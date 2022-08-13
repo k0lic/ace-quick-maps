@@ -5,6 +5,9 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { NewLocationsComponent } from './new-locations/new-locations.component';
 import { JunkNavComponent } from './junk-nav/junk-nav.component';
+import { AgmCoreModule } from '@agm/core';
+import { Secrets } from 'secrets';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -14,7 +17,11 @@ import { JunkNavComponent } from './junk-nav/junk-nav.component';
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    FormsModule,
+    AgmCoreModule.forRoot({
+      apiKey: Secrets.GOOGLE_MAP_API_KEY
+    })
   ],
   providers: [],
   bootstrap: [AppComponent]

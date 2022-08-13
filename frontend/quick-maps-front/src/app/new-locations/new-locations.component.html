@@ -1,11 +1,60 @@
-<div>
-  <iframe 
-  width="1400" 
-  height="800" 
-  style="border:0" 
-  loading="lazy" 
-  allowfullscreen 
-  referrerpolicy="no-referrer-when-downgrade" 
-  [src]='getMapLink()'>
-  </iframe>
+<div class="row d-flex justify-content-center">
+  <div class="col-12 d-flex justify-content-center">
+    <h1>Angular Google Maps - Lets try it out :D</h1>
+  </div>
+
+  <!-- MAP -->
+  <div class="col-8">
+    <agm-map
+      class="row"
+      [latitude]="map_lat"
+      [longitude]="map_lng"
+      [zoom]="map_zoom"
+      (mapReady)="mapReadyHandler($event)"
+    >
+      <agm-marker 
+        *ngFor="let m of markers; let i = index"
+        [latitude]="m.lat"
+        [longitude]="m.lng"
+        [label]="m.label"
+        (markerRightClick)="removeMarker(i)"
+        [markerDraggable]="true"
+        (dragEnd)="onMarkerDragEnd(i, $event)"
+        >
+      </agm-marker>
+    </agm-map>
+
+    <!-- SUBMIT BUTTON -->
+    <div class="row justify-content-center pt-2">
+      <button type="button" class="btn btn-primary col-6" (click)="submitMarkers()">Submit places</button>
+    </div>
+  </div>
+
+  <!-- LIST OF PLACES -->
+  <div class="col-4">
+    <div class="row d-flex justify-content-center p-3">
+
+      <!-- INPUT FOR NEW PLACE NAME -->
+      <div class="col-10 form-group mb-2">
+        <input 
+          type="text" 
+          class="form-control" 
+          id="inputPlaceName" 
+          #inputPlaceNameTag
+          placeholder="Input place name" 
+          (keyup.enter)="onEnterPress()"
+          [(ngModel)]="newPlaceName"
+        >
+      </div>
+
+      <!-- LIST -->
+      <div *ngFor="let m of markers.slice().reverse(); let i = index" class="col-12">
+        <div class="row mb-1 p-2 bg-light">
+          <div class="col pl-4">{{m.hasName ? m.label : '...'}}</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
