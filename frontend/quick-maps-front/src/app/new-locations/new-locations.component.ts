@@ -1,4 +1,5 @@
 import { Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { LocationService } from '../_services/location.service';
 // import { MouseEvent } from '@agm/core';
 
 // Marker interface, used for presenting the places on the map, and then for sending the newly created places to the backend.
@@ -28,9 +29,13 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
   map : google.maps.Map|null = null;
   mapClickListener : google.maps.MapsEventListener|null = null;
 
-  constructor(private zone: NgZone) { }
+  constructor(private zone: NgZone, private locationService: LocationService) { }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    this.locationService.getAllLocations().subscribe((x) => {
+      console.log("Received from the server: " + x);
+    })
+  }
 
   // Workaround necessary since the default way is broken in this version of the agm(?) library.
   // If this is removed, variables: map, mapClickListener, zone; become useless -> remove as well.
