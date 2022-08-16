@@ -16,18 +16,19 @@
         *ngFor="let m of markers; let i = index"
         [latitude]="m.lat"
         [longitude]="m.lng"
-        [label]="m.label"
+        [label]="{
+          color: 'purple',
+          text: m.hasName?m.label:' ',
+          fontSize: '1.8em',
+          fontWeight: '500'
+        }"
         (markerRightClick)="removeMarker(i)"
         [markerDraggable]="true"
         (dragEnd)="onMarkerDragEnd(i, $event)"
+        [iconUrl]="iconObj"
         >
       </agm-marker>
     </agm-map>
-
-    <!-- SUBMIT BUTTON -->
-    <div class="row justify-content-center pt-2">
-      <button type="button" class="btn btn-primary col-6" (click)="submitMarkers()">Submit places</button>
-    </div>
   </div>
 
   <!-- LIST OF PLACES -->

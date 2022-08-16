@@ -29,11 +29,20 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
   map : google.maps.Map|null = null;
   mapClickListener : google.maps.MapsEventListener|null = null;
 
+  markers: Marker[] = []
+
+  iconObj : any;
+
   constructor(private zone: NgZone, private locationService: LocationService) { }
 
   ngOnInit(): void {
     // Retrieve locations from the server
     this.refreshMarkers();
+
+    this.iconObj = {
+      url: "../../assets/icons/place.svg",
+      labelOrigin: {x: 18, y: -6}
+    };
   }
 
   // Workaround necessary since the default way is broken in this version of the agm(?) library.
@@ -170,36 +179,5 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
     // Focus on place name input element for easier workflow.
     this.focusPlaceNameInput();
   }
-
-  submitMarkers(): void {
-    // Skip if marker array is empty.
-    if (this.markers.length == 0) {
-      return;
-    }
-
-    let lastIndex = this.markers.length - 1;
-    // Trim last marker if it has no name.
-    if (this.markers[lastIndex].hasName == false) {
-      this.markers.splice(lastIndex, 1);
-    }
-
-    // Check if there's anything left to send.
-    if (this.markers.length > 0) {
-      // TODO: send markers to backend :)
-      this.markers.forEach(marker => {
-        console.log(marker.label + "\t" + marker.lat + " " + marker.lng);
-      });
-    }
-    
-    // Clear markers, should be done when we're sure of delivery.
-    this.clearMarkers();
-  }
-
-  clearMarkers(): void {
-    // Remove all elements.
-    this.markers.splice(0, this.markers.length);
-  }
-
-  markers: Marker[] = []
 
 }
