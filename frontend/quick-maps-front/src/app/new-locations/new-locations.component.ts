@@ -32,9 +32,8 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
   constructor(private zone: NgZone, private locationService: LocationService) { }
 
   ngOnInit(): void {
-    this.locationService.getAllLocations().subscribe((x) => {
-      console.log("Received from the server: " + x);
-    })
+    // Retrieve locations from the server
+    this.refreshMarkers();
   }
 
   // Workaround necessary since the default way is broken in this version of the agm(?) library.
@@ -55,6 +54,20 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
   }
   // End of workaround.
 
+  refreshMarkers(): void {
+    this.locationService.getAllLocations().subscribe((locations: [{name: string, lat: number, lng: number}]) => {
+      locations.forEach(loc => {
+        this.markers.push({
+          label: loc.name,
+          lat: loc.lat,
+          lng: loc.lng,
+          hasName: true,
+          isSaved: true
+        });
+      });
+    });
+  }
+
   onMapClick($event : google.maps.MouseEvent): void {
     // Decide if new marker is to be added, or the one that was added last should just be moved.
     if (this.markers.length == 0 || this.markers[this.markers.length - 1].hasName) {
@@ -66,6 +79,10 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
     }
 
     // Focus on place name input element for easier workflow.
+    this.focusPlaceNameInput();
+  }
+
+  focusPlaceNameInput(): void {
     this.inputPlaceNameElement.nativeElement.focus();
   }
 
@@ -101,6 +118,13 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
     // Name last marker, since it has no name yet.
     this.markers[index].label = name;
     this.markers[index].hasName = true;
+
+    // Send last marker to server
+    let newLocation = this.markers[index];
+    this.locationService.addLocation(newLocation.label, newLocation.lat, newLocation.lng).subscribe((x) => {
+      // TODO: make this not throw error in console
+      console.log("Response from new location");
+    });
   }
 
   onEnterPress(): void {
@@ -113,13 +137,38 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
 
   removeMarker(index: number): void {
     // Remove one element at 'index'.
+    let label = this.markers[index].label;
+    let hasName = this.markers[index].hasName;
     this.markers.splice(index, 1);
+
+    // Remove location from server
+    if (hasName) {
+      this.locationService.deleteLocation(label).subscribe((x) => {
+        // TODO: make this not throw error in console
+        console.log("Response from delete location");
+      });
+    }
+
+    // Focus on place name input element for easier workflow.
+    this.focusPlaceNameInput();
   }
 
   onMarkerDragEnd(index: number, $event: any): void {
     // Update marker coords.
     this.markers[index].lat = $event.latLng.lat();
     this.markers[index].lng = $event.latLng.lng();
+
+    // Update location coords on server
+    let marker = this.markers[index];
+    if (marker.hasName) {
+      this.locationService.moveLocation(marker.label, marker.lat, marker.lng).subscribe((x) => {
+        // TODO: make this not throw error in console
+        console.log("Response from move location");
+      });
+    }
+
+    // Focus on place name input element for easier workflow.
+    this.focusPlaceNameInput();
   }
 
   submitMarkers(): void {

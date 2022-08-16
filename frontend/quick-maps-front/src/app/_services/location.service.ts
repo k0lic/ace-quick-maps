@@ -10,11 +10,31 @@ export class LocationService {
   constructor(private http: HttpClient) { }
 
   getAllLocations() {
-    // TODO: retrieve all previously created locations from the server
-    return this.http.get(uri + "/locations_get");
+    return this.http.get<[{name: string, lat: number, lng: number}]>(uri + "/all_locations");
   }
 
-  updateLocationList() {
-    // TODO: update the database with the current location list - remove, update and add so the database reflects the state visible to the user
+  addLocation(name: string, lat: number, lng: number) {
+    let data = {
+      name: name,
+      lat: lat,
+      lng: lng
+    };
+    return this.http.post(uri + "/add_location", data);
+  }
+
+  moveLocation(name: string, lat: number, lng: number) {
+    let data = {
+      name: name,
+      lat: lat,
+      lng: lng
+    };
+    return this.http.post(uri + "/move_location", data);
+  }
+
+  deleteLocation(name: string) {
+    let data = {
+      name: name
+    };
+    return this.http.post(uri + "/delete_location", data);
   }
 }
