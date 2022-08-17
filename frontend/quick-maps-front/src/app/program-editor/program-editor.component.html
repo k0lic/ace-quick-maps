@@ -1,0 +1,100 @@
+<div class="row d-flex justify-content-center">
+    <!-- HEADER -->
+    <div class="col-12 d-flex justify-content-center mb-5">
+        <h1>{{selectedPartnerName + ' - ' + selectedTourProgramName}}</h1>
+    </div>
+
+    <!-- PROGRAM SELECTOR -->
+    <div class="col-12 mb-4">
+        <div class="row justify-content-center">
+            <!-- PARTNER SELECTOR -->
+            <div class="col-12 col-lg-5 d-flex justify-content-center mb-2">
+                <select class="form-select" [ngModel]="selectedPartnerId" (ngModelChange)="onPartnerSelect($event)">
+                    <option *ngFor="let partner of partners" [value]="partner.idpartner">
+                        {{partner.name}}
+                    </option>
+                </select>
+            </div>
+            <!-- TOUR PROGRAM SELECTOR -->
+            <div class="col-12 col-lg-3 d-flex justify-content-center mb-2">
+                <select class="form-select" [ngModel]="selectedTourProgramId" (ngModelChange)="onTourProgramSelect($event)">
+                    <option *ngFor="let program of tourProgramsFiltered" [value]="program.id">
+                        {{program.name}}
+                    </option>
+                </select>
+            </div>
+            <!-- EDIT BUTTON -->
+            <div class="col-12 col-lg-2">
+                <button type="button" [class]="editMode?'btn btn-secondary':'btn btn-primary'" (click)="flipEditMode()">{{editMode?'View':'Edit'}}</button>
+            </div>
+        </div>
+    </div>
+  
+    <!-- MAP CONTAINER -->
+    <div class="col-12 col-lg-8 col-xxl-9">
+        <div class="row d-flex justify-content-center">
+            <!-- MAP HEADER -->
+            <div class="col-12 col-lg-10 mb-3">
+                <div class="row">
+                    <button type="button" class="btn btn-secondary col-3" (click)="goToPreviousDay()">&lt;</button>
+                    <h5 class="col-6 text-center">
+                        {{selectedTourProgramName + ' - Day ' + selectedDay}}
+                    </h5>
+                    <button type="button" class="btn btn-secondary col-3" (click)="goToNextDay()">&gt;</button>
+                </div>
+            </div>
+
+            <!-- MAP -->
+            <agm-map
+                class="col-12"
+                [latitude]="map_lat"
+                [longitude]="map_lng"
+                [zoom]="map_zoom"
+                (mapReady)="mapReadyHandler($event)"
+                >
+                <agm-marker 
+                    *ngFor="let m of markers; let i = index"
+                    [latitude]="m.lat"
+                    [longitude]="m.lng"
+                    [label]="{
+                        color: 'purple',
+                        text: m.label,
+                        fontSize: '1.8em',
+                        fontWeight: '500'
+                    }"
+                    >
+                </agm-marker>
+            </agm-map>
+        </div>
+    </div>
+  
+    <!-- LIST OF PLACES -->
+    <div class="col-10 col-lg-4 col-xxl-3">
+      <div class="row d-flex justify-content-center p-3">
+  
+        <!-- PROGRAM HEADER -->
+        <div class="col-12">
+            <h4>{{selectedTourProgramName + ' Tour Program'}}</h4>
+        </div>
+  
+        <!-- LIST OF DAYS -->
+        <div *ngFor="let day of days; let i = index" class="col-12">
+          <div [class]="day.day_number==selectedDay?'row mb-1 p-2 bg-primary d-flex justify-content-right':'row mb-1 p-2 bg-light d-flex justify-content-right'" (click)="onDaySelect(day.day_number)">
+            <!-- DAY HEADER -->
+            <div class="col-12">
+                {{'Day ' + day.day_number}}
+            </div>
+            <!-- LIST OF POINTS -->
+            <div *ngFor="let point of day.points" class="col-11 col-lg-9">
+                {{'#' + point.index + ' - ' + point.location}}
+            </div>
+          </div>
+        </div>
+
+        <!-- NEW DAY BUTTON -->
+        <button *ngIf="editMode" type="button" class="btn btn-primary col-4 mt-3" (click)="addTourProgramDay()">Add day</button>
+  
+      </div>
+    </div>
+  
+  </div>

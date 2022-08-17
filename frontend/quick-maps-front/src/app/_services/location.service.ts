@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Location } from '../_entities/location';
 import { uri } from '../_helpers/uriHelper';
 
 @Injectable({
@@ -10,7 +11,7 @@ export class LocationService {
   constructor(private http: HttpClient) { }
 
   getAllLocations() {
-    return this.http.get<[{name: string, lat: number, lng: number}]>(uri + "/all_locations");
+    return this.http.get<[Location]>(uri + "/all_locations");
   }
 
   addLocation(name: string, lat: number, lng: number) {

@@ -74,8 +74,17 @@ router.post('/delete_location', (req, res) => {
 });
 
 // Program routes
+router.get('/all_partners', (req, res) => {
+    let query_string = 'SELECT * FROM partners';
+    executeQuery(query_string, res);
+});
+
 router.get('/all_tour_programs', (req, res) => {
-    let query_string = 'SELECT * FROM programs pr, partners pa WHERE pr.idpartner = pa.idpartner';  // join with partners might be unneeded
+    let query_string = ''
+        + 'SELECT pr.idprogram as id, pr.name as name, pr.idpartner as partner_id, pa.name as partner_name, pa.shorthand as parther_short '
+        + 'FROM programs pr, partners pa '
+        + 'WHERE pr.idpartner = pa.idpartner';  // join with partners might be unneeded
+        
     executeQuery(query_string, res);
 });
 
@@ -83,12 +92,22 @@ router.post('/tour_program_days', (req, res) => {
     let program_id = req.body.id;
 
     // TODO: what if there's a day without any points? that will be missed, no?
+    // let query_string = ''
+    //     + 'SELECT * '
+    //     + 'FROM program_days d, points p, locations l '
+    //     + 'WHERE d.idprogram = \'' + program_id + '\' '
+    //     + '     AND p.idprogram = d.idprogram AND p.daynumber = d.number '
+    //     + '     AND l.name = p.location';
     let query_string = ''
-        + 'SELECT * '
-        + 'FROM program_days d, points p, locations l '
-        + 'WHERE d.idprogram = \'' + program_id + '\' '
-        + '     AND p.idprogram = d.idprogram AND p.daynumber = d.number '
-        + '     AND l.name = p.location';
+        + 'SELECT d.idprogram as program_id, d.number as day_number, d.description as day_description, '
+	    + 'p.idpoint as point_id, p.pointindex as point_index, p.location as location_name, p.idtype as point_type, p.description as point_description, '
+        + 'l.lat as lat, l.lng as lng '
+        + 'FROM program_days d '
+        + 'LEFT JOIN points p '
+        + 'ON d.idprogram = p.idprogram AND d.number = p.daynumber '
+        + 'LEFT JOIN locations l '
+        + 'ON p.location = l.name '
+        + 'WHERE d.idprogram = ' + program_id;
     executeQuery(query_string, res);
 });
 

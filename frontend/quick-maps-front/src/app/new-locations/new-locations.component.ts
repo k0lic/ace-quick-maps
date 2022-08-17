@@ -1,4 +1,5 @@
 import { Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Location } from '../_entities/location';
 import { LocationService } from '../_services/location.service';
 // import { MouseEvent } from '@agm/core';
 
@@ -64,7 +65,7 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
   // End of workaround.
 
   refreshMarkers(): void {
-    this.locationService.getAllLocations().subscribe((locations: [{name: string, lat: number, lng: number}]) => {
+    this.locationService.getAllLocations().subscribe((locations: [Location]) => {
       locations.forEach(loc => {
         this.markers.push({
           label: loc.name,

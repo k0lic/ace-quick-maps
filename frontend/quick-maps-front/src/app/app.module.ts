@@ -9,12 +9,14 @@ import { AgmCoreModule } from '@agm/core';
 import { Secrets } from 'secrets';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { ProgramEditorComponent } from './program-editor/program-editor.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     NewLocationsComponent,
-    JunkNavComponent
+    JunkNavComponent,
+    ProgramEditorComponent
   ],
   imports: [
     BrowserModule,
