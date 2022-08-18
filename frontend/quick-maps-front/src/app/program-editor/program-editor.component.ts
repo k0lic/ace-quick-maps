@@ -112,30 +112,36 @@ export class ProgramEditorComponent implements OnInit {
     // Get click coordinates
     let lat = $event.latLng.lat();
     let lng = $event.latLng.lng();
+    let point_index = this.days[this.selectedDay - 1].points.length + 1
+    let location = '';
+    let use_location = false;
 
-    // TODO: check if marker is free floating - if so we don't search for the nearest location
-    let loc = this.getNearestLocation(lat, lng);
+    // Get nearest location coordinates, if needed (if point is not free-floating)
+    if (!(this.getSelectedPointType()?.free_floating == true)) {  // value can be null, so best to check like this
+      let loc = this.getNearestLocation(lat, lng);
+      location = loc.name;
+      lat = loc.lat;
+      lng = loc.lng;
 
-    // Add marker
-    this.pointMarkers.push({
-      label: loc.name,
-      lat: loc.lat,
-      lng: loc.lng,
-      icon_map_key: this.selectedPointType,
-      show_label: this.getSelectedPointType()?.preferred_ui_label??false
-    });
-    console.log(this.pointMarkers);
+      use_location = true;
+    }
 
-    // Add point to day
-    let dayIndex = this.selectedDay - 1;
-    this.days[dayIndex].points.push({
-      id: 0,
-      index: this.days[dayIndex].points.length + 1,
-      location: loc.name,
-      type: this.selectedPointType,
-      description: '',
-      lat: loc.lat,
-      lng: loc.lng
+    // Send new point to the server
+    this.programService.addPoint(
+      this.selectedTourProgramId, 
+      this.selectedDay,
+      point_index,
+      use_location,
+      location,
+      lat,
+      lng,
+      this.selectedPointType,
+      ''
+    ).subscribe((res) => {
+      // TODO: fix this
+    }, err => {
+      // TODO: fix this so flow doesn't always end in the error callback
+      this.getAllDayPoints();
     });
   }
 
@@ -178,16 +184,31 @@ export class ProgramEditorComponent implements OnInit {
       }
     });
 
+    // Automatically select the first day
+    this.selectedDay = 1;
+
     // Fetch all the day-points from the server for the selected program
     this.getAllDayPoints();
   }
 
   onDaySelect(dayNumber: number): void {
-    // TODO: check ranges
+    // No days, fallback to default
+    if (this.days.length == 0) {
+      this.selectedDay = 1;
+      return;
+    }
 
+    // Check range
+    if (dayNumber < this.days[0].day_number || dayNumber > this.days[this.days.length - 1].day_number) {
+      // Invalid day number
+      return;
+    }
+
+    // Updated day selection
     this.selectedDay = dayNumber;
 
-    // TODO: do something with the map
+    // Show only markers for the selected day
+    this.refreshPointMarkers();
   }
 
   addTourProgramDay(): void {
@@ -204,6 +225,16 @@ export class ProgramEditorComponent implements OnInit {
       console.log(err);
 
       // TODO: figure out how to not flow into the error catcher
+      this.getAllDayPoints();
+    });
+  }
+
+  deleteLastTourProgramDay(): void {
+    let dayNumber = this.days[this.days.length - 1].day_number;
+    this.programService.deleteProgramDay(this.selectedTourProgramId, dayNumber).subscribe(res => {
+      // TODO: see below
+    }, err => {
+      // TODO: fix error callback catching everything
       this.getAllDayPoints();
     });
   }
@@ -297,6 +328,8 @@ export class ProgramEditorComponent implements OnInit {
 
       // Save
       this.days = tmp;
+
+      this.refreshPointMarkers();
     });
   }
 
@@ -346,7 +379,25 @@ export class ProgramEditorComponent implements OnInit {
   }
 
   getSelectedPointType(): PointType | undefined {
-    return this.pointTypes.find(t => t.name == this.selectedPointType);
+    return this.getTypeObject(this.selectedPointType);
+  }
+
+  getTypeObject(name: string): PointType | undefined {
+    return this.pointTypes.find(t => t.name == name);
+  }
+
+  refreshPointMarkers(): void {
+    this.pointMarkers = [];
+
+    this.days[this.selectedDay - 1].points.forEach(p => {
+      this.pointMarkers.push({
+        label: p.location??' ',
+        lat: p.lat,
+        lng: p.lng,
+        icon_map_key: p.type,
+        show_label: this.getTypeObject(p.type)?.preferred_ui_label??false
+      });
+    });
   }
 
 }

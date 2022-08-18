@@ -43,17 +43,45 @@ export class ProgramService {
     return this.http.post(uri + '/add_program_day', data);
   }
 
-  addPoint(program_id: number, number: number, point_index: number, location: string, type: string, description: string) {
+  deleteProgramDay(program_id: number, number: number) {
+    let data = {
+      id: program_id,
+      number: number
+    };
+
+    return this.http.post(uri + '/delete_program_day', data);
+  }
+
+  addPoint(program_id: number, number: number, point_index: number, use_location: boolean, location: string, lat: number, lng: number, type: string, description: string) {
     let data = {
       id: program_id,
       number: number,
       index: point_index,
+      location_present: use_location,
       location: location,
+      lat: lat,
+      lng: lng,
       type: type,
       description: description
     };
 
+    console.log(use_location);
+
     return this.http.post(uri + '/add_point', data);
+  }
+
+  updatePoint(id: number, point_index: number, location: string, lat: number, lng: number, type: string, description: string) {
+    let data = {
+      id: id,
+      index: point_index,
+      location: location,
+      lat: lat,
+      lng: lng,
+      type: type,
+      description: description
+    };
+
+    return this.http.post(uri + '/update_point', data);
   }
 
   deletePoint(point_id: number) {

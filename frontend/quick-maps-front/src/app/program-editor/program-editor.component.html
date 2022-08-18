@@ -133,8 +133,13 @@
           </div>
         </div>
 
-        <!-- NEW DAY BUTTON -->
-        <button *ngIf="editMode" type="button" class="btn btn-primary col-4 mt-3" (click)="addTourProgramDay()">Add day</button>
+        <!-- DAY BUTTONS -->
+        <div class="col-12 mt-3">
+            <div class="row d-flex justify-content-center">
+                <button *ngIf="editMode" type="button" class="btn btn-primary col-4 col-lg-8 m-2" (click)="addTourProgramDay()">Add day</button>
+                <button *ngIf="editMode" type="button" class="btn btn-danger col-4 col-lg-8 m-2" (click)="deleteLastTourProgramDay()">Remove last day</button>
+            </div>
+        </div>
   
       </div>
     </div>

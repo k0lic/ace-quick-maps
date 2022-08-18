@@ -100,7 +100,7 @@ router.post('/tour_program_days', (req, res) => {
     //     + '     AND l.name = p.location';
     let query_string = ''
         + 'SELECT d.idprogram as program_id, d.number as day_number, d.description as day_description, '
-	    + 'p.idpoint as point_id, p.pointindex as point_index, p.location as location_name, p.lat as ff_lat, p.lng as ff_lng'
+	    + 'p.idpoint as point_id, p.pointindex as point_index, p.location as location_name, p.lat as ff_lat, p.lng as ff_lng, '
         + 'p.idtype as point_type, p.description as point_description, '
         + 'l.lat as location_lat, l.lng as location_lng '
         + 'FROM program_days d '
@@ -123,22 +123,49 @@ router.post('/add_program_day', (req, res) => {
 
 router.post('/delete_program_day', (req, res) => {
     // TODO: remove all the points first, yeah?
+    let program_id = req.body.id;
+    let number = req.body.number;
+
+    let query_string_1 = 'DELETE FROM points WHERE idprogram = ' + program_id + ' AND daynumber = ' + number;
+    let query_string_2 = 'DELETE FROM program_days WHERE idprogram = ' + program_id + ' AND number = ' + number;
+    connection.query(query_string_1, (err, rows, fields) => {
+        if (err) {
+            console.log(err);
+            res.sendStatus(500);
+            return;
+        }
+
+        connection.query(query_string_2, (err, rows, fields) => {
+            if (err) {
+                console.log(err);
+                res.sendStatus(500);
+                return;
+            }
+    
+            res.sendStatus(200);
+        });
+    });
 });
 
 router.post('/add_point', (req, res) => {
     let program_id = req.body.id;
     let number = req.body.number;
     let point_index = req.body.index;
+    let location_present = req.body.location_present;
     let location = req.body.location;
+    let lat = req.body.lat;
+    let lng = req.body.lng;
     let type = req.body.type;
     let description = req.body.description;
 
-    let query_string = 'INSERT INTO points (idprogram, daynumber, pointindex, location, idtype, description) '
+    let query_string = 'INSERT INTO points (idprogram, daynumber, pointindex, ' + (location_present? 'location, ' : 'lat, lng, ') + 'idtype, description) '
         + 'VALUES ('
         + '\'' + program_id + '\','
         + '\'' + number + '\','
         + '\'' + point_index + '\','
-        + '\'' + location + '\','
+        + (location_present ? ('\'' + location + '\',') : '')
+        + (!location_present ? ('\'' + lat + '\',') : '')
+        + (!location_present ? ('\'' + lng + '\',') : '')
         + '\'' + type + '\','
         + '\'' + description + '\')';
     executeQueryWithoutResults(query_string, res);
@@ -148,12 +175,16 @@ router.post('/update_point', (req, res) => {
     let id = req.body.id;
     let point_index = req.body.index;
     let location = req.body.location;
+    let lat = req.body.lat;
+    let lng = req.body.lng;
     let type = req.body.type;
     let description = req.body.description;
 
     let query_string = 'UPDATE points '
         + 'SET pointindex = \'' + point_index + '\','
         + '     location = \'' + location + '\','
+        + '     lat = \'' + lat + '\','
+        + '     lng = \'' + lng + '\','
         + '     idtype = \'' + type + '\','
         + '     description = \'' + description + '\' '
         + 'WHERE idpoint = \'' + id + '\'';
