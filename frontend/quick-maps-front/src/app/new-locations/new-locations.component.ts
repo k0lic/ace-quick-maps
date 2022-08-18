@@ -41,7 +41,7 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
     this.refreshMarkers();
 
     this.iconObj = {
-      url: "../../assets/icons/place.svg",
+      url: "../../assets/icons/place_purple.svg",
       labelOrigin: {x: 18, y: -6}
     };
   }

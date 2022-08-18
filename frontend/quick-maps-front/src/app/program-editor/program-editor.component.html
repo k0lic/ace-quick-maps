@@ -1,6 +1,6 @@
 <div class="row d-flex justify-content-center">
     <!-- HEADER -->
-    <div class="col-12 d-flex justify-content-center mb-5">
+    <div class="col-12 d-flex justify-content-center mb-3">
         <h1>{{selectedPartnerName + ' - ' + selectedTourProgramName}}</h1>
     </div>
 
@@ -34,7 +34,7 @@
     <div class="col-12 col-lg-8 col-xxl-9">
         <div class="row d-flex justify-content-center">
             <!-- MAP HEADER -->
-            <div class="col-12 col-lg-10 mb-3">
+            <div class="col-12 col-lg-10 mb-2">
                 <div class="row">
                     <button type="button" class="btn btn-secondary col-3" (click)="goToPreviousDay()">&lt;</button>
                     <h5 class="col-6 text-center">
@@ -51,24 +51,66 @@
                 [longitude]="map_lng"
                 [zoom]="map_zoom"
                 (mapReady)="mapReadyHandler($event)"
+                [disableDefaultUI]="true"
                 >
+                <!-- LOCATION MARKERS -->
                 <agm-marker 
-                    *ngFor="let m of markers; let i = index"
+                    *ngFor="let m of locationMarkers; let i = index"
                     [latitude]="m.lat"
                     [longitude]="m.lng"
-                    [label]="{
+                    [label]="m.show_label?{
+                        color: 'gray',
+                        text: m.label,
+                        fontSize: '1em',
+                        fontWeight: '300'
+                    }:''"
+                    [iconUrl]="markerIconMap.get(m.icon_map_key)"
+                    [markerClickable]="false"
+                    >
+                </agm-marker>
+                <!-- POINT MARKERS -->
+                <agm-marker 
+                    *ngFor="let m of pointMarkers; let i = index"
+                    [latitude]="m.lat"
+                    [longitude]="m.lng"
+                    [label]="m.show_label?{
                         color: 'purple',
                         text: m.label,
                         fontSize: '1.8em',
                         fontWeight: '500'
-                    }"
+                    }:''"
+                    [iconUrl]="markerIconMap.get(m.icon_map_key)"
                     >
                 </agm-marker>
+                <!-- POLYLINE -->
+                <agm-polyline *ngIf="pointMarkers.length > 0" strokeColor="purple">
+                    <agm-polyline-point 
+                        *ngFor="let point of pointMarkers; let i = index"
+                        [latitude]="point.lat"
+                        [longitude]="point.lng"
+                    >
+                    </agm-polyline-point>
+                </agm-polyline>
             </agm-map>
+
+            <!-- MARKER TYPE BUTTONS -->
+            <div *ngIf="editMode" class="col-12">
+                <div class="row d-flex justify-content-center">
+                    <button 
+                        *ngFor="let type of pointTypes" 
+                        type="button" 
+                        [class]="type.name==selectedPointType?'btn btn-primary col-3 col-xxl-1 m-1':'btn btn-secondary col-3 col-xxl-1 m-1'" 
+                        (click)="onPointTypeClick(type.name)"
+                        style="font-size: 0.8em;"
+                    >
+                        {{type.name}}
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
   
-    <!-- LIST OF PLACES -->
+    <!-- SIDEBAR -->
     <div class="col-10 col-lg-4 col-xxl-3">
       <div class="row d-flex justify-content-center p-3">
   
@@ -79,14 +121,14 @@
   
         <!-- LIST OF DAYS -->
         <div *ngFor="let day of days; let i = index" class="col-12">
-          <div [class]="day.day_number==selectedDay?'row mb-1 p-2 bg-primary d-flex justify-content-right':'row mb-1 p-2 bg-light d-flex justify-content-right'" (click)="onDaySelect(day.day_number)">
+          <div [class]="day.day_number==selectedDay?'row mb-1 p-2 bg-primary':'row mb-1 p-2 bg-light'" (click)="onDaySelect(day.day_number)">
             <!-- DAY HEADER -->
             <div class="col-12">
                 {{'Day ' + day.day_number}}
             </div>
             <!-- LIST OF POINTS -->
-            <div *ngFor="let point of day.points" class="col-11 col-lg-9">
-                {{'#' + point.index + ' - ' + point.location}}
+            <div *ngFor="let point of day.points" class="col-11 col-lg-9 bg-light mx-3 m-1">
+                {{'#' + point.index + ' - ' + point.location + ' - ' + point.type}}
             </div>
           </div>
         </div>

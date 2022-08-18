@@ -12,6 +12,8 @@ interface Marker {
   label: string;
 	lat: number;
 	lng: number;
+  icon_map_key: string;
+  show_label: boolean;
 }
 
 // Point interface, used for the sidebar
@@ -52,10 +54,12 @@ export class ProgramEditorComponent implements OnInit {
   tourPrograms: TourProgram[] = [];
   tourProgramsFiltered: TourProgram[] = [];
   pointTypes: PointType[] = [];
-  markers: Marker[] = [];
   dayPointsRaw: ProgramDayPoint[] = [];
   days: ProgramDay[] = [];
   locations: Location[] = [];
+  locationMarkers: Marker[] = [];
+  pointMarkers: Marker[] = [];
+  markerIconMap: Map<string, any> = new Map();
 
   editMode: boolean = false;
   selectedDay: number = 1;
@@ -63,6 +67,7 @@ export class ProgramEditorComponent implements OnInit {
   selectedPartnerName: string = "";
   selectedTourProgramId: number = 1;
   selectedTourProgramName: string = "";
+  selectedPointType: string = "";
 
   jokerPartner: Partner = {
     idpartner: -1,
@@ -104,16 +109,22 @@ export class ProgramEditorComponent implements OnInit {
       return;
     }
 
+    // Get click coordinates
     let lat = $event.latLng.lat();
     let lng = $event.latLng.lng();
+
+    // TODO: check if marker is free floating - if so we don't search for the nearest location
     let loc = this.getNearestLocation(lat, lng);
 
     // Add marker
-    this.markers.push({
+    this.pointMarkers.push({
       label: loc.name,
       lat: loc.lat,
-      lng: loc.lng
+      lng: loc.lng,
+      icon_map_key: this.selectedPointType,
+      show_label: this.getSelectedPointType()?.preferred_ui_label??false
     });
+    console.log(this.pointMarkers);
 
     // Add point to day
     let dayIndex = this.selectedDay - 1;
@@ -121,7 +132,7 @@ export class ProgramEditorComponent implements OnInit {
       id: 0,
       index: this.days[dayIndex].points.length + 1,
       location: loc.name,
-      type: '',
+      type: this.selectedPointType,
       description: '',
       lat: loc.lat,
       lng: loc.lng
@@ -197,6 +208,10 @@ export class ProgramEditorComponent implements OnInit {
     });
   }
 
+  onPointTypeClick(name: string): void {
+    this.selectedPointType = name;
+  }
+
   // Fetch data from server
   getAllPartners(): void {
     this.programService.getAllPartners().subscribe((partners: [Partner]) => {
@@ -214,7 +229,24 @@ export class ProgramEditorComponent implements OnInit {
 
   getAllPointTypes(): void {
     this.programService.getAllPointTypes().subscribe((types: [PointType]) => {
-      this.pointTypes = types;
+      this.pointTypes = types.sort((t1, t2) => t1.preferred_ui_pos - t2.preferred_ui_pos);
+
+      // Set first type as selected by default
+      this.selectedPointType = this.pointTypes[0].name;
+
+      // Populate marker icon map for all types
+      this.pointTypes.forEach(type => {
+        if (type.preferred_ui_icon == null || type.preferred_ui_icon.trim().length == 0) {
+          // There is no icon
+          this.markerIconMap.set(type.name, ' ');
+        } else {
+          // There should be an icon
+          this.markerIconMap.set(type.name, {
+            url: (type.preferred_ui_icon != null && type.preferred_ui_icon != '')?(')../../assets/icons/' + type.preferred_ui_icon):'',
+            labelOrigin: {x: 18, y: -6}
+          });
+        }
+      });
     });
   }
 
@@ -257,8 +289,8 @@ export class ProgramEditorComponent implements OnInit {
             location: dp.location_name,
             type: dp.point_type,
             description: dp.point_description,
-            lat: dp.lat,
-            lng: dp.lng
+            lat: dp.location_name != null?dp.location_lat:dp.ff_lat,
+            lng: dp.location_name != null?dp.location_lng:dp.ff_lng
           });
         }
       });
@@ -271,6 +303,24 @@ export class ProgramEditorComponent implements OnInit {
   getAllLocations(): void {
     this.locationService.getAllLocations().subscribe((locations: [Location]) => {
       this.locations = locations;
+
+      // Add location icon object to marker icon map
+      this.markerIconMap.set('_location', {
+        url: '../../assets/icons/place_gray.svg',
+        labelOrigin: {x: 18, y: -6}
+      });
+
+      // Add location markers to map
+      this.locationMarkers = [];
+      this.locations.forEach(loc => {
+        this.locationMarkers.push({
+          label: loc.name,
+          lat: loc.lat,
+          lng: loc.lng,
+          icon_map_key: '_location',
+          show_label: true
+        });
+      });
     });
   }
 
@@ -293,6 +343,10 @@ export class ProgramEditorComponent implements OnInit {
   // Does NOT work for all spots on the globe, will work for our use case ;)
   distance(lat1: number, lng1: number, lat2: number, lng2: number): number {
     return Math.pow(lat1 - lat2, 2) + Math.pow(lng1 - lng2, 2);
+  }
+
+  getSelectedPointType(): PointType | undefined {
+    return this.pointTypes.find(t => t.name == this.selectedPointType);
   }
 
 }

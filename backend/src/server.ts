@@ -100,8 +100,9 @@ router.post('/tour_program_days', (req, res) => {
     //     + '     AND l.name = p.location';
     let query_string = ''
         + 'SELECT d.idprogram as program_id, d.number as day_number, d.description as day_description, '
-	    + 'p.idpoint as point_id, p.pointindex as point_index, p.location as location_name, p.idtype as point_type, p.description as point_description, '
-        + 'l.lat as lat, l.lng as lng '
+	    + 'p.idpoint as point_id, p.pointindex as point_index, p.location as location_name, p.lat as ff_lat, p.lng as ff_lng'
+        + 'p.idtype as point_type, p.description as point_description, '
+        + 'l.lat as location_lat, l.lng as location_lng '
         + 'FROM program_days d '
         + 'LEFT JOIN points p '
         + 'ON d.idprogram = p.idprogram AND d.number = p.daynumber '
