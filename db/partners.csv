@@ -1,4 +1,4 @@
-idpartners,name,shorthand
+idpartner,name,shorthand
 1,"KE Adventure Travel",KE
 2,EXPLORE!,EXPL
 3,Ramblers,RAMB
@@ -12,3 +12,4 @@ idpartners,name,shorthand
 11,Sawadee,SAW
 12,Djoser,DJOS
 13,"Les Covoyageurs",LCOV
+14,"Dragon Bay Ramblers",DBR

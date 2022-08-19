@@ -1,53 +1,58 @@
-name,name,shorthand
-BBL,"KE Adventure Travel",KE
-SER,"KE Adventure Travel",KE
-FCR,"KE Adventure Travel",KE
-"KE WCI","KE Adventure Travel",KE
-YD,EXPLORE!,EXPL
-CCD,EXPLORE!,EXPL
-CBM,EXPLORE!,EXPL
-WCM,EXPLORE!,EXPL
-23500,Ramblers,RAMB
-28910,Ramblers,RAMB
-28960,Ramblers,RAMB
-MTG005,"Terres d'Aventure",TDAV
-MTG006,"Terres d'Aventure",TDAV
-MTG007,"Terres d'Aventure",TDAV
-MTG009,"Terres d'Aventure",TDAV
-SER003,"Terres d'Aventure",TDAV
-MTGL01,"Terres d'Aventure",TDAV
-MTGL02,"Terres d'Aventure",TDAV
-MTGL03,"Terres d'Aventure",TDAV
-MTGL04,"Terres d'Aventure",TDAV
-MTGF02,"Terres d'Aventure",TDAV
-MTG010,"Terres d'Aventure",TDAV
-CRO003,"Terres d'Aventure",TDAV
-CRO012,"Terres d'Aventure",TDAV
-MTN60,"Nomade Aventure",NOM
-MTN61,"Nomade Aventure",NOM
-MTN65,"Nomade Aventure",NOM
-MTN67,"Nomade Aventure",NOM
-MTN102,"Nomade Aventure",NOM
-SER02,"Nomade Aventure",NOM
-MCG1,"Mediterrana Tours",MED
-MCG2,"Mediterrana Tours",MED
-BTTS,"biss Aktivreisen",BISS
-SBM,"biss Aktivreisen",BISS
-HM,HEADWATER,HEAD
-CD1,"A.C.E. Adventure",ACE
-CHB,"A.C.E. Adventure",ACE
-WS,"A.C.E. Adventure",ACE
-BC,"A.C.E. Adventure",ACE
-FM,"A.C.E. Adventure",ACE
-CB,"A.C.E. Adventure",ACE
-SER01,"Schulz Activ Reisen",SCH
-BAK,Sawadee,SAW
-BAF,Sawadee,SAW
-JRBAK,Sawadee,SAW
-EEZ,Sawadee,SAW
-EEF,Sawadee,SAW
-SEMK,Djoser,DJOS
-FIBK,Djoser,DJOS
-JBA,Djoser,DJOS
-MAGR,Djoser,DJOS
-PTB,"Les Covoyageurs",LCOV
+idprogram,name,idpartner
+1,BBL,1
+2,SER,1
+3,FCR,1
+4,WCI,1
+5,YD,2
+6,CCD,2
+7,CBM,2
+8,WCM,2
+10,28910,3
+12,MTG005,4
+13,MTG006,4
+14,MTG007,4
+15,MTG009,4
+16,SER003,4
+19,MTGL03,4
+20,MTGL04,4
+21,MTGF02,4
+22,MTG010,4
+23,CRO003,4
+24,CRO012,4
+25,MTN60,5
+26,MTN61,5
+27,MTN65,5
+28,MTN67,5
+29,MTN102,5
+31,MCG1,6
+32,MCG2,6
+33,BTTS,7
+34,SBM,7
+35,HM,8
+36,CD,9
+38,WS,9
+40,FM,9
+41,CB,9
+42,SER01,10
+43,BAK,11
+44,BAF,11
+45,JRBAK,11
+46,EEZ,11
+47,EEF,11
+48,SEMK,12
+49,FIBK,12
+50,JBA,12
+51,MAGR,12
+52,PTB,13
+53,MP,9
+54,"SEMK - DE",12
+55,BCN,13
+56,DBR012,14
+57,MTGS10,4
+58,MTGS21,4
+59,CROS25,4
+60,MTGS22,4
+61,"CRO SG",4
+62,CDC,9
+63,MNWR,7
+64,"CD SG",9
