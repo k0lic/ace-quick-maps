@@ -91,4 +91,12 @@ export class ProgramService {
 
     return this.http.post(uri + '/delete_point', data);
   }
+
+  fixupTourProgram(program_id: number) {
+    let data = {
+      id: program_id
+    };
+
+    return this.http.post(uri + '/tour_program_fixup', data);
+  }
 }

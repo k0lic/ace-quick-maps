@@ -53,7 +53,8 @@ export class ProgramEditorComponent implements OnInit {
   partners: Partner[] = [];
   tourPrograms: TourProgram[] = [];
   tourProgramsFiltered: TourProgram[] = [];
-  pointTypes: PointType[] = [];
+  userPointTypes: PointType[] = [];
+  allPointTypes: PointType[] = [];
   dayPointsRaw: ProgramDayPoint[] = [];
   days: ProgramDay[] = [];
   locations: Location[] = [];
@@ -243,6 +244,18 @@ export class ProgramEditorComponent implements OnInit {
     this.selectedPointType = name;
   }
 
+  fixUpTourProgramOnServer(): void {
+    this.programService.fixupTourProgram(this.selectedTourProgramId).subscribe(res => {
+      // TODO: epic issue
+    }, err => {
+      // TODO: err callback goes brrrrrrrrrr
+      console.log("Hello from fixup err callback :)");
+
+      // Fetch the changes
+      this.getAllDayPoints();
+    })
+  }
+
   // Fetch data from server
   getAllPartners(): void {
     this.programService.getAllPartners().subscribe((partners: [Partner]) => {
@@ -260,13 +273,14 @@ export class ProgramEditorComponent implements OnInit {
 
   getAllPointTypes(): void {
     this.programService.getAllPointTypes().subscribe((types: [PointType]) => {
-      this.pointTypes = types.sort((t1, t2) => t1.preferred_ui_pos - t2.preferred_ui_pos);
+      this.allPointTypes = types;
+      this.userPointTypes = types.filter(t => t.user_type).sort((t1, t2) => t1.preferred_ui_pos - t2.preferred_ui_pos);
 
       // Set first type as selected by default
-      this.selectedPointType = this.pointTypes[0].name;
+      this.selectedPointType = this.userPointTypes[0].name;
 
       // Populate marker icon map for all types
-      this.pointTypes.forEach(type => {
+      this.allPointTypes.forEach(type => {
         if (type.preferred_ui_icon == null || type.preferred_ui_icon.trim().length == 0) {
           // There is no icon
           this.markerIconMap.set(type.name, ' ');
@@ -383,7 +397,7 @@ export class ProgramEditorComponent implements OnInit {
   }
 
   getTypeObject(name: string): PointType | undefined {
-    return this.pointTypes.find(t => t.name == name);
+    return this.allPointTypes.find(t => t.name == name);
   }
 
   refreshPointMarkers(): void {
