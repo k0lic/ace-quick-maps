@@ -142,7 +142,7 @@ export class ProgramEditorComponent implements OnInit {
       // TODO: fix this
     }, err => {
       // TODO: fix this so flow doesn't always end in the error callback
-      this.getAllDayPoints();
+      this.getAllDayPoints(null);
     });
   }
 
@@ -189,7 +189,7 @@ export class ProgramEditorComponent implements OnInit {
     this.selectedDay = 1;
 
     // Fetch all the day-points from the server for the selected program
-    this.getAllDayPoints();
+    this.getAllDayPoints(null);
   }
 
   onDaySelect(dayNumber: number): void {
@@ -226,7 +226,7 @@ export class ProgramEditorComponent implements OnInit {
       console.log(err);
 
       // TODO: figure out how to not flow into the error catcher
-      this.getAllDayPoints();
+      this.getAllDayPoints(newDayNumber);
     });
   }
 
@@ -236,7 +236,7 @@ export class ProgramEditorComponent implements OnInit {
       // TODO: see below
     }, err => {
       // TODO: fix error callback catching everything
-      this.getAllDayPoints();
+      this.getAllDayPoints(this.selectedDay == dayNumber ? (dayNumber == 1 ? null : dayNumber - 1) : null);
     });
   }
 
@@ -252,7 +252,7 @@ export class ProgramEditorComponent implements OnInit {
       console.log("Hello from fixup err callback :)");
 
       // Fetch the changes
-      this.getAllDayPoints();
+      this.getAllDayPoints(null);
     })
   }
 
@@ -295,7 +295,7 @@ export class ProgramEditorComponent implements OnInit {
     });
   }
 
-  getAllDayPoints(): void {
+  getAllDayPoints(focus_on_day: number | null): void {
     this.programService.getTourProgramDays(this.selectedTourProgramId).subscribe((dayPoints: [ProgramDayPoint]) => {
       this.dayPointsRaw = dayPoints;
 
@@ -342,6 +342,9 @@ export class ProgramEditorComponent implements OnInit {
 
       // Save
       this.days = tmp;
+      if (focus_on_day != null) {
+        this.selectedDay = focus_on_day;
+      }
 
       this.refreshPointMarkers();
     });
