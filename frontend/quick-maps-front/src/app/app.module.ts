@@ -10,13 +10,15 @@ import { Secrets } from 'secrets';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { ProgramEditorComponent } from './program-editor/program-editor.component';
+import { TestComponent } from './test/test.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     NewLocationsComponent,
     JunkNavComponent,
-    ProgramEditorComponent
+    ProgramEditorComponent,
+    TestComponent
   ],
   imports: [
     BrowserModule,
