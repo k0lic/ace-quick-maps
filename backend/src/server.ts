@@ -3,6 +3,7 @@ let express = require('express');
 let cors = require('cors');
 let bodyParser = require('body-parser');
 let cookieParser = require('cookie-parser');
+let Excel = require('exceljs')
 
 // !!! Setup pre-Routes
 const app = express();
@@ -185,8 +186,6 @@ router.post('/tour_program_fixup', (req, res) => {
                     });
                     changesMade = true;
 
-                    // console.log('NEW POINT ' + currentLocation + ' - hotel_checkout on day ' + info.day_number + ' at index ' + 1);
-
                     rememberHotelAddedToStartOfDayInInfo(arr, index, currentLocation);
                     info = arr[index];
                 }
@@ -208,8 +207,6 @@ router.post('/tour_program_fixup', (req, res) => {
                         description: ''
                     });
                     changesMade = true;
-
-                    // console.log('NEW POINT ' + currentLocation + ' - hotel_stay on day ' + info.day_number + ' at index ' + 1);
 
                     rememberHotelAddedToStartOfDayInInfo(arr, index, currentLocation);
                     info = arr[index];
@@ -238,8 +235,6 @@ router.post('/tour_program_fixup', (req, res) => {
                         changesMade = true;
                         currentLocation = tomorrowsInfo.first_location;
 
-                        // console.log('NEW POINT ' + currentLocation + ' - hotel_checkin on day ' + info.day_number + ' at index ' + info.last_index + 1);
-
                         rememberHotelAddedToEndOfDayInInfo(arr, index, currentLocation);
                         return;
                     }
@@ -260,8 +255,6 @@ router.post('/tour_program_fixup', (req, res) => {
                             description: ''
                         });
                         changesMade = true;
-
-                        // console.log('NEW POINT ' + currentLocation + ' - hotel_stay on day ' + info.day_number + ' at index ' + info.last_index + 1);
 
                         rememberHotelAddedToEndOfDayInInfo(arr, index, currentLocation);
                         return;
@@ -337,9 +330,6 @@ router.post('/tour_program_fixup', (req, res) => {
             }
         });
 
-        // console.log("NEW ROWS JUST DROPPED");
-        // console.log(newRows);
-
         // TODO: maybe this can be extracted into a function that performs n queries inside a transaction?
         // Begin transaction
         connection.beginTransaction(err => {
@@ -398,7 +388,6 @@ router.post('/tour_program_fixup', (req, res) => {
                         }
 
                         // Send success confirmation
-                        console.log("transaction SUCCESSFUL");
                         res.sendStatus(200);
                     });
                 });
@@ -553,6 +542,11 @@ router.get('/all_point_types', (req, res) => {
     executeQuery(query_string, res);
 });
 
+// Excel file routes
+router.get('/process_excel_test_file', (req, res) => {
+    testExcelFunction(res);
+})
+
 // Query helpers
 function executeQueryWithoutResults(query_string: string, res): void {
     connection.query(query_string, (err, rows, fields) => {
@@ -576,6 +570,114 @@ function executeQuery(query_string: string, res): void {
 
         res.status(200).send(rows);
     });
+}
+
+// Excel file functions
+async function testExcelFunction(res) {
+    let workbook = new Excel.Workbook();
+    await workbook.xlsx.readFile('D:\\ACE\\quick_maps\\main\\backend\\src\\Raspored tura 2022.xlsx');
+
+    let worksheet = workbook.getWorksheet('link');
+    
+    let rowObjs: any[] = [];
+    worksheet.eachRow((row, rowNumber) => {
+
+        let operator    = extractCellRawValue(workbook, worksheet, row, 1);
+        let tour        = extractCellRawValue(workbook, worksheet, row, 2);
+        let departNum   = extractCellRawValue(workbook, worksheet, row, 3);
+        let hotel1      = extractCellRawValue(workbook, worksheet, row, 4);
+        let hotel2      = extractCellRawValue(workbook, worksheet, row, 5);
+        let activities  = extractCellRawValue(workbook, worksheet, row, 6);
+        let dayNum      = extractCellRawValue(workbook, worksheet, row, 7);
+        let arrDate     = extractCellRawValue(workbook, worksheet, row, 8);
+        let depDate     = extractCellRawValue(workbook, worksheet, row, 9);
+        let status      = extractCellRawValue(workbook, worksheet, row, 10);
+        let junkString  = extractCellRawValue(workbook, worksheet, row, 13);
+
+        // console.log([operator, tour, departNum, dayNum, hotel1, status].join(','));
+        // if (status != null && ['status', 'potvrdjena', 'otkazana', 'nepoznat', 'potvrdjen', 'potvrđena'].indexOf(status) == -1) {
+        //     console.log('Weird status value: <' + status + '> at row ' + rowNumber);
+        //     console.log(JSON.stringify(status));
+        // }
+
+        rowObjs.push({
+            rowNumber: rowNumber,
+            operator: operator,
+            tour: tour,
+            departNum: departNum,
+            dayNum: dayNum,
+            hotel1: hotel1,
+            hotel2: hotel2,
+            activities: activities,
+            arrDate: arrDate,
+            depDate: depDate,
+            status: status,
+            junkString: junkString
+        });
+    });
+
+    console.log('Extracted all row objects: ' + rowObjs.length + ' in total');
+    // console.log(rowObjs);
+    // console.log(rowObjs.slice(0, 5));
+    // console.log(rowObjs.slice(rowObjs.length - 5, rowObjs.length));
+    // console.log(rowObjs.slice(1275, 1285));
+
+    // let statusMap: Map<string, number> = new Map();
+    // rowObjs.forEach(obj => {
+    //     let key = obj.status ?? "<<NULL>>";
+    //     statusMap.set(key, (statusMap.get(key)??0) + 1);
+    // });
+    // console.log(statusMap);
+
+    res.sendStatus(200);
+}
+
+function extractCellRawValue(workbook, worksheet, row, cellIndex) {
+    // Fetch cell value
+    let cellValue = row.getCell(cellIndex).value;
+
+    // Extract formula result, if cell content is a formula
+    cellValue = checkIfExcelLinkAndEvaluate(workbook, worksheet, cellValue);
+
+    return cellValue;
+}
+
+function checkIfExcelLinkAndEvaluate(workbook, worksheet, cell) {
+    // Check if cell is a formula cell
+    if (cell == null || typeof cell != 'object' || (!('formula' in cell) && !('sharedFormula' in cell))) {
+        // Give up - cell value is not a formula
+        return cell;
+    }
+
+    // Construct regexs that extract: cell address; worksheet name and cell address
+    let regexIntern = /^([^!]+)$/;
+    let regexExtern = /^([^!]+)!([^!]+)$/;
+
+    // Match regular expressions
+    let matchIntern = (('formula' in cell) ? cell.formula : cell.sharedFormula).match(regexIntern);
+    let matchExtern = (('formula' in cell) ? cell.formula : cell.sharedFormula).match(regexExtern);
+
+    // Extract cell address (? and worksheet name if present) if possible
+    if (matchIntern == null && matchExtern == null) {
+        // Give up - formula is not of link type
+        return cell;
+    }
+    let worksheetName = matchExtern == null ? null : matchExtern[1];
+    let cellAddress = matchExtern == null ? matchIntern[1] : matchExtern[2];
+
+    // Fetch target cell
+    let targetWorksheet = matchExtern == null ? worksheet : workbook.getWorksheet(worksheetName);
+    if (targetWorksheet != null) {
+        let targetCell = targetWorksheet.getCell(cellAddress);
+
+        if (targetCell != null) {
+            // Recursively travel through the chain of links until you resolve to a value
+            return checkIfExcelLinkAndEvaluate(workbook, targetWorksheet, targetCell.value);
+        }
+    }
+
+    // Couldn't resolve link
+    return cell;
 }
 
 // !!! Setup post-Routes
