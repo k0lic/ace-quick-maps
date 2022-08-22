@@ -491,8 +491,7 @@ router.post('/delete_point', (req, res) => {
 
 // Tour routes
 router.post('/date_tour_info_confirmed', (req, res) => {
-    let date = req.body.date;
-    
+    let date = new Date(req.body.date);
     getTourInfoForDate(date, ['confirmed'], res);
 });
 

@@ -1,15 +1,35 @@
 import { Component, NgZone, OnInit } from '@angular/core';
 import { PointType } from '../_entities/point-type';
+import { TourInfoPoint } from '../_entities/tour-info-point';
 import { ProgramService } from '../_services/program.service';
 import { TourService } from '../_services/tour.service';
 
 // Marker interface, used for presenting the points on the map
 interface Marker {
+  tourName: string;
+  tourStartDate: Date;
   label: string;
 	lat: number;
 	lng: number;
-  icon_map_key: string;
-  show_label: boolean;
+  iconMapKey: string;
+  showLabel: boolean;
+}
+
+interface MarkerContainer {
+  name: string;
+  depart: number;
+  excelRow: number;
+  status: string;
+  startDate: Date;
+  endDate: Date;
+  date: Date;
+  hotel1: string;
+  hotel2: string;
+  tourGuide: string;
+  guests: string;
+  activities: string;
+  markers: Marker[];
+  color: string;
 }
 
 @Component({
@@ -29,13 +49,16 @@ export class DateMapComponent implements OnInit {
 
   selectedDate: Date = new Date();
   allPointTypes: PointType[] = [];
-  markers: Marker[] = [];
+  tourInfoPoints: TourInfoPoint[] = [];
+  tourInfoBank: Map<string, TourInfoPoint[]> = new Map();
+  markerContainers: MarkerContainer[] = [];
   markerIconMap: Map<string, any> = new Map();
 
   constructor(private zone: NgZone, private tourService: TourService, private programService: ProgramService) { }
 
   ngOnInit(): void {
     this.getAllPointTypes();
+    this.getTourInfo();
   }
 
   // Workaround necessary since the default way is broken in this version of the agm(?) library.
@@ -64,21 +87,85 @@ export class DateMapComponent implements OnInit {
   }
 
   goToPreviousDate(): void {
-    // TODO
+    let newDate = new Date(this.selectedDate);
+    newDate.setDate(newDate.getDate() - 1);
+    this.onDateSelect(newDate);
   }
 
   goToNextDate(): void {
-    // TODO
+    let newDate = new Date(this.selectedDate);
+    newDate.setDate(newDate.getDate() + 1);
+    this.onDateSelect(newDate);
   }
 
-  onDateSelect(dayNumber: number): void {
-    // TODO
+  onDateSelect(newDate: Date): void {
+    this.selectedDate = newDate;
+
+    // Request tour info for the new date
+    this.getTourInfo();
   }
 
   getTourInfo(): void {
-    this.tourService.getConfirmedTourInfoForDate(this.selectedDate).subscribe(tourInfo => {
+    // Check if this date was already queried
+    if (this.tourInfoBank.has(this.dateString(this.selectedDate))) {
+      console.log('JUST LOOK IN THE BANK PogO');
+      this.tourInfoPoints = this.tourInfoBank.get(this.dateString(this.selectedDate))??[];
+      this.refreshMarkerContainers();
+      return;
+    }
+
+    // This is the first time this date is requested, so send the query to the server
+    this.tourService.getConfirmedTourInfoForDate(this.selectedDate).subscribe((tourInfo: [TourInfoPoint]) => {
+      console.log('QUERY THE SERVER Sadge');
+      this.tourInfoPoints = tourInfo;
       
+      // Save date info for possible later use
+      // TODO: can this cause too much memory usage?
+      if (this.tourInfoPoints.length > 0) {
+        this.tourInfoBank.set(this.dateString(this.tourInfoPoints[0].date), this.tourInfoPoints);
+        console.log(this.tourInfoBank.keys());
+      }
+
+      this.refreshMarkerContainers();
     });
+  }
+
+  refreshMarkerContainers(): void {
+    this.markerContainers = [];
+    this.tourInfoPoints.forEach(p => {
+      let c: MarkerContainer | undefined = this.markerContainers.find(mc => mc.name == p.program && mc.startDate == p.start_date);
+      if (c == null) {
+        c = {
+          name: p.program,
+          depart: p.depart,
+          excelRow: p.excel_row,
+          status: p.status,
+          startDate: p.start_date,
+          endDate: p.end_date,
+          date: p.date,
+          hotel1: p.hotel1,
+          hotel2: p.hotel2,
+          tourGuide: p.tour_guide,
+          guests: p.guests,
+          activities: p.activities,
+          markers: [],
+          color: '#FF0000'
+        };
+        this.markerContainers.push(c);
+      }
+
+      c.markers.push({
+        tourName: p.program,
+        tourStartDate: p.start_date,
+        label: p.location,
+        lat: p.location != null ? p.lat : p.ff_lat,
+        lng: p.location != null ? p.lng: p.ff_lng,
+        iconMapKey: p.point_type,
+        showLabel: this.allPointTypes.find(t => t.name == p.point_type)?.preferred_ui_label??false
+      });
+    });
+
+    console.log(this.markerContainers);
   }
 
   getAllPointTypes(): void {
@@ -99,6 +186,15 @@ export class DateMapComponent implements OnInit {
         }
       });
     });
+  }
+
+  padZero(x: number): string {
+    return (x >= 0 && x < 10 ? '0' : '') + x;
+  }
+
+  dateString(d: Date): string {
+    d = new Date(d);
+    return this.padZero(d.getDate()) + '/' + this.padZero(d.getMonth() + 1) + '/' + d.getFullYear();
   }
 
 }

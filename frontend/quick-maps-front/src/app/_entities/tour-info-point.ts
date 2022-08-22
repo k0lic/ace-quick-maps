@@ -9,7 +9,7 @@ export interface TourInfoPoint {
     hotel1: string;
     hotel2: string;
     tour_guide: string;
-    guest: string;
+    guests: string;
     activities: string;
     point_index: number;
     location: string;
