@@ -11,6 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { ProgramEditorComponent } from './program-editor/program-editor.component';
 import { TestComponent } from './test/test.component';
+import { DateMapComponent } from './date-map/date-map.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { TestComponent } from './test/test.component';
     NewLocationsComponent,
     JunkNavComponent,
     ProgramEditorComponent,
-    TestComponent
+    TestComponent,
+    DateMapComponent
   ],
   imports: [
     BrowserModule,

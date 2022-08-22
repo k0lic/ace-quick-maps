@@ -1,0 +1,53 @@
+<div class="row d-flex justify-content-center">  
+
+    <!-- PROGRAM SELECTOR -->
+    <div class="col-12 mb-4">
+        <div class="row justify-content-center">
+            <button type="button" class="btn btn-secondary col-3" (click)="goToPreviousDate()">&lt;</button>
+            <h5 class="col-6 text-center">
+                22/08/2022
+            </h5>
+            <button type="button" class="btn btn-secondary col-3" (click)="goToNextDate()">&gt;</button>
+        </div>
+    </div>
+
+    <!-- MAP CONTAINER -->
+    <div class="col-12">
+        <div class="row d-flex justify-content-center">
+            <!-- MAP -->
+            <agm-map
+                class="col-12"
+                [latitude]="map_lat"
+                [longitude]="map_lng"
+                [zoom]="map_zoom"
+                (mapReady)="mapReadyHandler($event)"
+                [disableDefaultUI]="true"
+                >
+                <!-- POINT MARKERS -->
+                <agm-marker 
+                    *ngFor="let m of markers; let i = index"
+                    [latitude]="m.lat"
+                    [longitude]="m.lng"
+                    [label]="m.show_label?{
+                        color: 'purple',
+                        text: m.label,
+                        fontSize: '1.8em',
+                        fontWeight: '500'
+                    }:''"
+                    [iconUrl]="markerIconMap.get(m.icon_map_key)"
+                    >
+                </agm-marker>
+                <!-- POLYLINE -->
+                <agm-polyline *ngIf="markers.length > 0" strokeColor="purple">
+                    <agm-polyline-point 
+                        *ngFor="let point of markers; let i = index"
+                        [latitude]="point.lat"
+                        [longitude]="point.lng"
+                    >
+                    </agm-polyline-point>
+                </agm-polyline>
+            </agm-map>
+        </div>
+    </div>
+  
+  </div>
