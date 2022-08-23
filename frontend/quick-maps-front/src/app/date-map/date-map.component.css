@@ -2,3 +2,39 @@ agm-map {
     height: 850px;
     width: 100%;
 }
+
+.tour-info-container {
+    height: 0;
+    position: absolute;
+    /* The max width of the info window. */
+    /* width: 200px; */
+}
+ 
+/* The popup bubble styling. */
+.popup-bubble {
+/* Position the bubble centred-above its parent. */
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -100%);
+    width: auto;
+}
+
+.popup-inner {
+    cursor: pointer;
+    background-color: white;
+    padding: 5px;
+    border-radius: 5px;
+    font-family: sans-serif;
+    /* overflow-y: auto; */
+    width: fit-content;
+}
+
+/* The parent of the bubble. A zero-height div at the top of the tip. */
+.popup-bubble-anchor {
+    /* Position the div a fixed distance above the tip. */
+    position: absolute;
+    /* width: 100%; */
+    bottom: 8px;
+    left: 0;
+}

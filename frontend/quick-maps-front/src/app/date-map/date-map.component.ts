@@ -1,6 +1,7 @@
-import { Component, NgZone, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit, Renderer2 } from '@angular/core';
 import { PointType } from '../_entities/point-type';
 import { TourInfoPoint } from '../_entities/tour-info-point';
+import { defaultSvgPath, svgMap } from '../_helpers/svgHelper';
 import { ProgramService } from '../_services/program.service';
 import { TourService } from '../_services/tour.service';
 
@@ -32,6 +33,185 @@ interface MarkerContainer {
   color: string;
 }
 
+interface TourInfoOverlay extends google.maps.OverlayView {
+  position: google.maps.LatLng;
+  containerDiv: HTMLDivElement;
+  bubbleContainer: HTMLDivElement;
+  bubbleContainerBig: HTMLDivElement;
+  hideBigOne: boolean;
+
+  // addItem(content: string, color: string): void;
+  // addItemBig(content: string, color: string): void;
+  addItem(item: MarkerContainer): void;
+  toggle(): void;
+}
+
+let TourInfoWindow: { new (position: google.maps.LatLng, content: string, color: string): TourInfoOverlay};
+let needToDefine = true;
+let renderer: Renderer2;
+
+function maybeDefine() {
+  if (needToDefine) {
+    defineTourInfoWindow();
+    needToDefine = false;
+  }
+}
+
+function padZero(x: number): string {
+  return (x >= 0 && x < 10 ? '0' : '') + x;
+}
+
+function dateString(d: Date): string {
+  d = new Date(d);
+  return padZero(d.getDate()) + '/' + padZero(d.getMonth() + 1) + '/' + d.getFullYear();
+}
+
+function toggleTOurInfoOverlay(tio: TourInfoOverlay): void {
+  tio.toggle();
+}
+
+function defineTourInfoWindow() {
+  TourInfoWindow = class TourInfoWindow extends google.maps.OverlayView implements TourInfoOverlay {
+    position: google.maps.LatLng;
+    containerDiv: HTMLDivElement;
+    bubbleContainer: HTMLDivElement;
+    bubbleContainerBig: HTMLDivElement;
+    hideBigOne: boolean;
+  
+    constructor(position: google.maps.LatLng, content: string, color: string) {
+      super();
+  
+      this.position = position;
+
+      // Item containers - each holds the separate div elements representing tours and stuff - first one the short version, the second one the long one
+      this.bubbleContainer = renderer.createElement('div');
+      this.bubbleContainerBig = renderer.createElement('div');
+
+      // Hide big one
+      renderer.setStyle(this.bubbleContainerBig, 'display', 'none');
+      this.hideBigOne = true;
+      
+      // Container for the afformentioned containers :)
+      let conContainer = renderer.createElement('div');
+      renderer.addClass(this.bubbleContainer, 'bubble-popup');
+      renderer.appendChild(conContainer, this.bubbleContainer);
+      renderer.appendChild(conContainer, this.bubbleContainerBig);
+      renderer.listen(conContainer, 'click', event => {
+        toggleTOurInfoOverlay(this);
+      });
+
+      // I need the anchor - holds the item container
+      let bubbleAnchor = renderer.createElement('div');
+      renderer.addClass(bubbleAnchor, 'popup-bubble-anchor');
+      renderer.appendChild(bubbleAnchor, conContainer);
+  
+      // The container adjusts the position based on the map zoom/pan - holds the anchor
+      this.containerDiv = renderer.createElement('div');
+      renderer.addClass(this.containerDiv, 'tour-info-container');
+      renderer.appendChild(this.containerDiv, bubbleAnchor);
+  
+      TourInfoWindow.preventMapHitsAndGesturesFrom(this.containerDiv);
+    }
+
+    addItem(item: MarkerContainer) {
+      // Add short version
+      let bubble = renderer.createElement('div');
+      renderer.addClass(bubble, 'popup-inner');
+      renderer.setStyle(bubble, 'border', '2px solid ' + item.color);
+      renderer.setProperty(bubble, 'innerHTML', item.name);
+
+      renderer.appendChild(this.bubbleContainer, bubble);
+
+      // Add detailed version
+      let bubbleBig = renderer.createElement('div');
+      renderer.addClass(bubbleBig, 'popup-inner');
+      renderer.setStyle(bubbleBig, 'border', '2px solid ' + item.color);
+
+      let headerEl = renderer.createElement('h4');
+      renderer.setProperty(headerEl, 'innerHTML', item.name + ' ' + dateString(item.startDate));
+      renderer.appendChild(bubbleBig, headerEl);
+      
+      let guideEl = renderer.createElement('div');
+      renderer.setProperty(guideEl, 'innerHTML', 'vodic' + ': ' + (item.tourGuide ?? '/'));
+      renderer.appendChild(bubbleBig, guideEl);
+      
+      let guestsEl = renderer.createElement('div');
+      renderer.setProperty(guestsEl, 'innerHTML', 'gosti' + ': ' + (item.guests ?? '/'));
+      renderer.appendChild(bubbleBig, guestsEl);
+      
+      let hotel1El = renderer.createElement('div');
+      renderer.setProperty(hotel1El, 'innerHTML', 'hotel1' + ': ' + (item.hotel1 ?? '/'));
+      renderer.appendChild(bubbleBig, hotel1El);
+      
+      let hotel2El = renderer.createElement('div');
+      renderer.setProperty(hotel2El, 'innerHTML', 'hotel2' + ': ' + (item.hotel2 ?? '/'));
+      renderer.appendChild(bubbleBig, hotel2El);
+      
+      let routeEl = renderer.createElement('div');
+      renderer.setProperty(routeEl, 'innerHTML', 'ruta' + ': ' + (item.markers[0].label ?? '?') + ' -> ' + (item.markers[item.markers.length - 1].label ?? '?'));
+      renderer.appendChild(bubbleBig, routeEl);
+      
+      if (item.activities != null) {
+        let activitiesEl = renderer.createElement('div');
+        renderer.setProperty(activitiesEl, 'innerHTML', 'aktivnost' + ': ' + item.activities);
+        renderer.appendChild(bubbleBig, activitiesEl);
+      }
+
+      renderer.appendChild(this.bubbleContainerBig, bubbleBig);
+    }
+
+    // addItem(content: string, color: string) {
+    //   let bubble = renderer.createElement('div');
+    //   renderer.addClass(bubble, 'popup-inner');
+    //   renderer.setStyle(bubble, 'border', '2px solid ' + color);
+    //   renderer.setProperty(bubble, 'innerHTML', content);
+
+    //   renderer.appendChild(this.bubbleContainer, bubble);
+    // }
+
+    // addItemBig(content: string, color: string) {
+    //   let bubbleBig = renderer.createElement('div');
+    //   renderer.addClass(bubbleBig, 'popup-inner');
+    //   renderer.setStyle(bubbleBig, 'border', '2px solid ' + color);
+    //   renderer.setProperty(bubbleBig, 'innerHTML', content);
+
+    //   renderer.appendChild(this.bubbleContainerBig, bubbleBig);
+    // }
+
+    toggle() {
+      this.hideBigOne = !this.hideBigOne;
+      if (this.hideBigOne) {
+        renderer.setStyle(this.bubbleContainer, 'display', 'block');
+        renderer.setStyle(this.bubbleContainerBig, 'display', 'none');
+      } else {
+        renderer.setStyle(this.bubbleContainer, 'display', 'none');
+        renderer.setStyle(this.bubbleContainerBig, 'display', 'block');
+      }
+    }
+  
+    onAdd() {
+      renderer.appendChild(this.getPanes()!.floatPane, this.containerDiv);
+    }
+  
+    onRemove() {
+      if (this.containerDiv.parentElement) {
+        renderer.removeChild(this.containerDiv.parentElement, this.containerDiv);
+      }
+    }
+  
+    draw() {
+      let divPosition = this.getProjection().fromLatLngToDivPixel(this.position)!;
+  
+      // this.containerDiv.style.left = divPosition.x + 'px';
+      // this.containerDiv.style.top = divPosition.y + 'px';
+      // this.containerDiv.style.display = 'block';
+      renderer.setStyle(this.containerDiv, 'left', divPosition.x + 'px');
+      renderer.setStyle(this.containerDiv, 'top', divPosition.y + 'px');
+      renderer.setStyle(this.containerDiv, 'display', 'block');
+    }
+  }
+}
+
 @Component({
   selector: 'app-date-map',
   templateUrl: './date-map.component.html',
@@ -44,8 +224,14 @@ export class DateMapComponent implements OnInit {
   map_lng : number = 19;
   map_zoom : number = 7;
 
+  anchorConst: any;
+  labelOriginConst: any;
+
   map : google.maps.Map|null = null;
   mapClickListener : google.maps.MapsEventListener|null = null;
+
+  svgMap: Map<string, string> = svgMap;
+  defaultSvgPath: string = defaultSvgPath;
 
   selectedDate: Date = new Date();
   allPointTypes: PointType[] = [];
@@ -53,12 +239,18 @@ export class DateMapComponent implements OnInit {
   tourInfoBank: Map<string, TourInfoPoint[]> = new Map();
   markerContainers: MarkerContainer[] = [];
   markerIconMap: Map<string, any> = new Map();
+  shortInfoWindows: TourInfoOverlay[] = [];
 
-  constructor(private zone: NgZone, private tourService: TourService, private programService: ProgramService) { }
+  constructor(private zone: NgZone, private renderer: Renderer2, private tourService: TourService, private programService: ProgramService) { }
 
   ngOnInit(): void {
     this.getAllPointTypes();
     this.getTourInfo();
+
+    this.anchorConst = {x: 12, y: 12};
+    this.labelOriginConst = {x: 12, y: 12};
+
+    renderer = this.renderer;
   }
 
   // Workaround necessary since the default way is broken in this version of the agm(?) library.
@@ -108,7 +300,6 @@ export class DateMapComponent implements OnInit {
   getTourInfo(): void {
     // Check if this date was already queried
     if (this.tourInfoBank.has(this.dateString(this.selectedDate))) {
-      console.log('JUST LOOK IN THE BANK PogO');
       this.tourInfoPoints = this.tourInfoBank.get(this.dateString(this.selectedDate))??[];
       this.refreshMarkerContainers();
       return;
@@ -116,14 +307,12 @@ export class DateMapComponent implements OnInit {
 
     // This is the first time this date is requested, so send the query to the server
     this.tourService.getConfirmedTourInfoForDate(this.selectedDate).subscribe((tourInfo: [TourInfoPoint]) => {
-      console.log('QUERY THE SERVER Sadge');
       this.tourInfoPoints = tourInfo;
       
       // Save date info for possible later use
       // TODO: can this cause too much memory usage?
       if (this.tourInfoPoints.length > 0) {
         this.tourInfoBank.set(this.dateString(this.tourInfoPoints[0].date), this.tourInfoPoints);
-        console.log(this.tourInfoBank.keys());
       }
 
       this.refreshMarkerContainers();
@@ -149,7 +338,7 @@ export class DateMapComponent implements OnInit {
           guests: p.guests,
           activities: p.activities,
           markers: [],
-          color: '#FF0000'
+          color: p.color
         };
         this.markerContainers.push(c);
       }
@@ -165,7 +354,55 @@ export class DateMapComponent implements OnInit {
       });
     });
 
-    console.log(this.markerContainers);
+    this.refreshInfoWindows();
+  }
+
+  refreshInfoWindows(): void {
+    // Check if google is defined, if not wait a bit then try again
+    if (typeof google === 'undefined') {
+      setTimeout(() => this.refreshInfoWindows(), 10);
+      return;
+    }
+
+    // Define the google.maps.OverlayView extended class, has to be defined dynamically since this page loads before google loads via script 
+    maybeDefine();
+
+    // Remove old windows
+    this.shortInfoWindows.forEach(s => {
+      s.setMap(null);
+    });
+
+    // Create new windows
+    this.shortInfoWindows = [];
+    this.markerContainers.forEach(c => {
+      let lat = c.markers[0].lat;
+      let lng = c.markers[0].lng;
+
+      // If there's a polyline(s), put the window in the middle of the first polyline
+      if (c.markers.length > 1) {
+        lat = (lat + c.markers[1].lat) / 2;
+        lng = (lng + c.markers[1].lng) / 2;
+      }
+
+      // Check if there's already a popup at the coordinates, if so don't create a new popup but instead add tour info to existing popup
+      let w: TourInfoOverlay | undefined = this.shortInfoWindows.find(w => w.position.lat() == lat && w.position.lng() == lng);
+      if (w == null) {
+        // Create new popup - empty
+        w = new TourInfoWindow(
+          new google.maps.LatLng(lat, lng),
+          c.name,
+          c.color
+        );
+        w.setMap(this.map);
+
+        this.shortInfoWindows.push(w);
+      }
+
+      // Add item to popup
+      // w.addItem(c.name, c.color);
+      // w.addItemBig(c.name + (c.tourGuide != null ? ' - ' + c.tourGuide : ''), c.color);
+      w.addItem(c);
+    });
   }
 
   getAllPointTypes(): void {
@@ -179,22 +416,22 @@ export class DateMapComponent implements OnInit {
           this.markerIconMap.set(type.name, ' ');
         } else {
           // There should be an icon
-          this.markerIconMap.set(type.name, {
-            url: (type.preferred_ui_icon != null && type.preferred_ui_icon != '')?(')../../assets/icons/' + type.preferred_ui_icon):'',
-            labelOrigin: {x: 18, y: -6}
-          });
+          this.markerIconMap.set(
+            type.name, 
+            type.preferred_ui_icon ?? ''
+          );
         }
       });
     });
   }
 
-  padZero(x: number): string {
-    return (x >= 0 && x < 10 ? '0' : '') + x;
+  getSvgPath(key: string): string {
+    let iconName = this.markerIconMap.get(key);
+    return svgMap.get(iconName)??defaultSvgPath;
   }
 
   dateString(d: Date): string {
-    d = new Date(d);
-    return this.padZero(d.getDate()) + '/' + this.padZero(d.getMonth() + 1) + '/' + d.getFullYear();
+    return dateString(d);
   }
 
 }

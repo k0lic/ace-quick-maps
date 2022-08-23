@@ -18,4 +18,5 @@ export interface TourInfoPoint {
     lng: number;
     ff_lat: number;
     ff_lng: number;
+    color: string;
 }
