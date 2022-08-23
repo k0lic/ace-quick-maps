@@ -505,7 +505,8 @@ function getTourInfoForDate(date, statusValues, res) {
 
     let query = 'SELECT p.name as program, t.depart_num as depart, t.excel_row_number as excel_row, t.status as \'status\', t.start_date as start_date, t.end_date as end_date, '
                 + '     d.date as \'date\', d.hotel1 as hotel1, d.hotel2 as hotel2, t.tour_guide as tour_guide, t.guests_raw as guests, a.description as activities, '
-                + '     po.pointindex as point_index, po.location as location, po.idtype as point_type, l.lat as lat, l.lng as lng, po.lat as ff_lat, po.lng as ff_lng '
+                + '     po.pointindex as point_index, po.location as location, po.idtype as point_type, l.lat as lat, l.lng as lng, po.lat as ff_lat, po.lng as ff_lng, '
+                + '     p.preferred_ui_color as color '
                 + 'FROM tour_days d '
                 + 'INNER JOIN tours t '
                 + 'ON d.tour_id = t.id '
@@ -554,9 +555,9 @@ function updateDatabaseWithTours(tours, res): void {
                 + quoteMe(t.startDate.getFullYear() + '-' + (t.startDate.getMonth() + 1) + '-' + t.startDate.getDate()) + ','
                 + quoteMe(t.endDate.getFullYear() + '-' + (t.endDate.getMonth() + 1) + '-' + t.endDate.getDate()) + ','
                 + t.departNum + ','
-                + quoteMe(t.tourGuide) + ','
+                + (t.tourGuide == null ? null : quoteMe(t.tourGuide)) + ','
                 + t.guestNum + ','
-                + quoteMe(t.guestNumRaw) + ','
+                + (t.guestNumRaw == null ? null : quoteMe(t.guestNumRaw)) + ','
                 + quoteMe(t.status)
                 + ')';
             firstTour = false;
