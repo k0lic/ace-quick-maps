@@ -10,6 +10,6 @@ export class TestService {
   constructor(private http: HttpClient) { }
 
   testExcelFileProcessing() {
-    return this.http.get(uri + '/process_excel_test_file');
+    return this.http.get(uri + '/test/process_excel_test_file');
   }
 }

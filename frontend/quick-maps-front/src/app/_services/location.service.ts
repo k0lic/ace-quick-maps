@@ -11,7 +11,7 @@ export class LocationService {
   constructor(private http: HttpClient) { }
 
   getAllLocations() {
-    return this.http.get<[Location]>(uri + "/all_locations");
+    return this.http.get<[Location]>(uri + "/locations/all_locations");
   }
 
   addLocation(name: string, lat: number, lng: number) {
@@ -20,7 +20,7 @@ export class LocationService {
       lat: lat,
       lng: lng
     };
-    return this.http.post(uri + "/add_location", data);
+    return this.http.post(uri + "/locations/add_location", data);
   }
 
   moveLocation(name: string, lat: number, lng: number) {
@@ -29,13 +29,13 @@ export class LocationService {
       lat: lat,
       lng: lng
     };
-    return this.http.post(uri + "/move_location", data);
+    return this.http.post(uri + "/locations/move_location", data);
   }
 
   deleteLocation(name: string) {
     let data = {
       name: name
     };
-    return this.http.post(uri + "/delete_location", data);
+    return this.http.post(uri + "/locations/delete_location", data);
   }
 }

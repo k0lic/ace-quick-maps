@@ -15,6 +15,6 @@ export class TourService {
       date: date
     };
 
-    return this.http.post<[TourInfoPoint]>(uri + '/date_tour_info_confirmed', data);
+    return this.http.post<[TourInfoPoint]>(uri + '/tours/date_tour_info_confirmed', data);
   }
 }

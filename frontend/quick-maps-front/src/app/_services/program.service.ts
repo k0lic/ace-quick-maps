@@ -14,15 +14,15 @@ export class ProgramService {
   constructor(private http: HttpClient) { }
 
   getAllPartners() {
-    return this.http.get<[Partner]>(uri + '/all_partners');
+    return this.http.get<[Partner]>(uri + '/programs/all_partners');
   }
 
   getAllTourPrograms() {
-    return this.http.get<[TourProgram]>(uri + '/all_tour_programs');
+    return this.http.get<[TourProgram]>(uri + '/programs/all_tour_programs');
   }
 
   getAllPointTypes() {
-    return this.http.get<[PointType]>(uri + '/all_point_types');
+    return this.http.get<[PointType]>(uri + '/point-types/all_point_types');
   }
 
   getTourProgramDays(program_id: number) {
@@ -30,7 +30,7 @@ export class ProgramService {
       id: program_id
     };
 
-    return this.http.post<[ProgramDayPoint]>(uri + '/tour_program_days', data);
+    return this.http.post<[ProgramDayPoint]>(uri + '/programs/tour_program_days', data);
   }
 
   addProgramDay(program_id: number, number: number, description: string) {
@@ -40,7 +40,7 @@ export class ProgramService {
       description: description
     };
 
-    return this.http.post(uri + '/add_program_day', data);
+    return this.http.post(uri + '/programs/add_program_day', data);
   }
 
   deleteProgramDay(program_id: number, number: number) {
@@ -49,7 +49,7 @@ export class ProgramService {
       number: number
     };
 
-    return this.http.post(uri + '/delete_program_day', data);
+    return this.http.post(uri + '/programs/delete_program_day', data);
   }
 
   addPoint(program_id: number, number: number, point_index: number, use_location: boolean, location: string, lat: number, lng: number, type: string, description: string) {
@@ -67,7 +67,7 @@ export class ProgramService {
 
     console.log(use_location);
 
-    return this.http.post(uri + '/add_point', data);
+    return this.http.post(uri + '/programs/add_point', data);
   }
 
   updatePoint(id: number, point_index: number, location: string, lat: number, lng: number, type: string, description: string) {
@@ -81,7 +81,7 @@ export class ProgramService {
       description: description
     };
 
-    return this.http.post(uri + '/update_point', data);
+    return this.http.post(uri + '/programs/update_point', data);
   }
 
   deletePoint(point_id: number) {
@@ -89,7 +89,7 @@ export class ProgramService {
       id: point_id
     };
 
-    return this.http.post(uri + '/delete_point', data);
+    return this.http.post(uri + '/programs/delete_point', data);
   }
 
   fixupTourProgram(program_id: number) {
@@ -97,6 +97,6 @@ export class ProgramService {
       id: program_id
     };
 
-    return this.http.post(uri + '/tour_program_fixup', data);
+    return this.http.post(uri + '/programs/tour_program_fixup', data);
   }
 }
