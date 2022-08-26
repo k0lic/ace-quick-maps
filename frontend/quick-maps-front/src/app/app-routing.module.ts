@@ -14,6 +14,7 @@ import { UserLayoutComponent } from './user-layout/user-layout.component';
 import { UserGuard } from './_guards/user-guard';
 import { AdminGuard } from './_guards/admin-guard';
 import { GuestGuard } from './_guards/guest-guard';
+import { MessageComponent } from './message/message.component';
 
 const routes: Routes = [
   {
@@ -23,6 +24,7 @@ const routes: Routes = [
       { path: 'date-map', component: DateMapComponent, canActivate: [UserGuard]},
       { path: 'new-locations', component: NewLocationsComponent, canActivate: [AdminGuard]},
       { path: 'program-editor', component: ProgramEditorComponent, canActivate: [AdminGuard]},
+      { path: 'message', component: MessageComponent, canActivate: [UserGuard]}
     ]
   },
   { 
@@ -32,6 +34,7 @@ const routes: Routes = [
       { path: 'login', component: LoginComponent, canActivate: [GuestGuard]},
       { path: 'register', component: RegisterComponent, canActivate: [GuestGuard]},
       { path: 'forgot-password', component: ForgotPasswordComponent, canActivate: [GuestGuard]},
+      { path: 'message', component: MessageComponent, canActivate: [GuestGuard]},
       { path: 'test', component: TestComponent},
       { path: '**', component: JunkNavComponent}
     ]

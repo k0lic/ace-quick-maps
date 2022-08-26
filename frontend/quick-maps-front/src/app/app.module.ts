@@ -7,7 +7,7 @@ import { NewLocationsComponent } from './new-locations/new-locations.component';
 import { JunkNavComponent } from './junk-nav/junk-nav.component';
 import { AgmCoreModule } from '@agm/core';
 import { Secrets } from 'secrets';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { ProgramEditorComponent } from './program-editor/program-editor.component';
 import { TestComponent } from './test/test.component';
@@ -21,6 +21,7 @@ import { GuestGuard } from './_guards/guest-guard';
 import { UserGuard } from './_guards/user-guard';
 import { HigherGuard } from './_guards/higher-guard';
 import { AdminGuard } from './_guards/admin-guard';
+import { MessageComponent } from './message/message.component';
 
 @NgModule({
   declarations: [
@@ -34,12 +35,14 @@ import { AdminGuard } from './_guards/admin-guard';
     RegisterComponent,
     ForgotPasswordComponent,
     NakedLayoutComponent,
-    UserLayoutComponent
+    UserLayoutComponent,
+    MessageComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     FormsModule,
+    ReactiveFormsModule,
     AgmCoreModule.forRoot({
       apiKey: Secrets.GOOGLE_MAP_API_KEY
     }),

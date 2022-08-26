@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LoginService } from '../_services/login.service';
 
 @Component({
@@ -8,22 +9,38 @@ import { LoginService } from '../_services/login.service';
 })
 export class ForgotPasswordComponent implements OnInit {
 
-  emailAddress: string = '';
+  forgotForm: FormGroup;
+  errorMessage: string = '';
 
-  constructor(private loginService: LoginService) { }
+  constructor(private loginService: LoginService, private fb: FormBuilder) {
+    this.forgotForm = this.fb.group({
+      email: ['', [Validators.required, Validators.pattern(/^\S+@\S+$/)]]
+    });
+  }
 
   ngOnInit(): void {
   }
 
   recover(): void {
-    this.loginService.forgotPassword(this.emailAddress).subscribe(res => {
+    // Clear server error
+    this.errorMessage = '';
+
+    // Mark all input fields as touched so any possible errors can be shown
+    this.forgotForm.markAllAsTouched();
+
+    if (!this.forgotForm.valid) {
+      // Just skip, the errors will already be shown
+      return;
+    }
+
+    this.loginService.forgotPassword(this.forgotForm.value.email).subscribe(res => {
       // TODO
-      console.log('success catcher');
-      console.log(res);
+      this.errorMessage = 'Not yet implemented!';
     }, err => {
-      // TODO: everything goes here
-      console.log('err catcher');
       console.log(err);
+
+      // TODO: make real message
+      this.errorMessage = 'Not yet implemented!';
     });
   }
 
