@@ -17,6 +17,10 @@ import { RegisterComponent } from './register/register.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { NakedLayoutComponent } from './naked-layout/naked-layout.component';
 import { UserLayoutComponent } from './user-layout/user-layout.component';
+import { GuestGuard } from './_guards/guest-guard';
+import { UserGuard } from './_guards/user-guard';
+import { HigherGuard } from './_guards/higher-guard';
+import { AdminGuard } from './_guards/admin-guard';
 
 @NgModule({
   declarations: [
@@ -41,7 +45,7 @@ import { UserLayoutComponent } from './user-layout/user-layout.component';
     }),
     HttpClientModule
   ],
-  providers: [],
+  providers: [GuestGuard, UserGuard, HigherGuard, AdminGuard],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

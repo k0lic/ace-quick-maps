@@ -11,24 +11,27 @@ import { RegisterComponent } from './register/register.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { NakedLayoutComponent } from './naked-layout/naked-layout.component';
 import { UserLayoutComponent } from './user-layout/user-layout.component';
+import { UserGuard } from './_guards/user-guard';
+import { AdminGuard } from './_guards/admin-guard';
+import { GuestGuard } from './_guards/guest-guard';
 
 const routes: Routes = [
   {
     path: 'ok',
     component: UserLayoutComponent,
     children: [
-      { path: 'date-map', component: DateMapComponent},
-      { path: 'new-locations', component: NewLocationsComponent},
-      { path: 'program-editor', component: ProgramEditorComponent},
+      { path: 'date-map', component: DateMapComponent, canActivate: [UserGuard]},
+      { path: 'new-locations', component: NewLocationsComponent, canActivate: [AdminGuard]},
+      { path: 'program-editor', component: ProgramEditorComponent, canActivate: [AdminGuard]},
     ]
   },
   { 
     path: '',
     component: NakedLayoutComponent,
     children: [
-      { path: 'login', component: LoginComponent},
-      { path: 'register', component: RegisterComponent},
-      { path: 'forgot-password', component: ForgotPasswordComponent},
+      { path: 'login', component: LoginComponent, canActivate: [GuestGuard]},
+      { path: 'register', component: RegisterComponent, canActivate: [GuestGuard]},
+      { path: 'forgot-password', component: ForgotPasswordComponent, canActivate: [GuestGuard]},
       { path: 'test', component: TestComponent},
       { path: '**', component: JunkNavComponent}
     ]

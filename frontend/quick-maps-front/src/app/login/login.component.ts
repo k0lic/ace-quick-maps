@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { LoginService } from '../_services/login.service';
 
 @Component({
@@ -11,21 +12,17 @@ export class LoginComponent implements OnInit {
   emailAddress: string = '';
   password: string = '';
 
-  constructor(private loginService: LoginService) { }
+  constructor(private loginService: LoginService, private router: Router) { }
 
   ngOnInit(): void {
   }
 
   login(): void {
     this.loginService.login(this.emailAddress, this.password).subscribe(res => {
-      // TODO
-      console.log('success catcher');
-      console.log(res);
+      this.router.navigate(['/ok/date-map'])
     }, err => {
-      // TODO: everything goes here
-      console.log('err catcher');
+      // TODO: show error
       console.log(err);
-      console.log(document.cookie);
     });
   }
 

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { LoginService } from '../_services/login.service';
 
 @Component({
@@ -14,19 +15,17 @@ export class RegisterComponent implements OnInit {
   password: string = '';
   passwordConfirm: string = '';
 
-  constructor(private loginService: LoginService) { }
+  constructor(private loginService: LoginService, private router: Router) { }
 
   ngOnInit(): void {
   }
 
   register(): void {
     this.loginService.register(this.emailAddress, this.password, this.name, this.lastName).subscribe(res => {
-      // TODO
-      console.log('success catcher');
-      console.log(res);
+      // TODO: show message that account request is pending approval
+      this.router.navigate(['/login']);
     }, err => {
-      // TODO: everything goes here
-      console.log('err catcher');
+      // TODO: show errors
       console.log(err);
     });
   }

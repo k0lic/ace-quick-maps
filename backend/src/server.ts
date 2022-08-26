@@ -88,6 +88,10 @@ app.use('/point-types', pointTypeRoutes.router);
 let loginRoutes = require('./_routes/login-routes');
 app.use('/logins', loginRoutes.router);
 
+// Me routes
+let meRoutes = require('./_routes/me-routes');
+app.use('/me', meRoutes.router);
+
 // Test file routes
 let testRoutes = require('./_routes/test-routes');
 app.use('/test', testRoutes.router);

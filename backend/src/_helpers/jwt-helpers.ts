@@ -2,10 +2,12 @@ import { Secrets } from "../../secrets";
 
 let jsonwebtoken = require('jsonwebtoken');
 
-function createJwt(email: string, userType: string): any {
+function createJwt(userRow: any): any {
     return jsonwebtoken.sign({
-        email: email,
-        type: userType
+        email: userRow.email,
+        type: userRow.user_type,
+        name: userRow.name,
+        lastName: userRow.last_name
     }, Secrets.JWT.SECRET, {
         expiresIn: '1h'
     });
