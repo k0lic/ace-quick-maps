@@ -1,0 +1,53 @@
+<div class="row d-flex justify-content-center">
+    <div class="col-10 col-lg-6 d-flex justify-content-center">
+        <div class="row d-flex justify-content-center">
+            <!-- HEADING -->
+            <h3 class="col-12 mt-5 mb-4">Register</h3>
+
+            <!-- EMAIL -->
+            <div class="col-12">
+                <label for="email-input">Email address</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="email-input" [(ngModel)]="emailAddress">
+                </div>
+            </div>
+
+            <!-- NAME -->
+            <div class="col-12">
+                <label for="name-input">First Name</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="name-input" [(ngModel)]="name">
+                </div>
+            </div>
+
+            <!-- LAST NAME -->
+            <div class="col-12">
+                <label for="last-name-input">Last Name</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="last-name-input" [(ngModel)]="lastName">
+                </div>
+            </div>
+
+            <!-- PASSWORD -->
+            <div class="col-12">
+                <label for="password-input">Password</label>
+                <div class="input-group mb-3">
+                    <input type="password" class="form-control" id="password-input" [(ngModel)]="password">
+                </div>
+            </div>
+
+            <!-- PASSWORD CONFIRM -->
+            <div class="col-12">
+                <label for="password-confirm-input">Confirm password</label>
+                <div class="input-group mb-3">
+                    <input type="password" class="form-control" id="password-confirm-input" [(ngModel)]="passwordConfirm">
+                </div>
+            </div>
+
+            <!-- REGISTER BUTTON -->
+            <div class="col-12 mb-4">
+                <button type="button" class="btn btn-primary" (click)="register()">Register</button>
+            </div>
+        </div>
+    </div>
+</div>

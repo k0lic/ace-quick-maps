@@ -1,0 +1,39 @@
+<div class="row d-flex justify-content-center">
+    <div class="col-10 col-lg-6 d-flex justify-content-center">
+        <div class="row d-flex justify-content-center">
+            <!-- HEADING -->
+            <h3 class="col-12 mt-5 mb-4">Log in</h3>
+
+            <!-- EMAIL -->
+            <div class="col-12">
+                <label for="email-input">Email address</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="email-input" [(ngModel)]="emailAddress">
+                </div>
+            </div>
+
+            <!-- PASSWORD -->
+            <div class="col-12">
+                <label for="password-input">Password</label>
+                <div class="input-group mb-3">
+                    <input type="password" class="form-control" id="password-input" [(ngModel)]="password">
+                </div>
+            </div>
+
+            <!-- LOGIN BUTTON -->
+            <div class="col-12 mb-4">
+                <button type="button" class="btn btn-primary" (click)="login()">Log in</button>
+            </div>
+
+            <!-- FORGOT PASSWORD LINK -->
+            <div class="col-12 mb-1">
+                <a routerLink="/forgot-password">Forgot your password?</a>
+            </div>
+
+            <!-- REGISTER LINK -->
+            <div class="col-12">
+                <a routerLink="/register">Register new account</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -12,6 +12,11 @@ import { HttpClientModule } from '@angular/common/http';
 import { ProgramEditorComponent } from './program-editor/program-editor.component';
 import { TestComponent } from './test/test.component';
 import { DateMapComponent } from './date-map/date-map.component';
+import { LoginComponent } from './login/login.component';
+import { RegisterComponent } from './register/register.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { NakedLayoutComponent } from './naked-layout/naked-layout.component';
+import { UserLayoutComponent } from './user-layout/user-layout.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +25,12 @@ import { DateMapComponent } from './date-map/date-map.component';
     JunkNavComponent,
     ProgramEditorComponent,
     TestComponent,
-    DateMapComponent
+    DateMapComponent,
+    LoginComponent,
+    RegisterComponent,
+    ForgotPasswordComponent,
+    NakedLayoutComponent,
+    UserLayoutComponent
   ],
   imports: [
     BrowserModule,
