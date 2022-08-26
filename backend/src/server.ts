@@ -63,7 +63,6 @@ let queryHelpers = require('./_helpers/query-helpers');
 let router = express.Router();
 
 router.get('/', (req, res) => {
-    console.log('cookies at start: ' + JSON.stringify(res.cookies));
     res.status(200).send('Hello from the new EXPRESS server! PogO');
 });
 

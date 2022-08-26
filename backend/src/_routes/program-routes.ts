@@ -3,7 +3,11 @@ let express = require('express');
 
 let router = express.Router();
 
+let userCheckers = require('../_middleware/user-checkers');
 let queryHelpers = require('../_helpers/query-helpers');
+
+// Make sure only 'admin' users have access
+router.use(userCheckers.assertIsAdmin);
 
 // List routes here
 router.get('/all_partners', (req, res) => {

@@ -3,8 +3,12 @@ let express = require('express');
 
 let router = express.Router();
 
+let userCheckers = require('../_middleware/user-checkers');
 let queryHelpers = require('../_helpers/query-helpers');
 let stringHelpers = require('../_helpers/string-helpers');
+
+// Make sure only users have access
+router.use(userCheckers.assertIsUser);
 
 // List routes here
 router.post('/date_tour_info_confirmed', (req, res) => {

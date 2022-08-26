@@ -2,26 +2,22 @@ import { Secrets } from "../../secrets";
 
 declare var require: any;
 let express = require('express');
-let jsonwebtoken = require('jsonwebtoken');
 let bcrypt = require('bcrypt');
 
 let router = express.Router();
 
+let userCheckers = require('../_middleware/user-checkers');
 let queryHelpers = require('../_helpers/query-helpers');
 let stringHelpers = require('../_helpers/string-helpers');
+let jwtHelpers = require('../_helpers/jwt-helpers');
+
+// Make sure only guests have access - a logged in user should not be able to eg. log in
+router.use(userCheckers.assertNoUser);
 
 // List routes here
 router.post('/login', (req, res) => {
     let email = req.body.email;
     let password = req.body.password;
-
-    res.cookie('big', email, {
-        maxAge: 60 * 60 * 1000,
-        sameSite: 'Lax',
-        secure: false
-    });
-    console.log('cookies at start: ' + JSON.stringify(req.cookies));
-    // console.log(Object.keys(res));
 
     let today = new Date();
     let todayString = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
@@ -51,19 +47,10 @@ router.post('/login', (req, res) => {
             }
 
             // Correct password - add jwt to cookies
-            let token = jsonwebtoken.sign({
-                email: email,
-                type: rows[0].user_type
-            }, Secrets.JWT.SECRET, {
-                expiresIn: '1h'
-            });
+            let token = jwtHelpers.createJwt(email, rows[0].user_type);
             res.cookie(Secrets.JWT.SESSION_ID, token, {
-                maxAge: 60 * 60 * 1000,
-                sameSite: 'Lax',
-                secure: false,
-                httpOnly: true
+                maxAge: 60 * 60 * 1000  // 1h (in milliseconds)
             });
-            console.log('cookies at end: ' + JSON.stringify(req.cookies));
 
             res.sendStatus(200);
         });
@@ -120,18 +107,6 @@ router.post('/forgot', (req, res) => {
 
         res.sendStatus(200);
     }, null);
-});
-
-router.post('/approve_user', (req, res) => {
-    // TODO
-});
-
-router.post('/renew_user_access', (req, res) => {
-    // TODO
-});
-
-router.post('/promote_user', (req, res) => {
-    // TODO
 });
 
 // Export router
