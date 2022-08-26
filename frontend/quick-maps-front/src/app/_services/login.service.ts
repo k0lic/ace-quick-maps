@@ -26,7 +26,7 @@ export class LoginService {
       last: lastName
     };
 
-    return this.http.post(uri + '/logins/register', data);
+    return this.http.post(uri + '/logins/register', data, optionsWithCookieEmpty);
   }
 
   forgotPassword(emailAddress: string) {
@@ -34,6 +34,6 @@ export class LoginService {
       email: emailAddress
     };
 
-    return this.http.post(uri + '/logins/forgot', data);
+    return this.http.post(uri + '/logins/forgot', data, optionsWithCookieEmpty);
   }
 }
