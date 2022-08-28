@@ -13,7 +13,6 @@
 
             <!-- REDIRECT LINK -->
             <div class="d-inline-flex col-12">
-                <!-- <p [innerHTML]="'CLICK_HERE_PATTERN' | translate:{linkName: translateService.instant(linkName), linkUrl: linkUrl}"></p> -->
                 <div translate>CLICK_HERE_MESSAGE.PREFIX</div>
                 <a [routerLink]="linkUrl" translate>CLICK_HERE_MESSAGE.HERE</a>
                 <div translate [translateParams]="{linkName: translateService.instant(linkName)}">CLICK_HERE_MESSAGE.SUFFIX</div>
