@@ -2,11 +2,11 @@
     <div class="col-10 col-lg-6 d-flex justify-content-center">
         <form class="row d-flex justify-content-center" [formGroup]="registerForm" novalidate>
             <!-- HEADING -->
-            <h3 class="col-12 mt-5 mb-4">Register</h3>
+            <h3 class="col-12 mt-5 mb-4" translate>REGISTER.TITLE</h3>
 
             <!-- EMAIL -->
             <div class="col-12">
-                <label for="emailInput">Email address</label>
+                <label for="emailInput" translate>FIELDS.EMAIL</label>
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" id="emailInput" formControlName="email">
                 </div>
@@ -14,7 +14,7 @@
 
             <!-- NAME -->
             <div class="col-12">
-                <label for="nameInput">First Name</label>
+                <label for="nameInput" translate>FIELDS.FIRST_NAME</label>
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" id="nameInput" formControlName="name">
                 </div>
@@ -22,7 +22,7 @@
 
             <!-- LAST NAME -->
             <div class="col-12">
-                <label for="lastNameInput">Last Name</label>
+                <label for="lastNameInput" translate>FIELDS.LAST_NAME</label>
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" id="lastNameInput" formControlName="lastName">
                 </div>
@@ -30,7 +30,7 @@
 
             <!-- PASSWORD -->
             <div class="col-12">
-                <label for="passwordInput">Password</label>
+                <label for="passwordInput" translate>FIELDS.PASSWORD</label>
                 <div class="input-group mb-3">
                     <input type="password" class="form-control" id="passwordInput" formControlName="password" (change)="onPasswordInputChange()">
                 </div>
@@ -38,7 +38,7 @@
 
             <!-- PASSWORD CONFIRM -->
             <div class="col-12">
-                <label for="passwordConfirmInput">Confirm password</label>
+                <label for="passwordConfirmInput" translate>FIELDS.PASSWORD_CONFIRM</label>
                 <div class="input-group mb-3">
                     <input type="password" class="form-control" id="passwordConfirmInput" formControlName="passwordConfirm">
                 </div>
@@ -46,39 +46,39 @@
 
             <!-- REGISTER BUTTON -->
             <div class="col-12 mb-3">
-                <button type="submit" class="btn btn-primary" (click)="register()">Register</button>
+                <button type="submit" class="btn btn-primary" (click)="register()" translate>REGISTER.BUTTON</button>
             </div>
 
             <!-- ERROR MESSAGES -->
             <div class="col-12 mb-4">
                 <!-- EMAIL ERROR -->
-                <div *ngIf="registerForm.controls['email'].invalid && (registerForm.controls['email'].dirty || registerForm.controls['email'].touched)" class="text-danger mb-2">
-                    Email address is invalid!
+                <div *ngIf="registerForm.controls['email'].invalid && (registerForm.controls['email'].dirty || registerForm.controls['email'].touched)" class="text-danger mb-2" translate>
+                    ERRORS.INVALID_EMAIL
                 </div>
 
                 <!-- FIRST NAME ERROR -->
-                <div *ngIf="registerForm.controls['name'].invalid && (registerForm.controls['name'].dirty || registerForm.controls['name'].touched)" class="text-danger mb-2">
-                    First name is required!
+                <div *ngIf="registerForm.controls['name'].invalid && (registerForm.controls['name'].dirty || registerForm.controls['name'].touched)" class="text-danger mb-2" translate>
+                    ERRORS.REQUIRED_FIRST_NAME
                 </div>
 
                 <!-- LAST NAME ERROR -->
-                <div *ngIf="registerForm.controls['lastName'].invalid && (registerForm.controls['lastName'].dirty || registerForm.controls['lastName'].touched)" class="text-danger mb-2">
-                    Last name is required!
+                <div *ngIf="registerForm.controls['lastName'].invalid && (registerForm.controls['lastName'].dirty || registerForm.controls['lastName'].touched)" class="text-danger mb-2" translate>
+                    ERRORS.REQUIRED_LAST_NAME
                 </div>
 
                 <!-- PASSWORD ERROR -->
-                <div *ngIf="registerForm.controls['password'].invalid && (registerForm.controls['password'].dirty || registerForm.controls['password'].touched)" class="text-danger mb-2">
-                    Password must be at least 8 characters long!
+                <div *ngIf="registerForm.controls['password'].invalid && (registerForm.controls['password'].dirty || registerForm.controls['password'].touched)" class="text-danger mb-2" translate>
+                    ERRORS.SHORT_PASSWORD
                 </div>
 
                 <!-- PASSWORD CONFIRM ERROR -->
-                <div *ngIf="registerForm.controls['passwordConfirm'].invalid && (registerForm.controls['passwordConfirm'].dirty || registerForm.controls['passwordConfirm'].touched)" class="text-danger mb-2">
-                    Password confirmation must match password!
+                <div *ngIf="registerForm.controls['passwordConfirm'].invalid && (registerForm.controls['passwordConfirm'].dirty || registerForm.controls['passwordConfirm'].touched)" class="text-danger mb-2" translate>
+                    ERRORS.CONFIRM_PASSWORD_MATCH
                 </div>
 
                 <!-- SERVER RESPONSE ERROR -->
-                <div *ngIf="errorMessage != ''" class="text-danger mb-2">
-                    {{errorMessage}}
+                <div *ngIf="errorMessage" class="text-danger mb-2" translate>
+                    ERRORS.USED_EMAIL
                 </div>
             </div>
         </form>

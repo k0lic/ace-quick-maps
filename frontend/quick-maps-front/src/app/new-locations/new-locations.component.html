@@ -1,6 +1,6 @@
 <div class="row d-flex justify-content-center">
   <div class="col-12 d-flex justify-content-center">
-    <h1>Angular Google Maps - Lets try it out :D</h1>
+    <h1 translate>LOCATIONS.TITLE</h1>
   </div>
 
   <!-- MAP -->
@@ -18,7 +18,7 @@
         [longitude]="m.lng"
         [label]="{
           color: 'purple',
-          text: m.hasName?m.label:' ',
+          text: m.hasName?translateService.instant('LOC.' + m.label):' ',
           fontSize: '1.8em',
           fontWeight: '500'
         }"
@@ -42,7 +42,7 @@
           class="form-control" 
           id="inputPlaceName" 
           #inputPlaceNameTag
-          placeholder="Input place name" 
+          [placeholder]="translateService.instant('LOCATIONS.INPUT_NEW_LOCATION')" 
           (keyup.enter)="onEnterPress()"
           [(ngModel)]="newPlaceName"
         >
@@ -51,7 +51,7 @@
       <!-- LIST -->
       <div *ngFor="let m of markers.slice().reverse(); let i = index" class="col-12">
         <div class="row mb-1 p-2 bg-light">
-          <div class="col pl-4">{{m.hasName ? m.label : '...'}}</div>
+          <div class="col pl-4">{{m.hasName ? translateService.instant('LOC.' + m.label) : '...'}}</div>
         </div>
       </div>
 

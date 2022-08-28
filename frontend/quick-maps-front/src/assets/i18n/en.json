@@ -1,0 +1,77 @@
+{
+    "TITLE": "ACE Eye",
+    "ACE": "ACE",
+    "LOCATIONS": {
+        "TITLE": "Locations",
+        "INPUT_NEW_LOCATION": "Input place name"
+    },
+    "RECOVERY": {
+        "TITLE": "Account recovery",
+        "BUTTON": "Send recovery link"
+    },
+    "LOGIN": {
+        "TITLE": "Log in",
+        "BUTTON": "Log in",
+        "FORGOT_PASSWORD": "Forgot your password?",
+        "REGISTER": "Register new account"
+    },
+    "REGISTER": {
+        "TITLE": "Register",
+        "BUTTON": "Register",
+        "SUCCESS_HEADING": "Account successfully created",
+        "SUCCESS_TEXT": "Account request has been successfully created, and is now pending approval from the staff. You should receive an email once your account is activated."
+    },
+    "CLICK_HERE_PATTERN": "Click <a [routerLink]=\"{{linkUrl}}\">here</a> to go back to the {{linkName}} page.",
+    "DAY_PATTERN": "Day {{day}}",
+    "DAY_OF_PROGRAM_PATTERN": "{{program}} - Day {{day}}",
+    "TOUR_PROGRAM_PATTERN": "{{program}} Tour Program",
+    "POINT_TYPES": {
+        "activity": "Activity",
+        "blank": "Blank",
+        "flight": "Flight",
+        "flight_arrival": "Flight arrival",
+        "flight_departure": "Flight departure",
+        "hotel": "Hotel",
+        "hotel_checkin": "Hotel Check in",
+        "hotel_checkout": "Hotel Check out",
+        "hotel_stay": "Hotel stay"
+    },
+    "FIELDS": {
+        "EMAIL": "Email address",
+        "PASSWORD": "Password",
+        "PASSWORD_CONFIRM": "Confirm password",
+        "FIRST_NAME": "First name",
+        "LAST_NAME": "Last name"
+    },
+    "BUTTONS": {
+        "EDIT": "Edit",
+        "VIEW": "View",
+        "FIX": "Fix",
+        "LOGOUT": "Log out",
+        "DAY_ADD": "Add day",
+        "DAY_REMOVE_LAST": "Remove last day"
+    },
+    "ERRORS": {
+        "INVALID_EMAIL": "Email address is invalid!",
+        "USED_EMAIL": "Email address already in use!",
+        "REQUIRED_FIRST_NAME": "First name is required!",
+        "REQUIRED_LAST_NAME": "Last name is required!",
+        "SHORT_PASSWORD": "Password must be at least 8 characters long!",
+        "CONFIRM_PASSWORD_MATCH": "Password confirmation must match password!",
+        "WRONG_USER_OR_PASSWORD": "Incorrect username or password!",
+        "NOT_IMPLEMENTED": "Not yet implemented!"
+    },
+    "ITEMS": {
+        "TOUR_GUIDE": "Guide: {{value}}",
+        "GUESTS": "Guests: {{value}}",
+        "HOTEL1": "Hotel1: {{value}}",
+        "HOTEL2": "Hotel2: {{value}}",
+        "ROUTE": "Route: {{v1}} -> {{v2}}",
+        "ACTIVITY": "Activity: {{value}}"
+    },
+    "LANG": {
+        "sr-Latn": "Serbian (Latin)",
+        "sr-Cyrl": "Serbian (Cyrillic)",
+        "en": "English"
+    }
+}

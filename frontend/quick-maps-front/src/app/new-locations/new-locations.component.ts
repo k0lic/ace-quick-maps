@@ -1,4 +1,5 @@
 import { Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { Location } from '../_entities/location';
 import { LocationService } from '../_services/location.service';
 // import { MouseEvent } from '@agm/core';
@@ -34,7 +35,7 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
 
   iconObj : any;
 
-  constructor(private zone: NgZone, private locationService: LocationService) { }
+  constructor(private zone: NgZone, public translateService: TranslateService, private locationService: LocationService) { }
 
   ngOnInit(): void {
     // Retrieve locations from the server

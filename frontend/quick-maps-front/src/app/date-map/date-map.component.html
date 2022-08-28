@@ -26,19 +26,6 @@
                 <!-- TOURS -->
                 <div *ngFor="let c of markerContainers">
                     <!-- POINT MARKERS -->
-                    <!-- <agm-marker 
-                        *ngFor="let m of c.markers; let i = index"
-                        [latitude]="m.lat"
-                        [longitude]="m.lng"
-                        [label]="m.showLabel?{
-                            color: c.color,
-                            text: m.label,
-                            fontSize: '1.8em',
-                            fontWeight: '500'
-                        }:''"
-                        [iconUrl]="markerIconMap.get(m.iconMapKey)"
-                        >
-                    </agm-marker> -->
                     <agm-marker 
                         *ngFor="let m of c.markers; let i = index"
                         [latitude]="m.lat"

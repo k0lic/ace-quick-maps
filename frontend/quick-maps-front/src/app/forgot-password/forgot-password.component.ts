@@ -10,7 +10,7 @@ import { LoginService } from '../_services/login.service';
 export class ForgotPasswordComponent implements OnInit {
 
   forgotForm: FormGroup;
-  errorMessage: string = '';
+  errorMessage: boolean = false;
 
   constructor(private loginService: LoginService, private fb: FormBuilder) {
     this.forgotForm = this.fb.group({
@@ -23,7 +23,7 @@ export class ForgotPasswordComponent implements OnInit {
 
   recover(): void {
     // Clear server error
-    this.errorMessage = '';
+    this.errorMessage = false;
 
     // Mark all input fields as touched so any possible errors can be shown
     this.forgotForm.markAllAsTouched();
@@ -35,12 +35,12 @@ export class ForgotPasswordComponent implements OnInit {
 
     this.loginService.forgotPassword(this.forgotForm.value.email).subscribe(res => {
       // TODO
-      this.errorMessage = 'Not yet implemented!';
+      this.errorMessage = true;
     }, err => {
       console.log(err);
 
       // TODO: make real message
-      this.errorMessage = 'Not yet implemented!';
+      this.errorMessage = true;
     });
   }
 

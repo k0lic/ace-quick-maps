@@ -1,14 +1,25 @@
 <div class="container container-wide">
     <div class="row mb-3">
         <div class="col-4">
-            <a routerLink="/">ACE</a>
+            <a routerLink="/" translate>ACE</a>
         </div>
-        <div *ngIf="user != null" class="col-8">
-            <div class="row d-flex justify-content-right">
-                <div class="col-7 col-lg-9 text-end">
-                    {{user.name + ' ' + user.lastName}}
+        <div class="col-8">
+            <div class="row d-flex justify-content-end">
+                <!-- USER -->
+                <div *ngIf="user != null" class="col-7 col-xxl-4">
+                    <div class="row"> 
+                        <div class="col-7 col-lg-9 text-end">
+                            {{user.name + ' ' + user.lastName}}
+                        </div>
+                        <button *ngIf="user != null" type="button" class="btn btn-danger col-5 col-lg-3 p-0" (click)="logout()" translate>BUTTONS.LOGOUT</button>
+                    </div>
                 </div>
-                <button type="button" class="btn btn-danger col-5 col-lg-3 p-0" (click)="logout()">Logout</button>
+                <!-- LANGUAGE -->
+                <div class="col-5 col-xl-4 col-xxl-3">
+                    <select class="form-select" [ngModel]="selectedLanguage" (ngModelChange)="onLanguageChange($event)">
+                        <option *ngFor="let lang of languages" [value]="lang" [translate]="'LANG.' + lang"></option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>

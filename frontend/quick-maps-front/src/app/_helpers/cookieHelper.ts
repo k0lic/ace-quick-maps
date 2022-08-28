@@ -3,6 +3,11 @@ function getCookie(name: string) {
     return cookie?.substring(cookie?.indexOf('=') + 1);
 }
 
+function setCookie(name: string, value: string) {
+    document.cookie = `${name}=${value}`;
+}
+
 export {
-    getCookie
+    getCookie,
+    setCookie
 }

@@ -11,7 +11,7 @@ import { LoginService } from '../_services/login.service';
 export class LoginComponent implements OnInit {
 
   loginForm: FormGroup;
-  errorMessage: string = '';
+  errorMessage: boolean = false;
 
   constructor(private loginService: LoginService, private router: Router, private fb: FormBuilder) {
     this.loginForm = this.fb.group({
@@ -25,7 +25,7 @@ export class LoginComponent implements OnInit {
 
   login(): void {
     // Clear server error
-    this.errorMessage = '';
+    this.errorMessage = false;
 
     // Mark all input fields as touched so any possible errors can be shown
     this.loginForm.markAllAsTouched();
@@ -40,7 +40,7 @@ export class LoginComponent implements OnInit {
     }, err => {
       console.log(err);
 
-      this.errorMessage = 'Incorrect username or password!';
+      this.errorMessage = true;
       this.loginForm.patchValue({
         password: ''
       });

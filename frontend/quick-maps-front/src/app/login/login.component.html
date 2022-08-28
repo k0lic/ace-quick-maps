@@ -2,11 +2,11 @@
     <div class="col-10 col-lg-6 d-flex justify-content-center">
         <form class="row d-flex justify-content-center" [formGroup]="loginForm" novalidate>
             <!-- HEADING -->
-            <h3 class="col-12 mt-5 mb-4">Log in</h3>
+            <h3 class="col-12 mt-5 mb-4" translate>LOGIN.TITLE</h3>
 
             <!-- EMAIL -->
             <div class="col-12">
-                <label for="emailInput">Email address</label>
+                <label for="emailInput" translate>FIELDS.EMAIL</label>
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" id="emailInput" formControlName="email">
                 </div>
@@ -14,7 +14,7 @@
 
             <!-- PASSWORD -->
             <div class="col-12">
-                <label for="passwordInput">Password</label>
+                <label for="passwordInput" translate>FIELDS.PASSWORD</label>
                 <div class="input-group mb-3">
                     <input type="password" class="form-control" id="passwordInput" formControlName="password">
                 </div>
@@ -22,35 +22,35 @@
 
             <!-- LOGIN BUTTON -->
             <div class="col-12 mb-3">
-                <button type="submit" class="btn btn-primary" (click)="login()">Log in</button>
+                <button type="submit" class="btn btn-primary" (click)="login()" translate>LOGIN.BUTTON</button>
             </div>
 
             <!-- ERROR MESSAGES -->
             <div class="col-12 mb-4">
                 <!-- EMAIL ERROR -->
-                <div *ngIf="loginForm.controls['email'].invalid && (loginForm.controls['email'].dirty || loginForm.controls['email'].touched)" class="text-danger mb-2">
-                    Email address is invalid!
+                <div *ngIf="loginForm.controls['email'].invalid && (loginForm.controls['email'].dirty || loginForm.controls['email'].touched)" class="text-danger mb-2" translate>
+                    ERRORS.INVALID_EMAIL
                 </div>
 
                 <!-- PASSWORD ERROR -->
-                <div *ngIf="loginForm.controls['password'].invalid && (loginForm.controls['password'].dirty || loginForm.controls['password'].touched)" class="text-danger mb-2">
-                    Password must be at least 8 characters long!
+                <div *ngIf="loginForm.controls['password'].invalid && (loginForm.controls['password'].dirty || loginForm.controls['password'].touched)" class="text-danger mb-2" translate>
+                    ERRORS.SHORT_PASSWORD
                 </div>
 
                 <!-- SERVER RESPONSE ERROR -->
-                <div *ngIf="errorMessage != ''" class="text-danger mb-2">
-                    {{errorMessage}}
+                <div *ngIf="errorMessage" class="text-danger mb-2" translate>
+                    ERRORS.WRONG_USER_OR_PASSWORD
                 </div>
             </div>
 
             <!-- FORGOT PASSWORD LINK -->
             <div class="col-12 mb-1">
-                <a routerLink="/forgot-password">Forgot your password?</a>
+                <a routerLink="/forgot-password" translate>LOGIN.FORGOT_PASSWORD</a>
             </div>
 
             <!-- REGISTER LINK -->
             <div class="col-12">
-                <a routerLink="/register">Register new account</a>
+                <a routerLink="/register" translate>LOGIN.REGISTER</a>
             </div>
         </form>
     </div>

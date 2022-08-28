@@ -1,4 +1,5 @@
 import { Component, NgZone, OnInit, Renderer2 } from '@angular/core';
+import { TranslateCompiler, TranslateService } from '@ngx-translate/core';
 import { PointType } from '../_entities/point-type';
 import { TourInfoPoint } from '../_entities/tour-info-point';
 import { defaultSvgPath, svgMap } from '../_helpers/svgHelper';
@@ -49,6 +50,7 @@ interface TourInfoOverlay extends google.maps.OverlayView {
 let TourInfoWindow: { new (position: google.maps.LatLng, content: string, color: string): TourInfoOverlay};
 let needToDefine = true;
 let renderer: Renderer2;
+let translateService: TranslateService;
 
 function maybeDefine() {
   if (needToDefine) {
@@ -114,6 +116,7 @@ function defineTourInfoWindow() {
     }
 
     addItem(item: MarkerContainer) {
+      // TODO: maybe this should be a component?
       // Add short version
       let bubble = renderer.createElement('div');
       renderer.addClass(bubble, 'popup-inner');
@@ -132,28 +135,42 @@ function defineTourInfoWindow() {
       renderer.appendChild(bubbleBig, headerEl);
       
       let guideEl = renderer.createElement('div');
-      renderer.setProperty(guideEl, 'innerHTML', 'vodic' + ': ' + (item.tourGuide ?? '/'));
+      renderer.setProperty(
+        guideEl, 'innerHTML', translateService.instant('ITEMS.TOUR_GUIDE', {value: item.tourGuide ?? '/'}));
       renderer.appendChild(bubbleBig, guideEl);
       
       let guestsEl = renderer.createElement('div');
-      renderer.setProperty(guestsEl, 'innerHTML', 'gosti' + ': ' + (item.guests ?? '/'));
+      // renderer.setProperty(guestsEl, 'innerHTML', 'gosti' + ': ' + (item.guests ?? '/'));
+      renderer.setProperty(
+        guestsEl, 'innerHTML', translateService.instant('ITEMS.GUESTS', {value: item.guests ?? '/'}));
       renderer.appendChild(bubbleBig, guestsEl);
       
       let hotel1El = renderer.createElement('div');
-      renderer.setProperty(hotel1El, 'innerHTML', 'hotel1' + ': ' + (item.hotel1 ?? '/'));
+      // renderer.setProperty(hotel1El, 'innerHTML', 'hotel1' + ': ' + (item.hotel1 ?? '/'));
+      renderer.setProperty(
+        hotel1El, 'innerHTML', translateService.instant('ITEMS.HOTEL1', {value: item.hotel1 ?? '/'}));
       renderer.appendChild(bubbleBig, hotel1El);
       
       let hotel2El = renderer.createElement('div');
-      renderer.setProperty(hotel2El, 'innerHTML', 'hotel2' + ': ' + (item.hotel2 ?? '/'));
+      // renderer.setProperty(hotel2El, 'innerHTML', 'hotel2' + ': ' + (item.hotel2 ?? '/'));
+      renderer.setProperty(
+        hotel2El, 'innerHTML', translateService.instant('ITEMS.HOTEL2', {value: item.hotel2 ?? '/'}));
       renderer.appendChild(bubbleBig, hotel2El);
       
       let routeEl = renderer.createElement('div');
-      renderer.setProperty(routeEl, 'innerHTML', 'ruta' + ': ' + (item.markers[0].label ?? '?') + ' -> ' + (item.markers[item.markers.length - 1].label ?? '?'));
+      // renderer.setProperty(routeEl, 'innerHTML', 'ruta' + ': ' + (item.markers[0].label ?? '?') + ' -> ' + (item.markers[item.markers.length - 1].label ?? '?'));
+      renderer.setProperty(
+        routeEl, 'innerHTML', translateService.instant('ITEMS.ROUTE', {
+            v1: item.markers[0].label != null ? translateService.instant('LOC.' + item.markers[0].label) : '?',
+            v2: item.markers[item.markers.length - 1].label != null ? translateService.instant('LOC.' + item.markers[item.markers.length - 1].label) : '?' 
+          }));
       renderer.appendChild(bubbleBig, routeEl);
       
       if (item.activities != null) {
         let activitiesEl = renderer.createElement('div');
-        renderer.setProperty(activitiesEl, 'innerHTML', 'aktivnost' + ': ' + item.activities);
+        // renderer.setProperty(activitiesEl, 'innerHTML', 'aktivnost' + ': ' + item.activities);
+        renderer.setProperty(
+          activitiesEl, 'innerHTML', translateService.instant('ITEMS.ACTIVITY', {value: item.activities}));
         renderer.appendChild(bubbleBig, activitiesEl);
       }
 
@@ -241,7 +258,13 @@ export class DateMapComponent implements OnInit {
   markerIconMap: Map<string, any> = new Map();
   shortInfoWindows: TourInfoOverlay[] = [];
 
-  constructor(private zone: NgZone, private renderer: Renderer2, private tourService: TourService, private programService: ProgramService) { }
+  constructor(
+    private zone: NgZone, 
+    private renderer: Renderer2, 
+    private translateService: TranslateService,
+    private tourService: TourService, 
+    private programService: ProgramService
+  ) { }
 
   ngOnInit(): void {
     this.getAllPointTypes();
@@ -251,6 +274,7 @@ export class DateMapComponent implements OnInit {
     this.labelOriginConst = {x: 12, y: 12};
 
     renderer = this.renderer;
+    translateService = this.translateService;
   }
 
   // Workaround necessary since the default way is broken in this version of the agm(?) library.

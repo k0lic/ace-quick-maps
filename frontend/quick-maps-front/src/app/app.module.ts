@@ -8,7 +8,7 @@ import { JunkNavComponent } from './junk-nav/junk-nav.component';
 import { AgmCoreModule } from '@agm/core';
 import { Secrets } from 'secrets';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { ProgramEditorComponent } from './program-editor/program-editor.component';
 import { TestComponent } from './test/test.component';
 import { DateMapComponent } from './date-map/date-map.component';
@@ -22,6 +22,13 @@ import { UserGuard } from './_guards/user-guard';
 import { HigherGuard } from './_guards/higher-guard';
 import { AdminGuard } from './_guards/admin-guard';
 import { MessageComponent } from './message/message.component';
+import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+
+// AoT requires an exported function for factories
+export function HttpLoaderFactory(http: HttpClient) {
+  return new TranslateHttpLoader(http);
+}
 
 @NgModule({
   declarations: [
@@ -45,8 +52,17 @@ import { MessageComponent } from './message/message.component';
     ReactiveFormsModule,
     AgmCoreModule.forRoot({
       apiKey: Secrets.GOOGLE_MAP_API_KEY
+      // TODO: add language fetch
     }),
-    HttpClientModule
+    HttpClientModule,
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory,
+        deps: [HttpClient]
+      },
+      defaultLanguage: 'sr-Latn'
+    })
   ],
   providers: [GuestGuard, UserGuard, HigherGuard, AdminGuard],
   bootstrap: [AppComponent]

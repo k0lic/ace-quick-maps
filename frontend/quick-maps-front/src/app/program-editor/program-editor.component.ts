@@ -1,4 +1,5 @@
 import { Component, NgZone, OnInit } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { Location } from '../_entities/location';
 import { Partner } from '../_entities/partner';
 import { PointType } from '../_entities/point-type';
@@ -76,7 +77,7 @@ export class ProgramEditorComponent implements OnInit {
     shorthand: "Any"
   };
 
-  constructor(private zone: NgZone, private locationService: LocationService, private programService: ProgramService) { }
+  constructor(private zone: NgZone, public translateService: TranslateService, private locationService: LocationService, private programService: ProgramService) { }
 
   ngOnInit(): void {
     this.getAllPartners();

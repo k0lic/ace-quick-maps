@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { Secrets } from 'secrets';
 import { UserShort } from '../_entities/user-short';
+import { getCookie, setCookie } from '../_helpers/cookieHelper';
 import { MeService } from '../_services/me.service';
 
 @Component({
@@ -11,9 +13,21 @@ import { MeService } from '../_services/me.service';
 })
 export class UserLayoutComponent implements OnInit {
 
+  languages: string[] = [
+    'sr-Latn',
+    'sr-Cyrl',
+    'en'
+  ];
+  selectedLanguage: string = this.languages[0];
+
   user: UserShort | null = null;
 
-  constructor(private meService: MeService, private router: Router) { }
+  constructor(private router: Router, private translateService: TranslateService, private meService: MeService) {
+    let cookie = getCookie(Secrets.LANGUAGE);
+    if (cookie != null && this.languages.indexOf(cookie) != -1) {
+      this.onLanguageChange(cookie);
+    }
+  }
 
   ngOnInit(): void {
     this.meService.getInfo().subscribe((u: UserShort) => {
@@ -27,6 +41,14 @@ export class UserLayoutComponent implements OnInit {
     }, err => {
       console.log(err);
     });
+  }
+
+  onLanguageChange(language: string) {
+    this.selectedLanguage = language;
+
+    setCookie(Secrets.LANGUAGE, language);
+
+    this.translateService.use(language);
   }
 
 }

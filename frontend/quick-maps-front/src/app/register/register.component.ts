@@ -11,7 +11,7 @@ import { LoginService } from '../_services/login.service';
 export class RegisterComponent implements OnInit {
 
   registerForm: FormGroup;
-  errorMessage: string = '';
+  errorMessage: boolean = false;
 
   constructor(private loginService: LoginService, private router: Router, private fb: FormBuilder) {
     this.registerForm = this.fb.group({
@@ -43,7 +43,7 @@ export class RegisterComponent implements OnInit {
 
   register(): void {
     // Clear server error
-    this.errorMessage = '';
+    this.errorMessage = false;
 
     // Mark all input fields as touched so any possible errors can be shown
     this.registerForm.markAllAsTouched();
@@ -61,15 +61,15 @@ export class RegisterComponent implements OnInit {
     ).subscribe(res => { 
       // Show message that account request is pending approval
       this.router.navigate(['/message'], {state: {
-        heading: 'Account successfully created',
-        message: 'Account request has been successfully created, and is now pending approval from the staff. You should receive an email once your account is activated.',
-        linkName: 'Login',
+        heading: 'REGISTER.SUCCESS_HEADING',
+        message: 'REGISTER.SUCCESS_TEXT',
+        linkName: 'LOGIN.TITLE',
         linkUrl: '/login'
       }});
     }, err => {
       console.log(err);
 
-      this.errorMessage = 'Email address already in use!';
+      this.errorMessage = true;
       this.registerForm.patchValue({
         password: '',
         passwordConfirm: ''

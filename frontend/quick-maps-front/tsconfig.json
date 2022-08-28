@@ -26,5 +26,11 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-  }
+  },
+  "@ngx-translate/core": [
+    "node_modules/@ngx-translate/core"
+  ],
+  "@ngx-translate/http-loader": [
+    "node_modules/@ngx-translate/http-loader"
+  ]
 }

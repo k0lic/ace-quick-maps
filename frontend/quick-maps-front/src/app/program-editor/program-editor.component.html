@@ -27,10 +27,10 @@
             <div class="col-12 col-lg-3">
                 <div class="row d-flex justify-content-left">
                     <div class="col-6">
-                        <button type="button" [class]="editMode?'btn btn-secondary':'btn btn-primary'" (click)="flipEditMode()">{{editMode?'View':'Edit'}}</button>
+                        <button type="button" [class]="editMode?'btn btn-secondary':'btn btn-primary'" (click)="flipEditMode()">{{editMode?translateService.instant('BUTTONS.VIEW'):translateService.instant('BUTTONS.EDIT')}}</button>
                     </div>
                     <div *ngIf="editMode" class="col-6">
-                        <button type="button" class="btn btn-secondary" (click)="fixUpTourProgramOnServer()">Fix</button>
+                        <button type="button" class="btn btn-secondary" (click)="fixUpTourProgramOnServer()" translate>BUTTONS.FIX</button>
                     </div>
                 </div>
             </div>
@@ -44,8 +44,8 @@
             <div class="col-12 col-lg-10 mb-2">
                 <div class="row">
                     <button type="button" class="btn btn-secondary col-3" (click)="goToPreviousDay()">&lt;</button>
-                    <h5 class="col-6 text-center">
-                        {{selectedTourProgramName + ' - Day ' + selectedDay}}
+                    <h5 class="col-6 text-center" translate [translateParams]="{program: selectedTourProgramName, day: selectedDay}">
+                        DAY_OF_PROGRAM_PATTERN
                     </h5>
                     <button type="button" class="btn btn-secondary col-3" (click)="goToNextDay()">&gt;</button>
                 </div>
@@ -67,7 +67,7 @@
                     [longitude]="m.lng"
                     [label]="m.show_label?{
                         color: 'gray',
-                        text: m.label,
+                        text: translateService.instant('LOC.' + m.label),
                         fontSize: '1em',
                         fontWeight: '300'
                     }:''"
@@ -82,7 +82,7 @@
                     [longitude]="m.lng"
                     [label]="m.show_label?{
                         color: 'purple',
-                        text: m.label,
+                        text: translateService.instant('LOC.' + m.label),
                         fontSize: '1.8em',
                         fontWeight: '500'
                     }:''"
@@ -109,8 +109,8 @@
                         [class]="type.name==selectedPointType?'btn btn-primary col-3 col-xxl-1 m-1':'btn btn-secondary col-3 col-xxl-1 m-1'" 
                         (click)="onPointTypeClick(type.name)"
                         style="font-size: 0.8em;"
+                        [translate]="'POINT_TYPES.' + type.name"
                     >
-                        {{type.name}}
                     </button>
                 </div>
             </div>
@@ -123,19 +123,17 @@
   
         <!-- PROGRAM HEADER -->
         <div class="col-12">
-            <h4>{{selectedTourProgramName + ' Tour Program'}}</h4>
+            <h4 translate [translateParams]="{program: selectedTourProgramName}">TOUR_PROGRAM_PATTERN</h4>
         </div>
   
         <!-- LIST OF DAYS -->
         <div *ngFor="let day of days; let i = index" class="col-12">
           <div [class]="day.day_number==selectedDay?'row mb-1 p-2 bg-primary':'row mb-1 p-2 bg-light'" (click)="onDaySelect(day.day_number)">
             <!-- DAY HEADER -->
-            <div class="col-12">
-                {{'Day ' + day.day_number}}
-            </div>
+            <div class="col-12" translate [translateParams]="day.day_number">DAY_PATTERN</div>
             <!-- LIST OF POINTS -->
             <div *ngFor="let point of day.points" class="col-11 col-lg-9 bg-light mx-3 m-1">
-                {{'#' + point.index + ' - ' + point.location + ' - ' + point.type}}
+                {{'#' + point.index + ' - ' + translateService.instant('LOC.' + point.location) + ' - ' + translateService.instant('POINT_TYPES.' + point.type)}}
             </div>
           </div>
         </div>
@@ -143,8 +141,8 @@
         <!-- DAY BUTTONS -->
         <div class="col-12 mt-3">
             <div class="row d-flex justify-content-center">
-                <button *ngIf="editMode" type="button" class="btn btn-primary col-4 col-lg-8 m-2" (click)="addTourProgramDay()">Add day</button>
-                <button *ngIf="editMode" type="button" class="btn btn-danger col-4 col-lg-8 m-2" (click)="deleteLastTourProgramDay()">Remove last day</button>
+                <button *ngIf="editMode" type="button" class="btn btn-primary col-4 col-lg-8 m-2" (click)="addTourProgramDay()" translate>BUTTONS.DAY_ADD</button>
+                <button *ngIf="editMode" type="button" class="btn btn-danger col-4 col-lg-8 m-2" (click)="deleteLastTourProgramDay()" translate>BUTTONS.DAY_REMOVE_LAST</button>
             </div>
         </div>
   

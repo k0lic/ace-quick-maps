@@ -13,7 +13,7 @@
 
             <!-- REDIRECT LINK -->
             <div class="col-12">
-                <p>Click <a [routerLink]="linkUrl">here</a> to go back to the {{linkName}} page.</p>
+                <p translate [translateParams]="{linkName: linkName, linkUrl: linkUrl}">CLICK_HERE_PATTERN</p>
             </div>
         </div>
     </div>
