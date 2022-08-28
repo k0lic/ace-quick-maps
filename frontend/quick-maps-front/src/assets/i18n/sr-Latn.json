@@ -19,9 +19,13 @@
         "TITLE": "Registracija",
         "BUTTON": "Registruj se",
         "SUCCESS_HEADING": "Nalog uspešno napravljen",
-        "SUCCESS_TEXT": "Zahtev za nalog je uspešno napravljen i trenutno čeka odobrenje od strane zaposlenih. Dobićete email kada je Vaš nalog aktiviran."
+        "SUCCESS_TEXT": "Zahtev za nalog je uspešno napravljen i trenutno čeka odobrenje od strane zaposlenih. Dobićete email kada Vaš nalog bude aktiviran."
     },
-    "CLICK_HERE_PATTERN": "Kliknite <a [routerLink]=\"{{linkUrl}}\">ovde</a> kako bi ste se vratili na stranicu \"{{linkName}}\".",
+    "CLICK_HERE_MESSAGE": {
+        "PREFIX": "Kliknite\u00a0",
+        "HERE": "ovde",
+        "SUFFIX": "\u00a0kako bi ste se vratili na stranicu \"{{linkName}}\"."
+    },
     "DAY_PATTERN": "Dan {{day}}",
     "DAY_OF_PROGRAM_PATTERN": "{{program}} - Dan {{day}}",
     "TOUR_PROGRAM_PATTERN": "Program {{program}} ture",

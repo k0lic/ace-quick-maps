@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-message',
@@ -15,7 +16,7 @@ export class MessageComponent implements OnInit {
   linkName: string = 'Login';
   linkUrl: string = '/login';
 
-  constructor(private router: Router) {
+  constructor(private router: Router, public translateService: TranslateService) {
     let state = router.getCurrentNavigation()?.extras.state;
 
     if (state != null) {

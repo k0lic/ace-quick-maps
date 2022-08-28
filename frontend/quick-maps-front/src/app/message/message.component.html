@@ -2,18 +2,21 @@
     <div class="col-10 d-flex justify-content-center">
         <div class="row d-flex justify-content-center">
             <!-- HEADING -->
-            <h3 class="col-12 mt-5 mb-4">
+            <h3 class="col-12 mt-5 mb-4" translate>
                 {{heading}}
             </h3>
 
             <!-- MESSAGE -->
             <div class="col-12">
-                <p>{{message}}</p>
+                <p translate>{{message}}</p>
             </div>
 
             <!-- REDIRECT LINK -->
-            <div class="col-12">
-                <p translate [translateParams]="{linkName: linkName, linkUrl: linkUrl}">CLICK_HERE_PATTERN</p>
+            <div class="d-inline-flex col-12">
+                <!-- <p [innerHTML]="'CLICK_HERE_PATTERN' | translate:{linkName: translateService.instant(linkName), linkUrl: linkUrl}"></p> -->
+                <div translate>CLICK_HERE_MESSAGE.PREFIX</div>
+                <a [routerLink]="linkUrl" translate>CLICK_HERE_MESSAGE.HERE</a>
+                <div translate [translateParams]="{linkName: translateService.instant(linkName)}">CLICK_HERE_MESSAGE.SUFFIX</div>
             </div>
         </div>
     </div>

@@ -21,7 +21,11 @@
         "SUCCESS_HEADING": "Account successfully created",
         "SUCCESS_TEXT": "Account request has been successfully created, and is now pending approval from the staff. You should receive an email once your account is activated."
     },
-    "CLICK_HERE_PATTERN": "Click <a [routerLink]=\"{{linkUrl}}\">here</a> to go back to the {{linkName}} page.",
+    "CLICK_HERE_MESSAGE": {
+        "PREFIX": "Click\u00a0",
+        "HERE": "here",
+        "SUFFIX": "\u00a0to go back to the {{linkName}} page."
+    },
     "DAY_PATTERN": "Day {{day}}",
     "DAY_OF_PROGRAM_PATTERN": "{{program}} - Day {{day}}",
     "TOUR_PROGRAM_PATTERN": "{{program}} Tour Program",

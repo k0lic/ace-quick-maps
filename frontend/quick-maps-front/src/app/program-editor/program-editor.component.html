@@ -130,7 +130,7 @@
         <div *ngFor="let day of days; let i = index" class="col-12">
           <div [class]="day.day_number==selectedDay?'row mb-1 p-2 bg-primary':'row mb-1 p-2 bg-light'" (click)="onDaySelect(day.day_number)">
             <!-- DAY HEADER -->
-            <div class="col-12" translate [translateParams]="day.day_number">DAY_PATTERN</div>
+            <div class="col-12" translate [translateParams]="{day: day.day_number}">DAY_PATTERN</div>
             <!-- LIST OF POINTS -->
             <div *ngFor="let point of day.points" class="col-11 col-lg-9 bg-light mx-3 m-1">
                 {{'#' + point.index + ' - ' + translateService.instant('LOC.' + point.location) + ' - ' + translateService.instant('POINT_TYPES.' + point.type)}}
