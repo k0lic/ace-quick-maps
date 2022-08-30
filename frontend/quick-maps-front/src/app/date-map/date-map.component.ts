@@ -1,5 +1,4 @@
 import { Component, NgZone, OnInit, Renderer2, SecurityContext } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
 import { TranslateCompiler, TranslateService } from '@ngx-translate/core';
 import { PointType } from '../_entities/point-type';
 import { TourInfoPoint } from '../_entities/tour-info-point';
@@ -51,7 +50,6 @@ let TourInfoWindow: { new (position: google.maps.LatLng, content: string, color:
 let needToDefine = true;
 let renderer: Renderer2;
 let translateService: TranslateService;
-let sanitizer: DomSanitizer;
 
 function maybeDefine() {
   if (needToDefine) {
@@ -237,7 +235,6 @@ export class DateMapComponent implements OnInit {
     private zone: NgZone, 
     private renderer: Renderer2, 
     private translateService: TranslateService,
-    private sanitizer: DomSanitizer,
     private tourService: TourService, 
     private programService: ProgramService
   ) { }
@@ -251,7 +248,6 @@ export class DateMapComponent implements OnInit {
 
     renderer = this.renderer;
     translateService = this.translateService;
-    sanitizer = this.sanitizer;
   }
 
   // Workaround necessary since the default way is broken in this version of the agm(?) library.
