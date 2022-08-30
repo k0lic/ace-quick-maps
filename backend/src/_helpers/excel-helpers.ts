@@ -98,7 +98,7 @@ function consolidateRowsIntoTourObjects(rows): any[] {
         let isPre = false;
         let isPost = false;
 
-        // Process special cases where departNum is not a number
+        // Process special cases where departNum/dayNum is not a number
         if (typeof row.departNum == 'string') {
             if (row.departNum.slice(0, 4) == 'priv') {
                 // Special case: priv. tours - private tours that are unique programs, should not be more than one
@@ -151,7 +151,7 @@ function consolidateRowsIntoTourObjects(rows): any[] {
             return;
         }
 
-        // TODO: Process regular values of departNum
+        // Process regular values of departNum
         if (currentTour != null && row.tour == currentTour.name && row.departNum == currentTour.departNum) {
             // Add day to tour
             currentTour.days.push(row);
@@ -253,13 +253,7 @@ function consolidateRowsIntoTourObjects(rows): any[] {
         let expectedDate: Date | null = null;
         // Check if everything is as expected
         tour.days.forEach((day, dayNumber) => {
-            // // Check day number is as expected
-            // if (day.dayNum != lastDay + 1) {
-            //     // TODO: is this important, should we do something except logging?
-            //     console.log('Unexpected day number at row ' + day.rowNumber + ' - Got <' + day.dayNum + '> while expecting ' + (lastDay + 1));
-            // }
-
-            // TODO: check arrDate?
+            // Check arrDate?
             let arrDate = day.arrDate;
             if (arrDate == null) {
                 if (expectedDate != null) {
