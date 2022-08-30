@@ -1,6 +1,8 @@
 declare var require: any;
 let Excel = require('exceljs');
 
+let dateHelpers = require('./date-helpers');
+
 let tourRoutes = require('../_routes/tour-routes');
 
 async function testExcelFunction(res) {
@@ -281,8 +283,8 @@ function consolidateRowsIntoTourObjects(rows): any[] {
                 || arrDate.getMonth() != expectedDate.getMonth() || arrDate.getDate() != expectedDate.getDate())
             ) {
                 if (tour.status == statusConfirmed) {
-                    let expectedDateString = expectedDate.getDate() + '/' + (expectedDate.getMonth() + 1) + '/' + expectedDate.getFullYear();
-                    let foundDateString = arrDate.getDate() + '/' + (arrDate.getMonth() + 1) + '/' + arrDate.getFullYear();
+                    let expectedDateString = dateHelpers.getDDMMYYYYslashed(expectedDate);
+                    let foundDateString = dateHelpers.getDDMMYYYYslashed(arrDate);
                     console.log('Unexpected arrDate value at row ' + day.rowNumber + ': expected ' + expectedDateString + ' but found ' + foundDateString);
                 }
                 tour.invalidData = true;

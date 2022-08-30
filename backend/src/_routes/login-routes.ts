@@ -10,6 +10,7 @@ let userCheckers = require('../_middleware/user-checkers');
 let queryHelpers = require('../_helpers/query-helpers');
 let stringHelpers = require('../_helpers/string-helpers');
 let jwtHelpers = require('../_helpers/jwt-helpers');
+let dateHelpers = require('../_helpers/date-helpers');
 
 // Make sure only guests have access - a logged in user should not be able to eg. log in
 router.use(userCheckers.assertNoUser);
@@ -20,11 +21,13 @@ router.post('/login', (req, res) => {
     let password = req.body.password;
 
     let today = new Date();
-    let todayString = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+    let todayString = dateHelpers.getYYYYMMDDdashed(today);
 
     // Check if user exists - approved and has not had access revoked
-    let query = 'SELECT * FROM users WHERE email = ' + stringHelpers.quoteMe(email) + ' AND approved = 1 AND revoke_access_date > ' + stringHelpers.quoteMe(todayString);
-    queryHelpers.executeQueryWithCallback(query, res, rows => {
+    // let query = 'SELECT * FROM users WHERE email = ' + stringHelpers.quoteMe(email) + ' AND approved = 1 AND revoke_access_date > ' + stringHelpers.quoteMe(todayString);
+    let queryString = 'SELECT * FROM users WHERE email = ? AND approved = 1 AND revoke_access_date > ?';
+    let queryValues = [email, todayString];
+    queryHelpers.executeQueryWithCallback(queryString, queryValues, res, rows => {
         if (rows.length == 0) {
             console.log('User not found');
             res.sendStatus(500);
@@ -80,16 +83,19 @@ router.post('/register', (req, res) => {
         let revokeAccessDate: Date = new Date();
         let radString = (revokeAccessDate.getFullYear() + 1) + '-02-01';
 
-        let query = 'INSERT INTO users (email, user_type, name, last_name, approved, password, revoke_access_date) VALUES ('
-            + stringHelpers.quoteMe(email) + ','
-            + stringHelpers.quoteMe('viewer') + ','
-            + stringHelpers.quoteMe(name) + ','
-            + stringHelpers.quoteMe(lastName) + ','
-            + 0 + ','
-            + stringHelpers.quoteMe(hash) + ','
-            + stringHelpers.quoteMe(radString) + ')';
+        // let query = 'INSERT INTO users (email, user_type, name, last_name, approved, password, revoke_access_date) VALUES ('
+        //     + stringHelpers.quoteMe(email) + ','
+        //     + stringHelpers.quoteMe('viewer') + ','
+        //     + stringHelpers.quoteMe(name) + ','
+        //     + stringHelpers.quoteMe(lastName) + ','
+        //     + 0 + ','
+        //     + stringHelpers.quoteMe(hash) + ','
+        //     + stringHelpers.quoteMe(radString) + ')';
+        // let queryString = 'INSERT INTO users (email, user_type, name, last_name, approved, password, revoke_access_date) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        let queryString = 'INSERT INTO users (email, user_type, name, last_name, approved, password, revoke_access_date) VALUES ?';
+        let queryValues = [[[email, 'viewer', name, lastName, 0, hash, radString]]];
         
-        queryHelpers.executeQueryWithoutResults(query, res);
+        queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
     });
 });
 
@@ -97,11 +103,13 @@ router.post('/forgot', (req, res) => {
     let email = req.body.email;
 
     let today = new Date();
-    let todayString = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+    let todayString = dateHelpers.getYYYYMMDDdashed(today);
 
     // Check if user exists - approved and has not had access revoked
-    let query = 'SELECT * FROM users WHERE email = ' + stringHelpers.quoteMe(email) + ' AND approved = 1 AND revoke_access_date > ' + stringHelpers.quoteMe(todayString);
-    queryHelpers.executeQueryWithCallback(query, res, rows => {
+    // let query = 'SELECT * FROM users WHERE email = ' + stringHelpers.quoteMe(email) + ' AND approved = 1 AND revoke_access_date > ' + stringHelpers.quoteMe(todayString);
+    let queryString = 'SELECT * FROM users WHERE email = ? AND approved = 1 AND revoke_access_date > ?';
+    let queryValues = [email, todayString];
+    queryHelpers.executeQueryWithCallback(queryString, queryValues, res, rows => {
         if (rows.length == 0) {
             console.log('User not found');
             res.sendStatus(500);

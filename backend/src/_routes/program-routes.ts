@@ -11,21 +11,21 @@ router.use(userCheckers.assertIsAdmin);
 
 // List routes here
 router.get('/all_partners', (req, res) => {
-    let query_string = 'SELECT * FROM partners';
-    queryHelpers.executeQuery(query_string, res);
+    let queryString = 'SELECT * FROM partners';
+    queryHelpers.executeQuery(queryString, [], res);
 });
 
 router.get('/all_tour_programs', (req, res) => {
-    let query_string = ''
+    let queryString = ''
         + 'SELECT pr.idprogram as id, pr.name as name, pr.idpartner as partner_id, pa.name as partner_name, pa.shorthand as parther_short '
         + 'FROM programs pr, partners pa '
         + 'WHERE pr.idpartner = pa.idpartner';  // join with partners might be unneeded
         
-    queryHelpers.executeQuery(query_string, res);
+    queryHelpers.executeQuery(queryString, [], res);
 });
 
-function getDayPointLocationJoinQuery(program_id: number): string {
-    return ''
+function getDayPointLocationJoinQuery(programId: number): [string, any] {
+    let queryString = ''
         + 'SELECT d.idprogram as program_id, d.number as day_number, d.description as day_description, '
         + 'p.idpoint as point_id, p.pointindex as point_index, p.location as location_name, p.lat as ff_lat, p.lng as ff_lng, '
         + 'p.idtype as point_type, p.description as point_description, '
@@ -35,60 +35,89 @@ function getDayPointLocationJoinQuery(program_id: number): string {
         + 'ON d.idprogram = p.idprogram AND d.number = p.daynumber '
         + 'LEFT JOIN locations l '
         + 'ON p.location = l.name '
-        + 'WHERE d.idprogram = ' + program_id + ' '
+        + 'WHERE d.idprogram = ? '
         + 'ORDER BY day_number, point_index';
+    let queryValues = [programId];
+    return [queryString, queryValues];
 }
 
 router.post('/tour_program_days', (req, res) => {
-    let program_id = req.body.id;
+    console.log('/tour_program_days');
+    
+    let programId = req.body.id;
 
-    let query_string = getDayPointLocationJoinQuery(program_id);
-    queryHelpers.executeQuery(query_string, res);
+    let joinQuery = getDayPointLocationJoinQuery(programId);
+    let queryString = joinQuery[0];
+    let queryValues = joinQuery[1];
+
+    queryHelpers.executeQuery(queryString, queryValues, res);
 });
 
 router.post('/tour_program_fixup', (req, res) => {
-    let program_id = req.body.id;
+    console.log('/tour_program_days');
 
-    let query_string = getDayPointLocationJoinQuery(program_id);
-    queryHelpers.executeQueryWithCallback(query_string, res, rows => {
+    let programId = req.body.id;
+
+    let joinQuery = getDayPointLocationJoinQuery(programId);
+    let queryString = joinQuery[0];
+    let queryValues = joinQuery[1];
+
+    queryHelpers.executeQueryWithCallback(queryString, queryValues, res, rows => {
         // TODO: are there other cases where nothing should be done?
         if (rows.length == 0) {
             res.sendStatus(200);
             return;
         }
 
-        let newRows = fixupProgramRows(program_id, rows);
+        let newRows = fixupProgramRows(programId, rows);
 
         // Build the delete and insert queries
-        let queries: string[] = [];
-        let delete_old_rows_query = 'DELETE FROM points WHERE idprogram = ' + program_id;   // FOR TESTING: REPLACE <program_id> WITH HARDCODED VALUE
-        queries.push(delete_old_rows_query);
+        let queryStrings: string[] = [];
+        let queryValues: any[] = [];
+
+        let deleteOldRowsQueryString = 'DELETE FROM points WHERE idprogram = ?';
+        let deleteOldRowsQueryValues = [programId];   // FOR TESTING: REPLACE <programId> WITH HARDCODED VALUE
+        queryStrings.push(deleteOldRowsQueryString);
+        queryValues.push(deleteOldRowsQueryValues);
 
         if (newRows.length > 0) {
-            let insert_new_rows_query = 'INSERT INTO points (idprogram, daynumber, pointindex, location, lat, lng, idtype, description) VALUES ';
-            let firstValue = true;
-            newRows.forEach(row => {
-                insert_new_rows_query += (firstValue?'':',') + '('
-                    + row.idprogram + ',' // FOR TESTING: REPLACE <row.idprogram> WITH HARDCODED VALUE
-                    + row.daynumber + ','
-                    + row.pointindex + ','
-                    + (row.location == null ? 'null' : '\'' + row.location + '\'') + ','
-                    + (row.lat == null ? 'null' : row.lat) + ','
-                    + (row.lng == null ? 'null' : row.lng) + ','
-                    + '\'' + row.idtype + '\'' + ','
-                    + '\'' + row.description + '\''
-                    + ')';
+            let insertNewRowsQueryString = 'INSERT INTO points (idprogram, daynumber, pointindex, location, lat, lng, idtype, description) VALUES ?';
 
-                firstValue = false;
+            let insertNewRowsQueryValues: any[] = [[]];
+            // let firstValue = true;
+            newRows.forEach(row => {
+                // insert_new_rows_query += (firstValue?'':',') + '('
+                //     + row.idprogram + ',' // FOR TESTING: REPLACE <row.idprogram> WITH HARDCODED VALUE
+                //     + row.daynumber + ','
+                //     + row.pointindex + ','
+                //     + (row.location == null ? 'null' : '\'' + row.location + '\'') + ','
+                //     + (row.lat == null ? 'null' : row.lat) + ','
+                //     + (row.lng == null ? 'null' : row.lng) + ','
+                //     + '\'' + row.idtype + '\'' + ','
+                //     + '\'' + row.description + '\''
+                //     + ')';
+                insertNewRowsQueryValues[0].push([
+                    row.idprogram,
+                    row.daynumber,
+                    row.pointindex,
+                    row.location,
+                    row.lat,
+                    row.lng,
+                    row.idtype,
+                    row.description
+                ]);
+                // firstValue = false;
             });
-            queries.push(insert_new_rows_query);
+
+            queryStrings.push(insertNewRowsQueryString);
+            queryValues.push(insertNewRowsQueryValues);
         }
 
-        queryHelpers.executeTransaction(queries, res);
+        queryHelpers.executeTransaction(queryStrings, queryValues, res);
     }, null);
 });
 
-function fixupProgramRows(program_id: number, rows: any[]): any[] {
+function fixupProgramRows(programId: number, rows: any[]): any[] {
     // Extract info before processing
     let lastDayNumber = 0;
     let lastDayLastPointIndex = 0;
@@ -142,7 +171,7 @@ function fixupProgramRows(program_id: number, rows: any[]): any[] {
                                             && arr[index + 1].last_index > 1 && arr[index + 1].first_location_index == 1 && arr[index + 1].first_location != currentLocation)
             )) {
                 newRows.push({
-                    idprogram: program_id,
+                    idprogram: programId,
                     daynumber: info.day_number,
                     pointindex: 1,
                     location: currentLocation,
@@ -164,7 +193,7 @@ function fixupProgramRows(program_id: number, rows: any[]): any[] {
                                                 ) 
                 || (info.hotel_point_count == 1 && info.first_location_index == info.last_index && info.first_location == currentLocation))) {
                 newRows.push({
-                    idprogram: program_id,
+                    idprogram: programId,
                     daynumber: info.day_number,
                     pointindex: 1,
                     location: currentLocation,
@@ -190,7 +219,7 @@ function fixupProgramRows(program_id: number, rows: any[]): any[] {
                 if ((info.hotel_point_count == 0 || (info.hotel_point_count == 1 && info.first_location_index == 1 && (info.day_number > 1 || info.last_index > 1))) 
                 && tomorrowsInfo.hotel_point_count > 0 && tomorrowsInfo.last_index > 1 && tomorrowsInfo.first_location_index == 1 && tomorrowsInfo.first_location != currentLocation) {
                     newRows.push({
-                        idprogram: program_id,
+                        idprogram: programId,
                         daynumber: info.day_number,
                         pointindex: info.last_index + 1,
                         location: tomorrowsInfo.first_location,
@@ -212,7 +241,7 @@ function fixupProgramRows(program_id: number, rows: any[]): any[] {
                     || (tomorrowsInfo.hotel_point_count > 0 && tomorrowsInfo.first_location_index == 1 && tomorrowsInfo.first_location == currentLocation)
                 )) {
                     newRows.push({
-                        idprogram: program_id,
+                        idprogram: programId,
                         daynumber: info.day_number,
                         pointindex: info.last_index + 1,
                         location: currentLocation,
@@ -300,11 +329,11 @@ function fixupProgramRows(program_id: number, rows: any[]): any[] {
     return newRows;
 }
 
-function pointDayRowReplaceJustType(row, newType, index_increment: number) {
+function pointDayRowReplaceJustType(row, newType, indexIncrement: number) {
     return {
         idprogram: row.program_id,
         daynumber: row.day_number,
-        pointindex: row.point_index + index_increment,
+        pointindex: row.point_index + indexIncrement,
         location: row.location_name,
         lat: row.ff_lat,
         lng: row.ff_lng,
@@ -313,11 +342,11 @@ function pointDayRowReplaceJustType(row, newType, index_increment: number) {
     };
 }
 
-function pointDayRowReplaceNothing(row, index_increment: number) {
+function pointDayRowReplaceNothing(row, indexIncrement: number) {
     return {
         idprogram: row.program_id,
         daynumber: row.day_number,
-        pointindex: row.point_index + index_increment,
+        pointindex: row.point_index + indexIncrement,
         location: row.location_name,
         lat: row.ff_lat,
         lng: row.ff_lng,
@@ -355,75 +384,110 @@ function rememberHotelAddedToEndOfDayInInfo(arr, index, currentLocation): void {
 }
 
 router.post('/add_program_day', (req, res) => {
-    let program_id = req.body.id;
+    console.log('/add_program_day');
+
+    let programId = req.body.id;
     let number = req.body.number;
     let description = req.body.description;
 
-    let query_string = 'INSERT INTO program_days (idprogram, number, description) VALUES (\'' + program_id + '\',\'' + number + '\',\'' + description + '\')';
-    queryHelpers.executeQueryWithoutResults(query_string, res);
+    // let queryString = 'INSERT INTO program_days (idprogram, number, description) VALUES (\'' + program_id + '\',\'' + number + '\',\'' + description + '\')';
+    let queryString = 'INSERT INTO program_days (idprogram, number, description) VALUES ?';
+    let queryValues = [[[programId, number, description]]];
+    queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
 });
 
 router.post('/delete_program_day', (req, res) => {
+    console.log('/delete_program_day');
+
     // Remove all the points first
-    let program_id = req.body.id;
+    let programId = req.body.id;
     let number = req.body.number;
 
-    let query_string_1 = 'DELETE FROM points WHERE idprogram = ' + program_id + ' AND daynumber = ' + number;
-    let query_string_2 = 'DELETE FROM program_days WHERE idprogram = ' + program_id + ' AND number = ' + number;
-    queryHelpers.executeTransaction([query_string_1, query_string_2], res);
+    // let queryString1 = 'DELETE FROM points WHERE idprogram = ' + programId + ' AND daynumber = ' + number;
+    let queryString1 = 'DELETE FROM points WHERE idprogram = ? AND daynumber = ?';
+    let queryValues1 = [programId, number];
+    // let queryString2 = 'DELETE FROM program_days WHERE idprogram = ' + programId + ' AND number = ' + number;
+    let queryString2 = 'DELETE FROM program_days WHERE idprogram = ? AND number = ?';
+    let queryValues2 = [programId, number];
+
+    queryHelpers.executeTransaction([queryString1, queryString2], [queryValues1, queryValues2], res);
 });
 
 router.post('/add_point', (req, res) => {
-    let program_id = req.body.id;
+    console.log('/add_point');
+
+    let programId = req.body.id;
     let number = req.body.number;
-    let point_index = req.body.index;
-    let location_present = req.body.location_present;
+    let pointIndex = req.body.index;
+    let locationPresent = req.body.location_present;
     let location = req.body.location;
     let lat = req.body.lat;
     let lng = req.body.lng;
     let type = req.body.type;
     let description = req.body.description;
 
-    let query_string = 'INSERT INTO points (idprogram, daynumber, pointindex, ' + (location_present? 'location, ' : 'lat, lng, ') + 'idtype, description) '
-        + 'VALUES ('
-        + '\'' + program_id + '\','
-        + '\'' + number + '\','
-        + '\'' + point_index + '\','
-        + (location_present ? ('\'' + location + '\',') : '')
-        + (!location_present ? ('\'' + lat + '\',') : '')
-        + (!location_present ? ('\'' + lng + '\',') : '')
-        + '\'' + type + '\','
-        + '\'' + description + '\')';
+    // let queryString = 'INSERT INTO points (idprogram, daynumber, pointindex, ' + (locationPresent? 'location, ' : 'lat, lng, ') + 'idtype, description) '
+    //     + 'VALUES ('
+    //     + '\'' + programId + '\','
+    //     + '\'' + number + '\','
+    //     + '\'' + pointIndex + '\','
+    //     + (locationPresent ? ('\'' + location + '\',') : '')
+    //     + (!locationPresent ? ('\'' + lat + '\',') : '')
+    //     + (!locationPresent ? ('\'' + lng + '\',') : '')
+    //     + '\'' + type + '\','
+    //     + '\'' + description + '\')';
+    let queryString = 'INSERT INTO points (idprogram, daynumber, pointindex, location, lat, lng, idtype, description) VALUES ?';
+    let queryValues = [[[
+        programId,
+        number,
+        pointIndex,
+        locationPresent ? location : null,
+        locationPresent ? null : lat,
+        locationPresent ? null : lng,
+        type,
+        description
+    ]]];
 
-    queryHelpers.executeQueryWithoutResults(query_string, res);
+    queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
 });
 
 router.post('/update_point', (req, res) => {
     let id = req.body.id;
-    let point_index = req.body.index;
+    let pointIndex = req.body.index;
     let location = req.body.location;
     let lat = req.body.lat;
     let lng = req.body.lng;
     let type = req.body.type;
     let description = req.body.description;
 
-    let query_string = 'UPDATE points '
-        + 'SET pointindex = \'' + point_index + '\','
-        + '     location = \'' + location + '\','
-        + '     lat = \'' + lat + '\','
-        + '     lng = \'' + lng + '\','
-        + '     idtype = \'' + type + '\','
-        + '     description = \'' + description + '\' '
-        + 'WHERE idpoint = \'' + id + '\'';
+    // let queryString = 'UPDATE points '
+    //     + 'SET pointindex = \'' + pointIndex + '\','
+    //     + '     location = \'' + location + '\','
+    //     + '     lat = \'' + lat + '\','
+    //     + '     lng = \'' + lng + '\','
+    //     + '     idtype = \'' + type + '\','
+    //     + '     description = \'' + description + '\' '
+    //     + 'WHERE idpoint = \'' + id + '\'';
+    let queryString = 'UPDATE points '
+        + 'SET pointindex = ?,'
+        + '     location = ?,'
+        + '     lat = ?,'
+        + '     lng = ?,'
+        + '     idtype = ?,'
+        + '     description = ? '
+        + 'WHERE idpoint = ?';
+    let queryValues = [pointIndex, location, lat, lng, type, description, id];
 
-    queryHelpers.executeQueryWithoutResults(query_string, res);
+    queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
 });
 
 router.post('/delete_point', (req, res) => {
     let id = req.body.id;
 
-    let query_string = 'DELETE FROM points WHERE idpoint = \'' + id + '\'';
-    queryHelpers.executeQueryWithoutResults(query_string, res);
+    // let queryString = 'DELETE FROM points WHERE idpoint = \'' + id + '\'';
+    let queryString = 'DELETE FROM points WHERE idpoint = ?';
+    let queryValues = [id];
+    queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
 });
 
 // Export router

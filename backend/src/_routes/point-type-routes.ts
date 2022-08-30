@@ -11,8 +11,8 @@ router.use(userCheckers.assertIsUser);
 
 // List routes here
 router.get('/all_point_types', (req, res) => {
-    let query_string = 'SELECT * FROM point_types';
-    queryHelpers.executeQuery(query_string, res);
+    let queryString = 'SELECT * FROM point_types';
+    queryHelpers.executeQuery(queryString, [], res);
 });
 
 // Export router
