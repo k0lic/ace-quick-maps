@@ -140,10 +140,10 @@ export class ProgramEditorComponent implements OnInit {
       this.selectedPointType,
       ''
     ).subscribe((res) => {
-      // TODO: fix this
-    }, err => {
-      // TODO: fix this so flow doesn't always end in the error callback
+      // Fetch all the points, which should now contain the newly added point
       this.getAllDayPoints(null);
+    }, err => {
+      console.log(err);
     });
   }
 
@@ -219,25 +219,20 @@ export class ProgramEditorComponent implements OnInit {
 
     // TODO: day description?
     this.programService.addProgramDay(this.selectedTourProgramId, newDayNumber, "").subscribe(res => {
-      // TODO: react to newly added day
-      console.log('res');
-      console.log(res);
-    }, err => {
-      console.log('err');
-      console.log(err);
-
-      // TODO: figure out how to not flow into the error catcher
+      // Fetch all the points, which should now contain the newly added day
       this.getAllDayPoints(newDayNumber);
+    }, err => {
+      console.log(err);
     });
   }
 
   deleteLastTourProgramDay(): void {
     let dayNumber = this.days[this.days.length - 1].day_number;
     this.programService.deleteProgramDay(this.selectedTourProgramId, dayNumber).subscribe(res => {
-      // TODO: see below
-    }, err => {
-      // TODO: fix error callback catching everything
+      // Fetch all the points, which should now contain one less day
       this.getAllDayPoints(this.selectedDay == dayNumber ? (dayNumber == 1 ? null : dayNumber - 1) : null);
+    }, err => {
+      console.log(err);
     });
   }
 
@@ -247,13 +242,10 @@ export class ProgramEditorComponent implements OnInit {
 
   fixUpTourProgramOnServer(): void {
     this.programService.fixupTourProgram(this.selectedTourProgramId).subscribe(res => {
-      // TODO: epic issue
-    }, err => {
-      // TODO: err callback goes brrrrrrrrrr
-      console.log("Hello from fixup err callback :)");
-
-      // Fetch the changes
+      // Fetch all the points, which should now contain new points created by the fixup function
       this.getAllDayPoints(null);
+    }, err => {
+      console.log(err);
     })
   }
 
@@ -343,6 +335,8 @@ export class ProgramEditorComponent implements OnInit {
 
       // Save
       this.days = tmp;
+
+      // If specified, change the selected day (done when a day is added/removed)
       if (focus_on_day != null) {
         this.selectedDay = focus_on_day;
       }

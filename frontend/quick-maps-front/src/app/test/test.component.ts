@@ -15,12 +15,8 @@ export class TestComponent implements OnInit {
 
   onTestClick(): void {
     this.testService.testExcelFileProcessing().subscribe(res => {
-      // TODO: err catches everything
-      console.log('res');
-      console.log(res);
+      // skip
     }, err => {
-      // TODO: err catches everything
-      console.log('err');
       console.log(err);
     });
   }

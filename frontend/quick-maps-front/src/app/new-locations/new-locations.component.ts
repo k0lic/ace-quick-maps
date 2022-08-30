@@ -83,7 +83,7 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
     // Decide if new marker is to be added, or the one that was added last should just be moved.
     if (this.markers.length == 0 || this.markers[this.markers.length - 1].hasName) {
       // There are no unnamed markers, user wants to add new marker.
-      this.addNewEmptyMarker($event);
+      this.addNewMarker(null, $event.latLng.lat(), $event.latLng.lng());
     } else {
       // Marker that was already added has no name, user decided to move it.
       this.moveLastMarker($event);
@@ -97,12 +97,12 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
     this.inputPlaceNameElement.nativeElement.focus();
   }
 
-  addNewEmptyMarker($event : google.maps.MouseEvent): void {
+  addNewMarker(label: string | null, lat: number, lng: number): void {
     this.markers.push({
-      label: "",
-      lat: $event.latLng.lat(),
-      lng: $event.latLng.lng(),
-      hasName: false,
+      label: label ?? "",
+      lat: lat,
+      lng: lng,
+      hasName: label != null,
       isSaved: false
     });
   }
@@ -132,9 +132,12 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
 
     // Send last marker to server
     let newLocation = this.markers[index];
-    this.locationService.addLocation(newLocation.label, newLocation.lat, newLocation.lng).subscribe((x) => {
-      // TODO: make this not throw error in console
-      console.log("Response from new location");
+    this.locationService.addLocation(newLocation.label, newLocation.lat, newLocation.lng).subscribe(res => {
+      // skip
+    }, err => {
+      console.log(err);
+      // Server failed adding the marker, remove it from ui
+      this.markers.splice(index, 1);
     });
   }
 
@@ -149,14 +152,19 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
   removeMarker(index: number): void {
     // Remove one element at 'index'.
     let label = this.markers[index].label;
+    let lat = this.markers[index].lat;
+    let lng = this.markers[index].lng;
     let hasName = this.markers[index].hasName;
     this.markers.splice(index, 1);
 
     // Remove location from server
     if (hasName) {
-      this.locationService.deleteLocation(label).subscribe((x) => {
-        // TODO: make this not throw error in console
-        console.log("Response from delete location");
+      this.locationService.deleteLocation(label).subscribe(res => {
+        // skip
+      }, err => {
+        console.log(err);
+        // Server failed removing the marker, add it back to ui
+        this.addNewMarker(label, lat, lng);
       });
     }
 
@@ -166,15 +174,21 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
 
   onMarkerDragEnd(index: number, $event: any): void {
     // Update marker coords.
+    let oldLat = this.markers[index].lat;
+    let oldLng = this.markers[index].lng;
     this.markers[index].lat = $event.latLng.lat();
     this.markers[index].lng = $event.latLng.lng();
 
     // Update location coords on server
     let marker = this.markers[index];
     if (marker.hasName) {
-      this.locationService.moveLocation(marker.label, marker.lat, marker.lng).subscribe((x) => {
-        // TODO: make this not throw error in console
-        console.log("Response from move location");
+      this.locationService.moveLocation(marker.label, marker.lat, marker.lng).subscribe(res => {
+        // skip
+      }, err => {
+        console.log(err);
+        // Server failed moving the marker, move it back to where it was
+        this.markers[index].lat = oldLat;
+        this.markers[index].lng = oldLng;
       });
     }
 
