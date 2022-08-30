@@ -1,7 +1,9 @@
-import { Component, NgZone, OnInit, Renderer2 } from '@angular/core';
+import { Component, NgZone, OnInit, Renderer2, SecurityContext } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { TranslateCompiler, TranslateService } from '@ngx-translate/core';
 import { PointType } from '../_entities/point-type';
 import { TourInfoPoint } from '../_entities/tour-info-point';
+import { escapeHtml } from '../_helpers/stringHelper';
 import { defaultSvgPath, svgMap } from '../_helpers/svgHelper';
 import { ProgramService } from '../_services/program.service';
 import { TourService } from '../_services/tour.service';
@@ -41,8 +43,6 @@ interface TourInfoOverlay extends google.maps.OverlayView {
   bubbleContainerBig: HTMLDivElement;
   hideBigOne: boolean;
 
-  // addItem(content: string, color: string): void;
-  // addItemBig(content: string, color: string): void;
   addItem(item: MarkerContainer): void;
   toggle(): void;
 }
@@ -51,6 +51,7 @@ let TourInfoWindow: { new (position: google.maps.LatLng, content: string, color:
 let needToDefine = true;
 let renderer: Renderer2;
 let translateService: TranslateService;
+let sanitizer: DomSanitizer;
 
 function maybeDefine() {
   if (needToDefine) {
@@ -121,7 +122,7 @@ function defineTourInfoWindow() {
       let bubble = renderer.createElement('div');
       renderer.addClass(bubble, 'popup-inner');
       renderer.setStyle(bubble, 'border', '2px solid ' + item.color);
-      renderer.setProperty(bubble, 'innerHTML', item.name);
+      renderer.setProperty(bubble, 'innerHTML', escapeHtml(item.name));
 
       renderer.appendChild(this.bubbleContainer, bubble);
 
@@ -131,69 +132,46 @@ function defineTourInfoWindow() {
       renderer.setStyle(bubbleBig, 'border', '2px solid ' + item.color);
 
       let headerEl = renderer.createElement('h4');
-      renderer.setProperty(headerEl, 'innerHTML', item.name + ' ' + dateString(item.startDate));
+      renderer.setProperty(headerEl, 'innerHTML', escapeHtml(item.name + ' ' + dateString(item.startDate)));
       renderer.appendChild(bubbleBig, headerEl);
       
       let guideEl = renderer.createElement('div');
       renderer.setProperty(
-        guideEl, 'innerHTML', translateService.instant('ITEMS.TOUR_GUIDE', {value: item.tourGuide ?? '/'}));
+        guideEl, 'innerHTML', escapeHtml(translateService.instant('ITEMS.TOUR_GUIDE', {value: item.tourGuide ?? '/'})));
       renderer.appendChild(bubbleBig, guideEl);
       
       let guestsEl = renderer.createElement('div');
-      // renderer.setProperty(guestsEl, 'innerHTML', 'gosti' + ': ' + (item.guests ?? '/'));
       renderer.setProperty(
-        guestsEl, 'innerHTML', translateService.instant('ITEMS.GUESTS', {value: item.guests ?? '/'}));
+        guestsEl, 'innerHTML', escapeHtml(translateService.instant('ITEMS.GUESTS', {value: item.guests ?? '/'})));
       renderer.appendChild(bubbleBig, guestsEl);
       
       let hotel1El = renderer.createElement('div');
-      // renderer.setProperty(hotel1El, 'innerHTML', 'hotel1' + ': ' + (item.hotel1 ?? '/'));
       renderer.setProperty(
-        hotel1El, 'innerHTML', translateService.instant('ITEMS.HOTEL1', {value: item.hotel1 ?? '/'}));
+        hotel1El, 'innerHTML', escapeHtml(translateService.instant('ITEMS.HOTEL1', {value: item.hotel1 ?? '/'})));
       renderer.appendChild(bubbleBig, hotel1El);
       
       let hotel2El = renderer.createElement('div');
-      // renderer.setProperty(hotel2El, 'innerHTML', 'hotel2' + ': ' + (item.hotel2 ?? '/'));
       renderer.setProperty(
-        hotel2El, 'innerHTML', translateService.instant('ITEMS.HOTEL2', {value: item.hotel2 ?? '/'}));
+        hotel2El, 'innerHTML', escapeHtml(translateService.instant('ITEMS.HOTEL2', {value: item.hotel2 ?? '/'})));
       renderer.appendChild(bubbleBig, hotel2El);
       
       let routeEl = renderer.createElement('div');
-      // renderer.setProperty(routeEl, 'innerHTML', 'ruta' + ': ' + (item.markers[0].label ?? '?') + ' -> ' + (item.markers[item.markers.length - 1].label ?? '?'));
       renderer.setProperty(
-        routeEl, 'innerHTML', translateService.instant('ITEMS.ROUTE', {
+        routeEl, 'innerHTML', escapeHtml(translateService.instant('ITEMS.ROUTE', {
             v1: item.markers[0].label != null ? translateService.instant('LOC.' + item.markers[0].label) : '?',
             v2: item.markers[item.markers.length - 1].label != null ? translateService.instant('LOC.' + item.markers[item.markers.length - 1].label) : '?' 
-          }));
+          })));
       renderer.appendChild(bubbleBig, routeEl);
       
       if (item.activities != null) {
         let activitiesEl = renderer.createElement('div');
-        // renderer.setProperty(activitiesEl, 'innerHTML', 'aktivnost' + ': ' + item.activities);
         renderer.setProperty(
-          activitiesEl, 'innerHTML', translateService.instant('ITEMS.ACTIVITY', {value: item.activities}));
+          activitiesEl, 'innerHTML', escapeHtml(translateService.instant('ITEMS.ACTIVITY', {value: item.activities})));
         renderer.appendChild(bubbleBig, activitiesEl);
       }
 
       renderer.appendChild(this.bubbleContainerBig, bubbleBig);
     }
-
-    // addItem(content: string, color: string) {
-    //   let bubble = renderer.createElement('div');
-    //   renderer.addClass(bubble, 'popup-inner');
-    //   renderer.setStyle(bubble, 'border', '2px solid ' + color);
-    //   renderer.setProperty(bubble, 'innerHTML', content);
-
-    //   renderer.appendChild(this.bubbleContainer, bubble);
-    // }
-
-    // addItemBig(content: string, color: string) {
-    //   let bubbleBig = renderer.createElement('div');
-    //   renderer.addClass(bubbleBig, 'popup-inner');
-    //   renderer.setStyle(bubbleBig, 'border', '2px solid ' + color);
-    //   renderer.setProperty(bubbleBig, 'innerHTML', content);
-
-    //   renderer.appendChild(this.bubbleContainerBig, bubbleBig);
-    // }
 
     toggle() {
       this.hideBigOne = !this.hideBigOne;
@@ -219,9 +197,6 @@ function defineTourInfoWindow() {
     draw() {
       let divPosition = this.getProjection().fromLatLngToDivPixel(this.position)!;
   
-      // this.containerDiv.style.left = divPosition.x + 'px';
-      // this.containerDiv.style.top = divPosition.y + 'px';
-      // this.containerDiv.style.display = 'block';
       renderer.setStyle(this.containerDiv, 'left', divPosition.x + 'px');
       renderer.setStyle(this.containerDiv, 'top', divPosition.y + 'px');
       renderer.setStyle(this.containerDiv, 'display', 'block');
@@ -262,6 +237,7 @@ export class DateMapComponent implements OnInit {
     private zone: NgZone, 
     private renderer: Renderer2, 
     private translateService: TranslateService,
+    private sanitizer: DomSanitizer,
     private tourService: TourService, 
     private programService: ProgramService
   ) { }
@@ -275,6 +251,7 @@ export class DateMapComponent implements OnInit {
 
     renderer = this.renderer;
     translateService = this.translateService;
+    sanitizer = this.sanitizer;
   }
 
   // Workaround necessary since the default way is broken in this version of the agm(?) library.
