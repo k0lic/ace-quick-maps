@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { LoginService } from '../_services/login.service';
 
 @Component({
@@ -12,7 +13,7 @@ export class ForgotPasswordComponent implements OnInit {
   forgotForm: FormGroup;
   errorMessage: boolean = false;
 
-  constructor(private loginService: LoginService, private fb: FormBuilder) {
+  constructor(private loginService: LoginService, private router: Router, private fb: FormBuilder) {
     this.forgotForm = this.fb.group({
       email: ['', [Validators.required, Validators.pattern(/^\S+@\S+$/)]]
     });
@@ -34,12 +35,15 @@ export class ForgotPasswordComponent implements OnInit {
     }
 
     this.loginService.forgotPassword(this.forgotForm.value.email).subscribe(res => {
-      // TODO
-      this.errorMessage = true;
+      // Show message that reset code was successfully created and sent to the email address
+      this.router.navigate(['/message'], {state: {
+        heading: 'RECOVERY.SUCCESS_HEADING',
+        message: 'RECOVERY.SUCCESS_TEXT',
+        linkName: 'LOGIN.TITLE',
+        linkUrl: '/login'
+      }});
     }, err => {
       console.log(err);
-
-      // TODO: make real message
       this.errorMessage = true;
     });
   }

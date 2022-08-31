@@ -25,6 +25,7 @@ import { MessageComponent } from './message/message.component';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { UserListsComponent } from './user-lists/user-lists.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -45,7 +46,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     NakedLayoutComponent,
     UserLayoutComponent,
     MessageComponent,
-    UserListsComponent
+    UserListsComponent,
+    ResetPasswordComponent
   ],
   imports: [
     BrowserModule,

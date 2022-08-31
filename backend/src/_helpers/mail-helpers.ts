@@ -1,4 +1,5 @@
 import { Secrets } from "../../secrets";
+import { Constants } from "../constants";
 
 declare var require: any;
 let nodemailer = require('nodemailer');
@@ -17,7 +18,7 @@ function sendMail(to: string, subject: string, text: string, callback, errCallba
         from: Secrets.EMAIL.ADDRESS,
         to: to,
         subject: subject,
-        html: text
+        html: text + Constants.MAIL_TEMPLATES.SIGNATURE     // automatically add signature to mail content
     };
 
     // Send email

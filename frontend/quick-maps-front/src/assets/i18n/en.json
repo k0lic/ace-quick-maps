@@ -7,7 +7,9 @@
     },
     "RECOVERY": {
         "TITLE": "Account recovery",
-        "BUTTON": "Send recovery link"
+        "BUTTON": "Send recovery link",
+        "SUCCESS_HEADING": "Recovery link sent",
+        "SUCCESS_TEXT": "Password reset request was successfully created and the details were sent to your email address."
     },
     "LOGIN": {
         "TITLE": "Log in",
@@ -20,6 +22,14 @@
         "BUTTON": "Register",
         "SUCCESS_HEADING": "Account successfully created",
         "SUCCESS_TEXT": "Account request has been successfully created, and is now pending approval from the staff. You should receive an email once your account is activated."
+    },
+    "RESET": {
+        "TITLE": "Password change",
+        "BUTTON": "Change password",
+        "SUCCESS_HEADING": "Password successfully changed",
+        "SUCCESS_TEXT": "Your password was successfully changed. You can now log in using the new password.",
+        "FAILURE_HEADING": "Unable to change password",
+        "FAILURE_TEXT": "The link has expired and it can no longer be used to change your password. Please request a new password reset link."
     },
     "USERS": {
         "ALL": "Users",
@@ -62,6 +72,7 @@
     "FIELDS": {
         "EMAIL": "Email address",
         "PASSWORD": "Password",
+        "NEW_PASSWORD": "New password",
         "PASSWORD_CONFIRM": "Confirm password",
         "FIRST_NAME": "First name",
         "LAST_NAME": "Last name"
@@ -82,6 +93,8 @@
         "SHORT_PASSWORD": "Password must be at least 8 characters long!",
         "CONFIRM_PASSWORD_MATCH": "Password confirmation must match password!",
         "WRONG_USER_OR_PASSWORD": "Incorrect username or password!",
+        "USER_NOT_FOUND": "Account not found!",
+        "VAGUE": "There's an error!",
         "NOT_IMPLEMENTED": "Not yet implemented!"
     },
     "ITEMS": {

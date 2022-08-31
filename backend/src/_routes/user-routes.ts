@@ -74,7 +74,7 @@ router.post('/approve_user', (req, res) => {
             mailHelpers.sendMailConsoleLog(
                 user,
                 Constants.MAIL_TEMPLATES.WELCOME.SUBJECT,
-                Constants.MAIL_TEMPLATES.WELCOME.TEXT + Constants.MAIL_TEMPLATES.SIGNATURE
+                Constants.MAIL_TEMPLATES.WELCOME.TEXT
             );
 
             // Send success status regardless of the mailing result

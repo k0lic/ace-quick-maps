@@ -36,4 +36,21 @@ export class LoginService {
 
     return this.http.post(uri + '/logins/forgot', data, optionsWithCookieEmpty);
   }
+
+  checkResetCode(code: string) {
+    let data = {
+      code: code
+    };
+
+    return this.http.post(uri + '/logins/reset_code_check', data, optionsWithCookieEmpty);
+  }
+
+  resetPassword(code: string, password: string) {
+    let data = {
+      code: code,
+      password: password
+    };
+
+    return this.http.post(uri + '/logins/reset_password', data, optionsWithCookieEmpty);
+  }
 }

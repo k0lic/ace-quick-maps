@@ -7,7 +7,9 @@
     },
     "RECOVERY": {
         "TITLE": "Oporavak naloga",
-        "BUTTON": "Pošalji link za oporavak"
+        "BUTTON": "Pošalji link za oporavak",
+        "SUCCESS_HEADING": "Link za oporavak naloga poslat",
+        "SUCCESS_TEXT": "Zahtev za promenom lozinke je uspešno napravljen i detalji su Vam poslati na email adresu."
     },
     "LOGIN": {
         "TITLE": "Prijava",
@@ -20,6 +22,14 @@
         "BUTTON": "Registruj se",
         "SUCCESS_HEADING": "Nalog uspešno napravljen",
         "SUCCESS_TEXT": "Zahtev za nalog je uspešno napravljen i trenutno čeka odobrenje od strane zaposlenih. Dobićete email kada Vaš nalog bude aktiviran."
+    },
+    "RESET": {
+        "TITLE": "Promena lozinke",
+        "BUTTON": "Promeni lozinku",
+        "SUCCESS_HEADING": "Lozinka uspešno izmenjena",
+        "SUCCESS_TEXT": "Lozinka za Vaš nalog je uspešno izmenjena. Sada možete da se prijavite koristeći novu lozinku.",
+        "FAILURE_HEADING": "Lozinku nije moguće promeniti",
+        "FAILURE_TEXT": "Vaš link je istekao i pomoću njega više nije moguće izvršiti izmenu lozinke. Molimo Vas da zatražite novi link za promenu lozinke."
     },
     "USERS": {
         "ALL": "Korisnici",
@@ -62,6 +72,7 @@
     "FIELDS": {
         "EMAIL": "Email adresa",
         "PASSWORD": "Lozinka",
+        "NEW_PASSWORD": "Nova lozinka",
         "PASSWORD_CONFIRM": "Potvrdite lozinku",
         "FIRST_NAME": "Ime",
         "LAST_NAME": "Prezime"
@@ -82,6 +93,8 @@
         "SHORT_PASSWORD": "Lozinka mora biti duga makar 8 karaktera!",
         "CONFIRM_PASSWORD_MATCH": "Potvrda lozinke se ne poklapa sa lozinkom!",
         "WRONG_USER_OR_PASSWORD": "Pogrešna email adresa ili lozinka!",
+        "USER_NOT_FOUND": "Nalog nije pronađen!",
+        "VAGUE": "Došlo je do greške!",
         "NOT_IMPLEMENTED": "Još nije implementirano!"
     },
     "ITEMS": {

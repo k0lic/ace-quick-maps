@@ -17,6 +17,7 @@ import { GuestGuard } from './_guards/guest-guard';
 import { MessageComponent } from './message/message.component';
 import { UserListsComponent } from './user-lists/user-lists.component';
 import { HigherGuard } from './_guards/higher-guard';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
 
 const routes: Routes = [
   {
@@ -37,6 +38,7 @@ const routes: Routes = [
       { path: 'login', component: LoginComponent, canActivate: [GuestGuard]},
       { path: 'register', component: RegisterComponent, canActivate: [GuestGuard]},
       { path: 'forgot-password', component: ForgotPasswordComponent, canActivate: [GuestGuard]},
+      { path: 'reset-password/:code', component: ResetPasswordComponent, canActivate: [GuestGuard]},
       { path: 'message', component: MessageComponent, canActivate: [GuestGuard]},
       { path: 'test', component: TestComponent},
       { path: '**', component: JunkNavComponent}
