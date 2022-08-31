@@ -21,6 +21,20 @@
         "SUCCESS_HEADING": "Account successfully created",
         "SUCCESS_TEXT": "Account request has been successfully created, and is now pending approval from the staff. You should receive an email once your account is activated."
     },
+    "USERS": {
+        "ALL": "Users",
+        "ACTIVE": "Activated users",
+        "EXPIRED": "Users with expired access rights",
+        "REQUESTS": "Account requests",
+        "NO_ACTIVES": "There's no activated users right now.",
+        "NO_EXPIREDS": "There's no users with expired access rights right now.",
+        "NO_REQUESTS": "There's no requests right now.",
+        "APPROVE_BUTTON": "Activate account",
+        "DELETE_REQUEST_BUTTON": "Delete request",
+        "CHANGE_TYPE_BUTTON": "Change account type",
+        "RENEW_ACCESS_BUTTON": "Renew access rights",
+        "REVOKE_ACCESS_BUTTON": "Revoke access rights"
+    },
     "CLICK_HERE_MESSAGE": {
         "PREFIX": "Click\u00a0",
         "HERE": "here",
@@ -39,6 +53,11 @@
         "hotel_checkin": "Hotel Check in",
         "hotel_checkout": "Hotel Check out",
         "hotel_stay": "Hotel stay"
+    },
+    "USER_TYPES": {
+        "viewer": "Viewer",
+        "user_manager": "Manager",
+        "admin": "Admin"
     },
     "FIELDS": {
         "EMAIL": "Email address",

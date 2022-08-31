@@ -10,10 +10,6 @@ const app = express();
 // Setup Cross-Origin Resource Sharing
 app.use(cors({
     origin: [/((http|https):\/\/)?localhost/],
-    // allowedHeaders: ['Content-Type', 'Authorization'],
-    // exposedHeaders: ['Content-Type'],
-    // allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'Content-Disposition'],
-    // exposedHeaders: ['Content-Type', 'Content-Disposition'],
     optionsSuccessStatus: 200,
     credentials: true
 }));
@@ -22,41 +18,11 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-// jwt
-// const secret = Secrets.JWT.SECRET;
-// const SESSION_ID = Secrets.JWT.SESSION_ID;
-
-// function verifyUser(req, res): boolean {
-//     console.log('req.cookies: ' + JSON.stringify(req.cookies));
-//     try {
-//         let token = req.cookies[SESSION_ID];
-//         jsonwebtoken.verify(token, secret);
-//         return true;
-//     } catch (err) {
-//         res.clearCookie(SESSION_ID);
-//         res.sendStatus(401);
-//         return false;
-//     }
-// }
-
-// function getTokenInfo(req , res): string | null {
-//     console.log('req.cookies: ' + JSON.stringify(req.cookies));
-//     try {
-//         let token = req.cookies[SESSION_ID];
-//         let verified = JSON.stringify(jsonwebtoken.verify(token, secret));
-//         let info = JSON.parse(verified);
-//         console.log(info);
-//         return info;
-//     } catch (err) {
-//         res.clearCookie(SESSION_ID);
-//         res.sendStatus(401);
-//         return null;
-//     }
-// }
-
-// Database Connection
-// requiring the file executes the initialization code
+// Database Connection - requiring the file executes the initialization code
 let queryHelpers = require('./_helpers/query-helpers');
+
+// Initialize the mail helper
+let mailHelpers = require('./_helpers/mail-helpers');
 
 // !!! Routes
 // Default routes
@@ -91,6 +57,10 @@ app.use('/logins', loginRoutes.router);
 // Me routes
 let meRoutes = require('./_routes/me-routes');
 app.use('/me', meRoutes.router);
+
+// User routes
+let userRoutes = require('./_routes/user-routes');
+app.use('/users', userRoutes.router);
 
 // Test file routes
 let testRoutes = require('./_routes/test-routes');

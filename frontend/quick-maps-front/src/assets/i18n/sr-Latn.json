@@ -21,6 +21,20 @@
         "SUCCESS_HEADING": "Nalog uspešno napravljen",
         "SUCCESS_TEXT": "Zahtev za nalog je uspešno napravljen i trenutno čeka odobrenje od strane zaposlenih. Dobićete email kada Vaš nalog bude aktiviran."
     },
+    "USERS": {
+        "ALL": "Korisnici",
+        "ACTIVE": "Aktivirani korisnici",
+        "EXPIRED": "Korisnici sa isteklim pravom pristupa",
+        "REQUESTS": "Zahtevi za otvaranje naloga",
+        "NO_ACTIVES": "Trenutno nema nijednog aktiviranog korisnika.",
+        "NO_EXPIREDS": "Trenutno nema nijednog korisnika sa isteklim pravom pristupa.",
+        "NO_REQUESTS": "Trenutno nema nijednog zahteva.",
+        "APPROVE_BUTTON": "Aktiviraj nalog",
+        "DELETE_REQUEST_BUTTON": "Obriši zahtev",
+        "CHANGE_TYPE_BUTTON": "Promeni tip naloga",
+        "RENEW_ACCESS_BUTTON": "Obnovi pravo pristupa",
+        "REVOKE_ACCESS_BUTTON": "Poništi pravo pristupa"
+    },
     "CLICK_HERE_MESSAGE": {
         "PREFIX": "Kliknite\u00a0",
         "HERE": "ovde",
@@ -39,6 +53,11 @@
         "hotel_checkin": "Hotel Check in",
         "hotel_checkout": "Hotel Check out",
         "hotel_stay": "Ostajanje u hotelu"
+    },
+    "USER_TYPES": {
+        "viewer": "Posmatrač",
+        "user_manager": "Menadžer",
+        "admin": "Admin"
     },
     "FIELDS": {
         "EMAIL": "Email adresa",

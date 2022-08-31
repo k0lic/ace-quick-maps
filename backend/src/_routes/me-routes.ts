@@ -1,4 +1,5 @@
 import { Secrets } from "../../secrets";
+import { Constants } from "../constants";
 
 declare var require: any;
 let express = require('express');
@@ -23,7 +24,7 @@ router.get('/get_info', (req, res) => {
 
 router.get('/logout', (req, res) => {
     jwtHelpers.clearJwt(res);
-    res.clearCookie(Secrets.USER_TYPE);
+    res.clearCookie(Constants.USER_TYPE);
     res.sendStatus(200);
 });
 

@@ -18,7 +18,7 @@ export class HigherGuard implements CanActivate {
             return false;
         }
 
-        if (['user-manager', 'admin'].indexOf(cookie) == -1) {
+        if (['user_manager', 'admin'].indexOf(cookie) == -1) {
             this.router.navigate(['/ok/date-map']);
             return false;
         }

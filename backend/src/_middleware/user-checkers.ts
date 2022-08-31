@@ -1,3 +1,4 @@
+declare var require: any;
 let jwtHelpers = require('../_helpers/jwt-helpers');
 
 // Make sure no one is logged in

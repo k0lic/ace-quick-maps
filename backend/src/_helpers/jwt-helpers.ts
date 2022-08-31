@@ -1,5 +1,6 @@
 import { Secrets } from "../../secrets";
 
+declare var require: any;
 let jsonwebtoken = require('jsonwebtoken');
 
 function createJwt(userRow: any): any {

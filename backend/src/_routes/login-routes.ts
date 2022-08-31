@@ -1,4 +1,5 @@
 import { Secrets } from "../../secrets";
+import { Constants } from "../constants";
 
 declare var require: any;
 let express = require('express');
@@ -56,7 +57,7 @@ router.post('/login', (req, res) => {
             });
 
             // Create another cookie that's used for 'dumb' page restriction by angular - not for security but for QOL
-            res.cookie(Secrets.USER_TYPE, rows[0].user_type, {
+            res.cookie(Constants.USER_TYPE, rows[0].user_type, {
                 maxAge: 60 * 60 * 1000  // 1h (in milliseconds)
             });
 
@@ -80,8 +81,9 @@ router.post('/register', (req, res) => {
         }
 
         // Next year, 1st of February - good time for access to be reset I think - outside of the season, not during the new year's holidays
-        let revokeAccessDate: Date = new Date();
-        let radString = (revokeAccessDate.getFullYear() + 1) + '-02-01';
+        // let revokeAccessDate: Date = new Date();
+        // let radString = (revokeAccessDate.getFullYear() + 1) + '-02-01';
+        let radString = dateHelpers.getYYYYMMDDdashed(dateHelpers.getFebruaryNextYear());
 
         // let query = 'INSERT INTO users (email, user_type, name, last_name, approved, password, revoke_access_date) VALUES ('
         //     + stringHelpers.quoteMe(email) + ','

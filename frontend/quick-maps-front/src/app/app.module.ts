@@ -24,6 +24,7 @@ import { AdminGuard } from './_guards/admin-guard';
 import { MessageComponent } from './message/message.component';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { UserListsComponent } from './user-lists/user-lists.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -43,7 +44,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     ForgotPasswordComponent,
     NakedLayoutComponent,
     UserLayoutComponent,
-    MessageComponent
+    MessageComponent,
+    UserListsComponent
   ],
   imports: [
     BrowserModule,

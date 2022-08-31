@@ -15,6 +15,8 @@ import { UserGuard } from './_guards/user-guard';
 import { AdminGuard } from './_guards/admin-guard';
 import { GuestGuard } from './_guards/guest-guard';
 import { MessageComponent } from './message/message.component';
+import { UserListsComponent } from './user-lists/user-lists.component';
+import { HigherGuard } from './_guards/higher-guard';
 
 const routes: Routes = [
   {
@@ -24,6 +26,7 @@ const routes: Routes = [
       { path: 'date-map', component: DateMapComponent, canActivate: [UserGuard]},
       { path: 'new-locations', component: NewLocationsComponent, canActivate: [AdminGuard]},
       { path: 'program-editor', component: ProgramEditorComponent, canActivate: [AdminGuard]},
+      { path: 'users', component: UserListsComponent, canActivate: [HigherGuard]},
       { path: 'message', component: MessageComponent, canActivate: [UserGuard]}
     ]
   },

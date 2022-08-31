@@ -1,0 +1,103 @@
+<div class="row d-flex justify-content-center">
+    <!-- HEADER -->
+    <div class="col-12 d-flex justify-content-center mb-5">
+        <h1 translate>USERS.ALL</h1>
+    </div>
+
+    <!-- ACCOUNT REQUESTS -->
+    <div class="col-12 mt-3 mb-2">
+        <h3 translate>USERS.REQUESTS</h3>
+    </div>
+
+    <div *ngFor="let req of userRequests; let i = index" class="col-12 mb-1">
+        <div [class]="req.email==selectedUser?'row mb-1 p-3 bg-primary':'row mb-1 p-2 bg-light'">
+            <!-- USER EMAIL -->
+            <h4 class="col-12 mb-1">{{req.email}}</h4>
+            <!-- USER NAME -->
+            <div class="col-12 col-lg-4 col-xxl-3 mb-1">{{req.name + ' ' + req.lastName}}</div>
+            <!-- USER TYPE SELECTOR -->
+            <div class="col-12 col-lg-4 col-xxl-3 mb-1">
+                <select class="form-select" [ngModel]="req.type" (ngModelChange)="updateType($event, i, userRequests)">
+                    <option *ngFor="let type of userTypes" [value]="type.id" [translate]="'USER_TYPES.' + type.id"></option>
+                </select>
+            </div>
+            <!-- APPROVE BUTTON -->
+            <div class="col-12 col-lg-5 col-xxl-3 mb-1">
+                <button type="button" class="btn btn-primary" (click)="approveUser(i)" translate>USERS.APPROVE_BUTTON</button>
+            </div>
+            <!-- DELETE BUTTON -->
+            <div class="col-12 col-lg-5 col-xxl-3 mb-1">
+                <button type="button" class="btn btn-danger" (click)="deleteRequest(i)" translate>USERS.DELETE_REQUEST_BUTTON</button>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="userRequests.length == 0" class="col-12 mb-3 text-center font-italic" translate>
+        USERS.NO_REQUESTS
+    </div>
+
+    <!-- TODO: EXPIRED ACCOUNTS -->
+    <div class="col-12 mt-3 mb-2">
+        <h3 translate>USERS.EXPIRED</h3>
+    </div>
+
+    <div *ngFor="let user of expiredUsers; let i = index" class="col-12 mb-1">
+        <div [class]="user.email==selectedUser?'row mb-1 p-3 bg-primary':'row mb-1 p-2 bg-light'">
+            <!-- USER EMAIL -->
+            <h4 class="col-12 mb-1">{{user.email}}</h4>
+            <!-- USER NAME -->
+            <div class="col-12 col-lg-4 mb-1">{{user.name + ' ' + user.lastName}}</div>
+            <!-- USER TYPE SELECTOR -->
+            <div class="col-12 col-lg-4 mb-1">
+                <select class="form-select" [ngModel]="user.newType" (ngModelChange)="updateType($event, i, expiredUsers)">
+                    <option *ngFor="let type of userTypes" [value]="type.id" [translate]="'USER_TYPES.' + type.id"></option>
+                </select>
+            </div>
+            <!-- CHANGE USER'S TYPE BUTTON -->
+            <div *ngIf="user.newType != user.type" class="col-12 col-lg-4 mb-1">
+                <button type="button" class="btn btn-primary" (click)="changeExpiredsType(i)" translate>USERS.CHANGE_TYPE_BUTTON</button>
+            </div>
+            <!-- RENEW USER'S ACCESS BUTTON -->
+            <div *ngIf="user.newType == user.type" class="col-12 col-lg-4 mb-1">
+                <button type="button" class="btn btn-primary" (click)="renewUsersAccess(i)" translate>USERS.RENEW_ACCESS_BUTTON</button>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="expiredUsers.length == 0" class="col-12 mb-3 text-center font-italic" translate>
+        USERS.NO_EXPIREDS
+    </div>
+
+    <!-- ACTIVE ACCOUNTS -->
+    <div class="col-12 mt-3 mb-2">
+        <h3 translate>USERS.ACTIVE</h3>
+    </div>
+
+    <div *ngFor="let user of activeUsers; let i = index" class="col-12 mb-1">
+        <div [class]="user.email==selectedUser?'row mb-1 p-3 bg-primary':'row mb-1 p-2 bg-light'">
+            <!-- USER EMAIL -->
+            <h4 class="col-12 mb-1">{{user.email}}</h4>
+            <!-- USER NAME -->
+            <div class="col-12 col-lg-4 mb-1">{{user.name + ' ' + user.lastName}}</div>
+            <!-- USER TYPE SELECTOR -->
+            <div class="col-12 col-lg-4 mb-1">
+                <select class="form-select" [ngModel]="user.newType" (ngModelChange)="updateType($event, i, activeUsers)">
+                    <option *ngFor="let type of userTypes" [value]="type.id" [translate]="'USER_TYPES.' + type.id"></option>
+                </select>
+            </div>
+            <!-- CHANGE USER'S TYPE BUTTON -->
+            <div *ngIf="user.newType != user.type" class="col-12 col-lg-4 mb-1">
+                <button type="button" class="btn btn-primary" (click)="changeActivesType(i)" translate>USERS.CHANGE_TYPE_BUTTON</button>
+            </div>
+            <!-- REVOKE USER'S ACCESS BUTTON -->
+            <div *ngIf="user.newType == user.type" class="col-12 col-lg-4 mb-1">
+                <button type="button" class="btn btn-danger" (click)="revokeUsersAccess(i)" translate>USERS.REVOKE_ACCESS_BUTTON</button>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="activeUsers.length == 0" class="col-12 mb-3 text-center font-italic" translate>
+        USERS.NO_ACTIVES
+    </div>
+  
+  </div>
