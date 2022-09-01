@@ -17,43 +17,18 @@ connection.connect((err) => {
     console.log('Successfully connected to the DB!');
 });
 
-// function executeQueryWithoutResults(query_string: string, res): void {
-//     executeQueryWithCallback(query_string, res, rows => {
-//         res.sendStatus(200);
-//     }, null);
-// }
 function executeQueryWithoutResults(queryString: string, queryValues: any, res): void {
     executeQueryWithCallback(queryString, queryValues, res, rows => {
         res.sendStatus(200);
     }, null);
 }
 
-// function executeQuery(query_string: string, res): void {
-//     executeQueryWithCallback(query_string, res, rows => {
-//         res.status(200).send(rows);
-//     }, null);
-// }
 function executeQuery(queryString: string, queryValues: any, res): void {
     executeQueryWithCallback(queryString, queryValues, res, rows => {
         res.status(200).send(rows);
     }, null);
 }
 
-// function executeQueryWithCallback(query_string: string, res, callback, err_callback): void {
-//     connection.query(query_string, (err, rows, fields) => {
-//         if (err) {
-//             if (err_callback != null) {
-//                 err_callback(err);
-//             } else {
-//                 console.log(err);
-//                 res.sendStatus(500);
-//             }
-//             return;
-//         }
-
-//         callback(rows);
-//     });
-// }
 function executeQueryWithCallback(queryString: string, queryValues: any, res, callback, errCallback): void {
     connection.query(queryString, queryValues, (err, rows, fields) => {
         if (err) {
@@ -70,16 +45,6 @@ function executeQueryWithCallback(queryString: string, queryValues: any, res, ca
     });
 }
 
-// Execute queries one by one inside a transaction
-// function executeTransaction(queries: string[], res): void {
-//     beginTransaction(res, () => {
-//         executeQueries(queries, res, () => {
-//             commitTransaction(res, () => {
-//                 res.sendStatus(200);
-//             });
-//         }, err => rollbackTransaction(res, err));
-//     }, null);
-// }
 function executeTransaction(queryStrings: string[], queryValues: any[], res): void {
     beginTransaction(res, () => {
         executeQueries(queryStrings, queryValues, res, () => {
@@ -123,18 +88,6 @@ function commitTransaction(res, callback) {
     });
 }
 
-// Execute queries one by one, calling this function recursively
-// function executeQueries(queries: string[], res, callback, err_callback): void {
-//     if (queries.length == 0) {
-//         // Job is done - all queries were executed
-//         callback();
-//         return;
-//     }
-
-//     executeQueryWithCallback(queries[0], res, rows => {
-//         executeQueries(queries.slice(1), res, callback, err_callback);
-//     }, err_callback);
-// }
 function executeQueries(queryStrings: string[], queryValues: any[], res, callback, errCallback): void {
     // Check if both arrays are of equal length
     if (queryStrings.length != queryValues.length) {
