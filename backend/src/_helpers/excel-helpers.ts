@@ -94,15 +94,11 @@ function consolidateRowsIntoTourObjects(rows): any[] {
         // Adjust for 2 things: index starting from 0, deleted header row
         let excelRowNumber = rowNumber + 2;
 
-        let departure = row.departNum;
-        let isPre = false;
-        let isPost = false;
-
         // Process special cases where departNum/dayNum is not a number
         if (typeof row.departNum == 'string') {
             if (row.departNum.slice(0, 4) == 'priv') {
                 // Special case: priv. tours - private tours that are unique programs, should not be more than one
-                departure = 1;
+                row.departNum = 1;
             } else if (row.departNum.slice(0, 3) == 'pre') {
                 // Pretour day, just add to special pretour array for now
                 // TODO: handle pre days, instead of just shooting them into an array and then ignoring them
