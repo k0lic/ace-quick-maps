@@ -1,11 +1,13 @@
+import { Secrets } from "../../secrets";
+
 declare var require: any;
 let mysql = require('mysql');
 
 const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'quick_maps_schema'
+    host: Secrets.MY_SQL.HOST,
+    user: Secrets.MY_SQL.USER,
+    password: Secrets.MY_SQL.PASSWORD,
+    database: Secrets.MY_SQL.DATABASE
 });
 
 connection.connect((err) => {
