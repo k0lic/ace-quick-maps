@@ -60,7 +60,7 @@ router.post('/login', (req, res) => {
 
             // Create another cookie that's used for 'dumb' page restriction by angular - not for security but for QOL
             res.cookie(Constants.USER_TYPE, rows[0].user_type, {
-                maxAge: 60 * 60 * 1000  // 1h (in milliseconds)
+                maxAge: 2 * 24 * 60 * 60 * 1000  // 2d (in milliseconds)
             });
 
             res.sendStatus(200);
