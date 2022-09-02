@@ -4,9 +4,6 @@
     <div class="col-12 mb-4">
         <div class="row justify-content-center">
             <button type="button" class="btn btn-secondary col-3" (click)="goToPreviousDate()">&lt;</button>
-            <!-- <h5 class="col-6 text-center">
-                {{dateString(selectedDate)}}
-            </h5> -->
             <div class="col-6 mb-3 p-auto">
                 <input type="date" class="form-control" id="dateInput" [(ngModel)]="selectedDateString" (ngModelChange)="onDateChange($event)">
             </div>
