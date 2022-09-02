@@ -9,7 +9,8 @@ let transporter = nodemailer.createTransport({
     auth: {
         user: Secrets.EMAIL.ADDRESS,
         pass: Secrets.EMAIL.PASSWORD
-    }
+    },
+    connectionTimeout: 5 * 1000     // 5 seconds - might be too short, change if you have issues with smtp timeouts
 });
 
 function sendMail(to: string, subject: string, text: string, callback, errCallback): void {
