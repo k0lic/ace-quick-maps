@@ -1,4 +1,6 @@
-export const uri = "http://localhost:4000";
+import { Environment } from "environment";
+
+export const uri = Environment.BACKEND_URL;
 
 export const optionsWithCookie = {
     withCredentials: true

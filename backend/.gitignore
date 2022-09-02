@@ -6,3 +6,4 @@ coverage
 build/
 src/*.xlsx
 secrets.ts
+environment.ts

@@ -54,14 +54,10 @@ router.post('/login', (req, res) => {
 
             // Correct password - add jwt to cookies
             let token = jwtHelpers.createJwt(rows[0]);
-            res.cookie(Secrets.JWT.SESSION_ID, token, {
-                maxAge: 2 * 24 * 60 * 60 * 1000  // 2d (in milliseconds)
-            });
+            res.cookie(Secrets.JWT.SESSION_ID, token);
 
             // Create another cookie that's used for 'dumb' page restriction by angular - not for security but for QOL
-            res.cookie(Constants.USER_TYPE, rows[0].user_type, {
-                maxAge: 2 * 24 * 60 * 60 * 1000  // 2d (in milliseconds)
-            });
+            res.cookie(Constants.USER_TYPE, rows[0].user_type);
 
             res.sendStatus(200);
         });

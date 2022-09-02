@@ -1,3 +1,5 @@
+import { Environment } from "../environment";
+
 declare var require: any;
 let express = require('express');
 let cors = require('cors');
@@ -9,7 +11,7 @@ const app = express();
 
 // Setup Cross-Origin Resource Sharing
 app.use(cors({
-    origin: [/((http|https):\/\/)?localhost/],
+    origin: [Environment.CORS_ORIGIN],
     optionsSuccessStatus: 200,
     credentials: true
 }));
