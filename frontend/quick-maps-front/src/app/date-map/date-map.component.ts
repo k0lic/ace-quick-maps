@@ -62,9 +62,22 @@ function padZero(x: number): string {
   return (x >= 0 && x < 10 ? '0' : '') + x;
 }
 
+function pad4Zero(x: number): string {
+  let prefix = x < 10 ? '000'
+    : x < 100 ? '00'
+    : x < 1000 ? '0'
+    : '';
+  return prefix + x;
+}
+
 function dateString(d: Date): string {
   d = new Date(d);
   return padZero(d.getDate()) + '/' + padZero(d.getMonth() + 1) + '/' + d.getFullYear();
+}
+
+function dateStringDashed(d: Date): string {
+  d = new Date(d);
+  return pad4Zero(d.getFullYear()) + '-' + padZero(d.getMonth() + 1) + '-' + padZero(d.getDate());
 }
 
 function toggleTOurInfoOverlay(tio: TourInfoOverlay): void {
@@ -224,6 +237,7 @@ export class DateMapComponent implements OnInit {
   defaultSvgPath: string = defaultSvgPath;
 
   selectedDate: Date = new Date();
+  selectedDateString: string = this.dateStringDashed(this.selectedDate);
   allPointTypes: PointType[] = [];
   tourInfoPoints: TourInfoPoint[] = [];
   tourInfoBank: Map<string, TourInfoPoint[]> = new Map();
@@ -287,8 +301,14 @@ export class DateMapComponent implements OnInit {
     this.onDateSelect(newDate);
   }
 
+  onDateChange(newDateString: any): void {
+    let newDate = this.reverseDateString(newDateString);
+    this.onDateSelect(newDate);
+  }
+
   onDateSelect(newDate: Date): void {
     this.selectedDate = newDate;
+    this.selectedDateString = this.dateStringDashed(this.selectedDate);
 
     // Request tour info for the new date
     this.getTourInfo();
@@ -296,8 +316,8 @@ export class DateMapComponent implements OnInit {
 
   getTourInfo(): void {
     // Check if this date was already queried
-    if (this.tourInfoBank.has(this.dateString(this.selectedDate))) {
-      this.tourInfoPoints = this.tourInfoBank.get(this.dateString(this.selectedDate))??[];
+    if (this.tourInfoBank.has(this.dateStringDashed(this.selectedDate))) {
+      this.tourInfoPoints = this.tourInfoBank.get(this.dateStringDashed(this.selectedDate))??[];
       this.refreshMarkerContainers();
       return;
     }
@@ -309,7 +329,7 @@ export class DateMapComponent implements OnInit {
       // Save date info for possible later use
       // TODO: can this cause too much memory usage?
       if (this.tourInfoPoints.length > 0) {
-        this.tourInfoBank.set(this.dateString(this.tourInfoPoints[0].date), this.tourInfoPoints);
+        this.tourInfoBank.set(this.dateStringDashed(this.tourInfoPoints[0].date), this.tourInfoPoints);
       }
 
       this.refreshMarkerContainers();
@@ -427,8 +447,19 @@ export class DateMapComponent implements OnInit {
     return svgMap.get(iconName)??defaultSvgPath;
   }
 
-  dateString(d: Date): string {
-    return dateString(d);
+  dateStringDashed(d: Date): string {
+    return dateStringDashed(d);
+  }
+
+  reverseDateString(s: string): Date {
+    let date = new Date();
+
+    let parts = s.split('-');
+    date.setFullYear(Number(parts[0]));
+    date.setMonth(Number(parts[1]) - 1);
+    date.setDate(Number(parts[2]));
+
+    return date;
   }
 
 }
