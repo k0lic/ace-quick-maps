@@ -5,6 +5,8 @@ let express = require('express');
 let cors = require('cors');
 let bodyParser = require('body-parser');
 let cookieParser = require('cookie-parser');
+let fs = require('fs');
+let https = require('https');
 
 // !!! Setup pre-Routes
 const app = express();
@@ -69,4 +71,24 @@ let testRoutes = require('./_routes/test-routes');
 app.use('/test', testRoutes.router);
 
 // !!! Setup post-Routes
-app.listen(4000, () => console.log('Express server running on port 4000'));
+if (Environment.SSL.ENABLED) {
+    // SSL Certificate
+    let sslPrivateKey = fs.readFileSync(Environment.SSL.KEY_PATH, 'utf8');
+    let sslCertificate = fs.readFileSync(Environment.SSL.CERT_PATH, 'utf8');
+    let sslCredentials = {
+        key: sslPrivateKey,
+        cert: sslCertificate
+    };
+
+    // Https server
+    let httpsServer = https.createServer(sslCredentials, app);
+
+    httpsServer.listen(4000, () => {
+        console.log('Express https server listening on port 4000');
+    });
+} else {
+    // Http server
+    app.listen(4000, () => {
+        console.log('Express unsecure server listening on port 4000')
+    });
+}

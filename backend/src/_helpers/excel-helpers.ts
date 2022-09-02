@@ -1,4 +1,4 @@
-import { Secrets } from "../../secrets";
+import { Environment } from "../../environment";
 
 declare var require: any;
 let Excel = require('exceljs');
@@ -9,7 +9,7 @@ let tourRoutes = require('../_routes/tour-routes');
 
 async function testExcelFunction(res) {
     let workbook = new Excel.Workbook();
-    await workbook.xlsx.readFile(Secrets.EXCEL_FILE_PATH);
+    await workbook.xlsx.readFile(Environment.EXCEL_FILE_PATH);
 
     let rows = extractAndResolveExcelRows(workbook);
 
