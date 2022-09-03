@@ -65,8 +65,6 @@ export class ProgramService {
       description: description
     };
 
-    console.log(use_location);
-
     return this.http.post(uri + '/programs/add_point', data, optionsWithCookieEmpty);
   }
 

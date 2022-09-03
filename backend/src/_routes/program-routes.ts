@@ -42,8 +42,6 @@ function getDayPointLocationJoinQuery(programId: number): [string, any] {
 }
 
 router.post('/tour_program_days', (req, res) => {
-    console.log('/tour_program_days');
-    
     let programId = req.body.id;
 
     let joinQuery = getDayPointLocationJoinQuery(programId);
@@ -54,8 +52,6 @@ router.post('/tour_program_days', (req, res) => {
 });
 
 router.post('/tour_program_fixup', (req, res) => {
-    console.log('/tour_program_days');
-
     let programId = req.body.id;
 
     let joinQuery = getDayPointLocationJoinQuery(programId);
@@ -384,8 +380,6 @@ function rememberHotelAddedToEndOfDayInInfo(arr, index, currentLocation): void {
 }
 
 router.post('/add_program_day', (req, res) => {
-    console.log('/add_program_day');
-
     let programId = req.body.id;
     let number = req.body.number;
     let description = req.body.description;
@@ -397,8 +391,6 @@ router.post('/add_program_day', (req, res) => {
 });
 
 router.post('/delete_program_day', (req, res) => {
-    console.log('/delete_program_day');
-
     // Remove all the points first
     let programId = req.body.id;
     let number = req.body.number;
@@ -414,8 +406,6 @@ router.post('/delete_program_day', (req, res) => {
 });
 
 router.post('/add_point', (req, res) => {
-    console.log('/add_point');
-
     let programId = req.body.id;
     let number = req.body.number;
     let pointIndex = req.body.index;
