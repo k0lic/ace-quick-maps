@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+import { setTitle } from '../_helpers/titleHelper';
 import { LoginService } from '../_services/login.service';
 
 @Component({
@@ -13,7 +16,13 @@ export class RegisterComponent implements OnInit {
   registerForm: FormGroup;
   errorMessage: boolean = false;
 
-  constructor(private loginService: LoginService, private router: Router, private fb: FormBuilder) {
+  constructor(
+    private router: Router, 
+    private fb: FormBuilder,
+    private titleService: Title,
+    private translateService: TranslateService,
+    private loginService: LoginService
+  ) {
     this.registerForm = this.fb.group({
       email: ['', [Validators.required, Validators.pattern(/^\S+@\S+$/)]],
       name: ['', Validators.required],
@@ -34,6 +43,7 @@ export class RegisterComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    setTitle('REGISTER.TITLE', this.titleService, this.translateService);
   }
 
   onPasswordInputChange() {

@@ -1,5 +1,13 @@
 {
     "TITLE": "АЦЕ Око",
+    "TITLE_PATTERN": "АЦЕ Око | {{subtitle}}",
+    "SUBTITLES": {
+        "MAP": "Мапа",
+        "NAV": "Мени",
+        "MESSAGE": "Порука",
+        "PROGRAM_EDITOR": "Измена програма",
+        "TEST": "Проба"
+    },
     "ACE": "АЦЕ",
     "LOCATIONS": {
         "TITLE": "Локације",

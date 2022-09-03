@@ -1,9 +1,11 @@
 import { Component, NgZone, OnInit, Renderer2, SecurityContext } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { TranslateCompiler, TranslateService } from '@ngx-translate/core';
 import { PointType } from '../_entities/point-type';
 import { TourInfoPoint } from '../_entities/tour-info-point';
 import { escapeHtml } from '../_helpers/stringHelper';
 import { defaultSvgPath, svgMap } from '../_helpers/svgHelper';
+import { setTitle } from '../_helpers/titleHelper';
 import { ProgramService } from '../_services/program.service';
 import { TourService } from '../_services/tour.service';
 
@@ -267,6 +269,7 @@ export class DateMapComponent implements OnInit {
     private zone: NgZone, 
     private renderer: Renderer2, 
     private translateService: TranslateService,
+    private titleService: Title,
     private tourService: TourService, 
     private programService: ProgramService
   ) { }
@@ -280,6 +283,8 @@ export class DateMapComponent implements OnInit {
 
     renderer = this.renderer;
     translateService = this.translateService;
+
+    setTitle('SUBTITLES.MAP', this.titleService, this.translateService);
   }
 
   // Workaround necessary since the default way is broken in this version of the agm(?) library.

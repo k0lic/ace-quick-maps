@@ -1,10 +1,12 @@
 import { Component, NgZone, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 import { Location } from '../_entities/location';
 import { Partner } from '../_entities/partner';
 import { PointType } from '../_entities/point-type';
 import { TourProgram } from '../_entities/program';
 import { ProgramDayPoint } from '../_entities/program-day-point';
+import { setTitle } from '../_helpers/titleHelper';
 import { LocationService } from '../_services/location.service';
 import { ProgramService } from '../_services/program.service';
 
@@ -77,13 +79,21 @@ export class ProgramEditorComponent implements OnInit {
     shorthand: "Any"
   };
 
-  constructor(private zone: NgZone, public translateService: TranslateService, private locationService: LocationService, private programService: ProgramService) { }
+  constructor(
+    private zone: NgZone, 
+    public translateService: TranslateService, 
+    private titleService: Title,
+    private locationService: LocationService, 
+    private programService: ProgramService
+  ) { }
 
   ngOnInit(): void {
     this.getAllPartners();
     this.getAllPrograms();
     this.getAllPointTypes();
     this.getAllLocations();
+
+    setTitle('SUBTITLES.PROGRAM_EDITOR', this.titleService, this.translateService);
   }
 
   // Workaround necessary since the default way is broken in this version of the agm(?) library.

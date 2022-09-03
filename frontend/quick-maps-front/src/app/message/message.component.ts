@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { setTitle } from '../_helpers/titleHelper';
 
 @Component({
   selector: 'app-message',
@@ -16,7 +18,11 @@ export class MessageComponent implements OnInit {
   linkName: string = 'Login';
   linkUrl: string = '/login';
 
-  constructor(private router: Router, public translateService: TranslateService) {
+  constructor(
+    private router: Router, 
+    public translateService: TranslateService,
+    private titleService: Title
+  ) {
     let state = router.getCurrentNavigation()?.extras.state;
 
     if (state != null) {
@@ -29,6 +35,7 @@ export class MessageComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    setTitle('SUBTITLES.MESSAGE', this.titleService, this.translateService);
   }
 
 }

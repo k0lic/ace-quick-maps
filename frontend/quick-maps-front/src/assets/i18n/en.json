@@ -1,5 +1,13 @@
 {
     "TITLE": "ACE Eye",
+    "TITLE_PATTERN": "ACE Eye | {{subtitle}}",
+    "SUBTITLES": {
+        "MAP": "Map",
+        "NAV": "Menu",
+        "MESSAGE": "Message",
+        "PROGRAM_EDITOR": "Program editor",
+        "TEST": "Test"
+    },
     "ACE": "ACE",
     "LOCATIONS": {
         "TITLE": "Locations",

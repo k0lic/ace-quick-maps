@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+import { setTitle } from '../_helpers/titleHelper';
 import { LoginService } from '../_services/login.service';
 
 @Component({
@@ -15,7 +18,14 @@ export class ResetPasswordComponent implements OnInit {
 
   code: string | null = null;
 
-  constructor(private loginService: LoginService, private router: Router, private fb: FormBuilder, private activatedRoute: ActivatedRoute) {
+  constructor(
+    private router: Router, 
+    private fb: FormBuilder, 
+    private activatedRoute: ActivatedRoute,
+    private titleService: Title,
+    private translateService: TranslateService,
+    private loginService: LoginService
+  ) {
     this.resetForm = this.fb.group({
       password: ['', [Validators.required, Validators.minLength(8)]],
       passwordConfirm: ['', ((control: AbstractControl) => {
@@ -47,6 +57,8 @@ export class ResetPasswordComponent implements OnInit {
       // Code is not valid
       this.invalidCodeRedirect();
     });
+
+    setTitle('RESET.TITLE', this.titleService, this.translateService);
   }
 
   invalidCodeRedirect(): void {

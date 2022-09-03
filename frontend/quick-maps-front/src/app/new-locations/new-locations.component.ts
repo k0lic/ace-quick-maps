@@ -1,6 +1,8 @@
 import { Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 import { Location } from '../_entities/location';
+import { setTitle } from '../_helpers/titleHelper';
 import { LocationService } from '../_services/location.service';
 // import { MouseEvent } from '@agm/core';
 
@@ -35,7 +37,12 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
 
   iconObj : any;
 
-  constructor(private zone: NgZone, public translateService: TranslateService, private locationService: LocationService) { }
+  constructor(
+    private zone: NgZone, 
+    public translateService: TranslateService, 
+    private titleService: Title,
+    private locationService: LocationService
+  ) { }
 
   ngOnInit(): void {
     // Retrieve locations from the server
@@ -45,6 +52,8 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
       url: "../../assets/icons/place_purple.svg",
       labelOrigin: {x: 18, y: -6}
     };
+
+    setTitle('LOCATIONS.TITLE', this.titleService, this.translateService);
   }
 
   // Workaround necessary since the default way is broken in this version of the agm(?) library.

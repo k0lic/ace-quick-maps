@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
+import { TranslateService } from '@ngx-translate/core';
+import { setTitle } from '../_helpers/titleHelper';
 
 @Component({
   selector: 'app-junk-nav',
@@ -7,9 +10,13 @@ import { Component, OnInit } from '@angular/core';
 })
 export class JunkNavComponent implements OnInit {
 
-  constructor() { }
+  constructor(
+    private titleService: Title,
+    private translateService: TranslateService
+  ) { }
 
   ngOnInit(): void {
+    setTitle('SUBTITLES.NAV', this.titleService, this.translateService);
   }
 
 }

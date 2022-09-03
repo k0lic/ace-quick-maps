@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
+import { TranslateService } from '@ngx-translate/core';
 import { User } from '../_entities/user';
 import { UserType } from '../_entities/user-type';
+import { setTitle } from '../_helpers/titleHelper';
 import { UserService } from '../_services/user.service';
 
 interface UserItem {
@@ -25,7 +28,11 @@ export class UserListsComponent implements OnInit {
 
   userTypes: UserType[] = [];
 
-  constructor(private userService: UserService) { }
+  constructor(
+    private titleService: Title,
+    private translateService: TranslateService,
+    private userService: UserService
+  ) { }
 
   ngOnInit(): void {
     // Fetch user requests
@@ -65,6 +72,8 @@ export class UserListsComponent implements OnInit {
       // Layout will perform redirect if necessary
       console.log(err);
     });
+    
+    setTitle('USERS.ALL', this.titleService, this.translateService);
   }
 
   approveUser(index: number): void {

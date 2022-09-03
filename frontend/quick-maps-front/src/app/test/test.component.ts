@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
+import { TranslateService } from '@ngx-translate/core';
+import { setTitle } from '../_helpers/titleHelper';
 import { TestService } from '../_services/test.service';
 
 @Component({
@@ -8,9 +11,14 @@ import { TestService } from '../_services/test.service';
 })
 export class TestComponent implements OnInit {
 
-  constructor(private testService: TestService) { }
+  constructor(
+    private titleService: Title,
+    private translateService: TranslateService,
+    private testService: TestService
+  ) { }
 
   ngOnInit(): void {
+    setTitle('SUBTITLES.TEST', this.titleService, this.translateService);
   }
 
   onTestClick(): void {
