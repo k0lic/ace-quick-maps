@@ -128,7 +128,7 @@ function defineTourInfoWindow() {
     }
 
     addItem(item: MarkerContainer, showFields: any) {
-      // TODO: maybe this should be a component?
+      // TODO: maybe this should be a component? I tried making it into a component, was very difficult so I gave up, the changes are stashed somewhere
       // Add short version
       let bubble = renderer.createElement('div');
       renderer.addClass(bubble, 'popup-inner');
@@ -302,9 +302,7 @@ export class DateMapComponent implements OnInit {
 
   onMapClick($event : google.maps.MouseEvent): void {
     // TODO: do we do anything on map click?
-    // Get click coordinates
-    // let lat = $event.latLng.lat();
-    // let lng = $event.latLng.lng();
+    // skip
   }
 
   goToPreviousDate(): void {

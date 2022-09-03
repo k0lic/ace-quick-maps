@@ -26,10 +26,27 @@ import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { UserListsComponent } from './user-lists/user-lists.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { getCookie } from './_helpers/cookieHelper';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http);
+}
+
+const languages: string[] = [
+  'sr-Latn',
+  'sr-Cyrl',
+  'en'
+];
+
+function fetchLanguageCookie(): string {
+  let cookie = getCookie(Secrets.LANGUAGE);
+  if (cookie != null && languages.indexOf(cookie) != -1) {
+    return cookie;
+  }
+
+  // Default map language - same as default website language
+  return 'sr-Latn';
 }
 
 @NgModule({
@@ -55,8 +72,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     FormsModule,
     ReactiveFormsModule,
     AgmCoreModule.forRoot({
-      apiKey: Secrets.GOOGLE_MAP_API_KEY
-      // TODO: add language fetch
+      apiKey: Secrets.GOOGLE_MAP_API_KEY,
+      language: fetchLanguageCookie()
     }),
     HttpClientModule,
     TranslateModule.forRoot({

@@ -125,7 +125,7 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
     let index = this.markers.length - 1;
     // Check if last marker already has name.
     if (this.markers[index].hasName) {
-      // TODO: what now?
+      // Ignore new name
       return;
     }
 
