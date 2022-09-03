@@ -1,11 +1,16 @@
 <div class="container container-wide">
     <div class="row mb-3">
-        <div class="col-6">
-            <a routerLink="/login" translate>TITLE</a>
+        <div class="col">
+            <a routerLink="/login">
+                <img src="../../assets/ace/ACE_Logo_L.svg" class="logo-image">
+            </a>
         </div>
-        <div class="col-6">
+        <div class="col">
+            <h1 translate>TITLE</h1>
+        </div>
+        <div class="col">
             <div class="row d-flex justify-content-end">
-                <div class="col-12 col-lg-5 col-xxl-3">
+                <div class="col-12 col-lg-9 col-xxl-6">
                     <select class="form-select" [ngModel]="selectedLanguage" (ngModelChange)="onLanguageChange($event)">
                         <option *ngFor="let lang of languages" [value]="lang" [translate]="'LANG.' + lang"></option>
                     </select>
