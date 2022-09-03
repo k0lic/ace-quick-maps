@@ -28,7 +28,10 @@ const routes: Routes = [
       { path: 'new-locations', component: NewLocationsComponent, canActivate: [AdminGuard]},
       { path: 'program-editor', component: ProgramEditorComponent, canActivate: [AdminGuard]},
       { path: 'users', component: UserListsComponent, canActivate: [HigherGuard]},
-      { path: 'message', component: MessageComponent, canActivate: [UserGuard]}
+      { path: 'test', component: TestComponent, canActivate: [AdminGuard]},
+      { path: 'nav', component: JunkNavComponent, canActivate: [HigherGuard]},
+      { path: 'message', component: MessageComponent, canActivate: [UserGuard]},
+      { path: '**', redirectTo: 'date-map'}
     ]
   },
   { 
@@ -40,9 +43,12 @@ const routes: Routes = [
       { path: 'forgot-password', component: ForgotPasswordComponent, canActivate: [GuestGuard]},
       { path: 'reset-password/:code', component: ResetPasswordComponent, canActivate: [GuestGuard]},
       { path: 'message', component: MessageComponent, canActivate: [GuestGuard]},
-      { path: 'test', component: TestComponent},
-      { path: '**', component: JunkNavComponent}
+      { path: '**', redirectTo: 'login'}
     ]
+  },
+  {
+    path: '**',
+    redirectTo: 'nav'
   }
 ];
 
