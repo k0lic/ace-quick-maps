@@ -222,6 +222,13 @@ router.post('/reset_password', (req, res) => {
     }, null);
 });
 
+router.get('/clear_cookies', (req, res) => {
+    // Same as the logout route in login-routes - just does not require you to be logged in
+    jwtHelpers.clearJwt(res);
+    res.clearCookie(Constants.USER_TYPE);
+    res.sendStatus(200);
+});
+
 // Export router
 export {
     router

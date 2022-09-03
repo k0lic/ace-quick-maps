@@ -254,6 +254,9 @@ export class ProgramEditorComponent implements OnInit {
     this.programService.getAllPartners().subscribe((partners: [Partner]) => {
       let partnersWithJoker = [this.jokerPartner].concat(partners);
       this.partners = partnersWithJoker;
+    }, err => {
+      // Layout will perform redirect if necessary
+      console.log(err);
     });
   }
 
@@ -261,6 +264,9 @@ export class ProgramEditorComponent implements OnInit {
     this.programService.getAllTourPrograms().subscribe((programs: [TourProgram]) => {
       this.tourPrograms = programs;
       this.onPartnerSelect(this.jokerPartner.idpartner);
+    }, err => {
+      // Layout will perform redirect if necessary
+      console.log(err);
     });
   }
 
@@ -285,6 +291,9 @@ export class ProgramEditorComponent implements OnInit {
           });
         }
       });
+    }, err => {
+      // Layout will perform redirect if necessary
+      console.log(err);
     });
   }
 
@@ -342,6 +351,9 @@ export class ProgramEditorComponent implements OnInit {
       }
 
       this.refreshPointMarkers();
+    }, err => {
+      // Layout will perform redirect if necessary
+      console.log(err);
     });
   }
 
@@ -366,6 +378,9 @@ export class ProgramEditorComponent implements OnInit {
           show_label: true
         });
       });
+    }, err => {
+      // Layout will perform redirect if necessary
+      console.log(err);
     });
   }
 

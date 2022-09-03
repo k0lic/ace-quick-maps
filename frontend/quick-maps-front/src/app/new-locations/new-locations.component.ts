@@ -76,6 +76,9 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
           isSaved: true
         });
       });
+    }, err => {
+      // Layout will perform redirect if necessary
+      console.log(err);
     });
   }
 

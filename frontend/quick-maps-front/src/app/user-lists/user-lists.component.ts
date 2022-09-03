@@ -33,6 +33,9 @@ export class UserListsComponent implements OnInit {
       requests.forEach(user => {
         this.userRequests.push(this.itemFromUser(user));
       });
+    }, err => {
+      // Layout will perform redirect if necessary
+      console.log(err);
     });
 
     // Fetch expired users
@@ -40,6 +43,9 @@ export class UserListsComponent implements OnInit {
       expireds.forEach(user => {
         this.expiredUsers.push(this.itemFromUser(user));
       });
+    }, err => {
+      // Layout will perform redirect if necessary
+      console.log(err);
     });
 
     // Fetch active users
@@ -47,11 +53,17 @@ export class UserListsComponent implements OnInit {
       actives.forEach(user => {
         this.activeUsers.push(this.itemFromUser(user));
       });
+    }, err => {
+      // Layout will perform redirect if necessary
+      console.log(err);
     });
 
     // Fetch user types
     this.userService.getUserTypes().subscribe((types: UserType[]) => {
       this.userTypes = types;
+    }, err => {
+      // Layout will perform redirect if necessary
+      console.log(err);
     });
   }
 

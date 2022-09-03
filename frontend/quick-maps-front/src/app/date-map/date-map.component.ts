@@ -356,6 +356,9 @@ export class DateMapComponent implements OnInit {
       }
 
       this.refreshMarkerContainers();
+    }, err => {
+      // Layout will perform redirect if necessary
+      console.log(err);
     });
   }
 
@@ -460,6 +463,9 @@ export class DateMapComponent implements OnInit {
           );
         }
       });
+    }, err => {
+      // Layout will perform redirect if necessary
+      console.log(err);
     });
   }
 

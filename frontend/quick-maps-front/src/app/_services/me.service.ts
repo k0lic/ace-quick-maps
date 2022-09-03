@@ -17,4 +17,8 @@ export class MeService {
   logout() {
     return this.http.get(uri + '/me/logout', optionsWithCookieEmpty);
   }
+
+  clearCookies() {
+    return this.http.get(uri + '/logins/clear_cookies', optionsWithCookieEmpty);
+  }
 }
