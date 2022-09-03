@@ -42,7 +42,7 @@ interface TourInfoOverlay extends google.maps.OverlayView {
   bubbleContainerBig: HTMLDivElement;
   hideBigOne: boolean;
 
-  addItem(item: MarkerContainer): void;
+  addItem(item: MarkerContainer, showFields: any): void;
   toggle(): void;
 }
 
@@ -127,13 +127,21 @@ function defineTourInfoWindow() {
       TourInfoWindow.preventMapHitsAndGesturesFrom(this.containerDiv);
     }
 
-    addItem(item: MarkerContainer) {
+    addItem(item: MarkerContainer, showFields: any) {
       // TODO: maybe this should be a component?
       // Add short version
       let bubble = renderer.createElement('div');
       renderer.addClass(bubble, 'popup-inner');
       renderer.setStyle(bubble, 'border', '2px solid ' + item.color);
-      renderer.setProperty(bubble, 'innerHTML', escapeHtml(item.name));
+      let shortContent = '';
+      shortContent += showFields.name       && item.name        ? (shortContent.length > 0 ? ',' : '') + item.name        : '';
+      shortContent += showFields.startDate  && item.startDate   ? (shortContent.length > 0 ? ',' : '') + item.startDate   : '';
+      shortContent += showFields.tourGuide  && item.tourGuide   ? (shortContent.length > 0 ? ',' : '') + item.tourGuide   : '';
+      shortContent += showFields.guests     && item.guests      ? (shortContent.length > 0 ? ',' : '') + item.guests      : '';
+      shortContent += showFields.hotel1     && item.hotel1      ? (shortContent.length > 0 ? ',' : '') + item.hotel1      : '';
+      shortContent += showFields.hotel2     && item.hotel2      ? (shortContent.length > 0 ? ',' : '') + item.hotel2      : '';
+      shortContent += showFields.activities && item.activities  ? (shortContent.length > 0 ? ',' : '') + item.activities  : '';
+      renderer.setProperty(bubble, 'innerHTML', escapeHtml(shortContent));
 
       renderer.appendChild(this.bubbleContainer, bubble);
 
@@ -245,6 +253,16 @@ export class DateMapComponent implements OnInit {
   markerIconMap: Map<string, any> = new Map();
   shortInfoWindows: TourInfoOverlay[] = [];
 
+  shortInfos: any = {
+    name: true,
+    startDate: false,
+    tourGuide: false,
+    guests: false,
+    hotel1: false,
+    hotel2: false,
+    activities: false
+  };
+
   constructor(
     private zone: NgZone, 
     private renderer: Renderer2, 
@@ -312,6 +330,11 @@ export class DateMapComponent implements OnInit {
 
     // Request tour info for the new date
     this.getTourInfo();
+  }
+
+  onShortInfoFieldsChange(): void {
+    // Same tour data points, but use different fields for the short bubble
+    this.refreshInfoWindows();
   }
 
   getTourInfo(): void {
@@ -416,9 +439,7 @@ export class DateMapComponent implements OnInit {
       }
 
       // Add item to popup
-      // w.addItem(c.name, c.color);
-      // w.addItemBig(c.name + (c.tourGuide != null ? ' - ' + c.tourGuide : ''), c.color);
-      w.addItem(c);
+      w.addItem(c, this.shortInfos);
     });
   }
 

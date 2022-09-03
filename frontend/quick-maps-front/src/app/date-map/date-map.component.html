@@ -11,6 +11,47 @@
         </div>
     </div>
 
+    <!-- FIELD SELECTOR -->
+    <div class="col-12 mb-4">
+        <div class="row justify-content-center">
+            <!-- NAME -->
+            <div class="form-check col-5 col-md-4 col-lg-3 col-xl mb-1">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="shortInfos.name" (ngModelChange)="onShortInfoFieldsChange()">
+                <label class="form-check-label" for="flexCheckDefault" translate>ITEM_LABELS.NAME</label>
+            </div>
+            <!-- START DATE -->
+            <div class="form-check col-5 col-md-4 col-lg-3 col-xl mb-1">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="shortInfos.startDate" (ngModelChange)="onShortInfoFieldsChange()">
+                <label class="form-check-label" for="flexCheckDefault" translate>ITEM_LABELS.START_DATE</label>
+            </div>
+            <!-- TOUR GUIDE -->
+            <div class="form-check col-5 col-md-4 col-lg-3 col-xl mb-1">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="shortInfos.tourGuide" (ngModelChange)="onShortInfoFieldsChange()">
+                <label class="form-check-label" for="flexCheckDefault" translate>ITEM_LABELS.TOUR_GUIDE</label>
+            </div>
+            <!-- GUESTS -->
+            <div class="form-check col-5 col-md-4 col-lg-3 col-xl mb-1">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="shortInfos.guests" (ngModelChange)="onShortInfoFieldsChange()">
+                <label class="form-check-label" for="flexCheckDefault" translate>ITEM_LABELS.GUESTS</label>
+            </div>
+            <!-- HOTEL1 -->
+            <div class="form-check col-5 col-md-4 col-lg-3 col-xl mb-1">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="shortInfos.hotel1" (ngModelChange)="onShortInfoFieldsChange()">
+                <label class="form-check-label" for="flexCheckDefault" translate>ITEM_LABELS.HOTEL1</label>
+            </div>
+            <!-- HOTEL2 -->
+            <div class="form-check col-5 col-md-4 col-lg-3 col-xl mb-1">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="shortInfos.hotel2" (ngModelChange)="onShortInfoFieldsChange()">
+                <label class="form-check-label" for="flexCheckDefault" translate>ITEM_LABELS.HOTEL2</label>
+            </div>
+            <!-- ACTIVITIES -->
+            <div class="form-check col-5 col-md-4 col-lg-3 col-xl mb-1">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="shortInfos.activities" (ngModelChange)="onShortInfoFieldsChange()">
+                <label class="form-check-label" for="flexCheckDefault" translate>ITEM_LABELS.ACTIVITY</label>
+            </div>
+        </div>
+    </div>
+
     <!-- MAP CONTAINER -->
     <div class="col-12">
         <div class="row d-flex justify-content-center">
