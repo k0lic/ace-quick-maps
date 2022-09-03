@@ -27,7 +27,6 @@ router.post('/login', (req, res) => {
     let todayString = dateHelpers.getYYYYMMDDdashed(today);
 
     // Check if user exists - approved and has not had access revoked
-    // let query = 'SELECT * FROM users WHERE email = ' + stringHelpers.quoteMe(email) + ' AND approved = 1 AND revoke_access_date > ' + stringHelpers.quoteMe(todayString);
     let queryString = 'SELECT * FROM users WHERE email = ? AND approved = 1 AND revoke_access_date > ?';
     let queryValues = [email, todayString];
     queryHelpers.executeQueryWithCallback(queryString, queryValues, res, rows => {
@@ -79,19 +78,8 @@ router.post('/register', (req, res) => {
         }
 
         // Next year, 1st of February - good time for access to be reset I think - outside of the season, not during the new year's holidays
-        // let revokeAccessDate: Date = new Date();
-        // let radString = (revokeAccessDate.getFullYear() + 1) + '-02-01';
         let radString = dateHelpers.getYYYYMMDDdashed(dateHelpers.getFebruaryNextYear());
 
-        // let query = 'INSERT INTO users (email, user_type, name, last_name, approved, password, revoke_access_date) VALUES ('
-        //     + stringHelpers.quoteMe(email) + ','
-        //     + stringHelpers.quoteMe('viewer') + ','
-        //     + stringHelpers.quoteMe(name) + ','
-        //     + stringHelpers.quoteMe(lastName) + ','
-        //     + 0 + ','
-        //     + stringHelpers.quoteMe(hash) + ','
-        //     + stringHelpers.quoteMe(radString) + ')';
-        // let queryString = 'INSERT INTO users (email, user_type, name, last_name, approved, password, revoke_access_date) VALUES (?, ?, ?, ?, ?, ?, ?)';
         let queryString = 'INSERT INTO users (email, user_type, name, last_name, approved, password, revoke_access_date) VALUES ?';
         let queryValues = [[[email, 'viewer', name, lastName, 0, hash, radString]]];
         
@@ -106,7 +94,6 @@ router.post('/forgot', (req, res) => {
     let todayString = dateHelpers.getYYYYMMDDdashed(today);
 
     // Check if user exists - approved and has not had access revoked
-    // let query = 'SELECT * FROM users WHERE email = ' + stringHelpers.quoteMe(email) + ' AND approved = 1 AND revoke_access_date > ' + stringHelpers.quoteMe(todayString);
     let queryString = 'SELECT * FROM users WHERE email = ? AND approved = 1 AND revoke_access_date > ?';
     let queryValues = [email, todayString];
     queryHelpers.executeQueryWithCallback(queryString, queryValues, res, rows => {

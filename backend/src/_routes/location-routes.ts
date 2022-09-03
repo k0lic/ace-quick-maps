@@ -20,7 +20,6 @@ router.post('/add_location', (req, res) => {
     let lat = req.body.lat;
     let lng = req.body.lng;
 
-    // let query_string = 'INSERT INTO `locations` (`name`, `lat`, `lng`) VALUES (\'' + name + '\',\'' + lat + '\',\'' + lng + '\')';
     let queryString = 'INSERT INTO locations (name, lat, lng) VALUES ?';
     let queryValues = [[[name, lat, lng]]];
     queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
@@ -31,7 +30,6 @@ router.post('/move_location', (req, res) => {
     let lat = req.body.lat;
     let lng = req.body.lng;
 
-    // let query_string = 'UPDATE `locations` SET `lat` = \'' + lat + '\', `lng` = \'' + lng + '\' WHERE (`name` = \'' + name + '\')';
     let queryString = 'UPDATE locations SET lat = ?, lng = ? WHERE name = ?';
     let queryValues = [lat, lng, name];
     queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
@@ -40,7 +38,6 @@ router.post('/move_location', (req, res) => {
 router.post('/delete_location', (req, res) => {
     let name = req.body.name;
 
-    // let query_string = 'DELETE FROM `quick_maps_schema`.`locations` WHERE (`name` = \'' + name + '\')';
     let queryString = 'DELETE FROM locations WHERE name = ?';
     let queryValues = [name];
     queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);

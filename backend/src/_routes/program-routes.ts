@@ -80,18 +80,7 @@ router.post('/tour_program_fixup', (req, res) => {
             let insertNewRowsQueryString = 'INSERT INTO points (idprogram, daynumber, pointindex, location, lat, lng, idtype, description) VALUES ?';
 
             let insertNewRowsQueryValues: any[] = [[]];
-            // let firstValue = true;
             newRows.forEach(row => {
-                // insert_new_rows_query += (firstValue?'':',') + '('
-                //     + row.idprogram + ',' // FOR TESTING: REPLACE <row.idprogram> WITH HARDCODED VALUE
-                //     + row.daynumber + ','
-                //     + row.pointindex + ','
-                //     + (row.location == null ? 'null' : '\'' + row.location + '\'') + ','
-                //     + (row.lat == null ? 'null' : row.lat) + ','
-                //     + (row.lng == null ? 'null' : row.lng) + ','
-                //     + '\'' + row.idtype + '\'' + ','
-                //     + '\'' + row.description + '\''
-                //     + ')';
                 insertNewRowsQueryValues[0].push([
                     row.idprogram,
                     row.daynumber,
@@ -102,7 +91,6 @@ router.post('/tour_program_fixup', (req, res) => {
                     row.idtype,
                     row.description
                 ]);
-                // firstValue = false;
             });
 
             queryStrings.push(insertNewRowsQueryString);
@@ -384,7 +372,6 @@ router.post('/add_program_day', (req, res) => {
     let number = req.body.number;
     let description = req.body.description;
 
-    // let queryString = 'INSERT INTO program_days (idprogram, number, description) VALUES (\'' + program_id + '\',\'' + number + '\',\'' + description + '\')';
     let queryString = 'INSERT INTO program_days (idprogram, number, description) VALUES ?';
     let queryValues = [[[programId, number, description]]];
     queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
@@ -395,10 +382,9 @@ router.post('/delete_program_day', (req, res) => {
     let programId = req.body.id;
     let number = req.body.number;
 
-    // let queryString1 = 'DELETE FROM points WHERE idprogram = ' + programId + ' AND daynumber = ' + number;
     let queryString1 = 'DELETE FROM points WHERE idprogram = ? AND daynumber = ?';
     let queryValues1 = [programId, number];
-    // let queryString2 = 'DELETE FROM program_days WHERE idprogram = ' + programId + ' AND number = ' + number;
+
     let queryString2 = 'DELETE FROM program_days WHERE idprogram = ? AND number = ?';
     let queryValues2 = [programId, number];
 
@@ -416,16 +402,6 @@ router.post('/add_point', (req, res) => {
     let type = req.body.type;
     let description = req.body.description;
 
-    // let queryString = 'INSERT INTO points (idprogram, daynumber, pointindex, ' + (locationPresent? 'location, ' : 'lat, lng, ') + 'idtype, description) '
-    //     + 'VALUES ('
-    //     + '\'' + programId + '\','
-    //     + '\'' + number + '\','
-    //     + '\'' + pointIndex + '\','
-    //     + (locationPresent ? ('\'' + location + '\',') : '')
-    //     + (!locationPresent ? ('\'' + lat + '\',') : '')
-    //     + (!locationPresent ? ('\'' + lng + '\',') : '')
-    //     + '\'' + type + '\','
-    //     + '\'' + description + '\')';
     let queryString = 'INSERT INTO points (idprogram, daynumber, pointindex, location, lat, lng, idtype, description) VALUES ?';
     let queryValues = [[[
         programId,
@@ -450,14 +426,6 @@ router.post('/update_point', (req, res) => {
     let type = req.body.type;
     let description = req.body.description;
 
-    // let queryString = 'UPDATE points '
-    //     + 'SET pointindex = \'' + pointIndex + '\','
-    //     + '     location = \'' + location + '\','
-    //     + '     lat = \'' + lat + '\','
-    //     + '     lng = \'' + lng + '\','
-    //     + '     idtype = \'' + type + '\','
-    //     + '     description = \'' + description + '\' '
-    //     + 'WHERE idpoint = \'' + id + '\'';
     let queryString = 'UPDATE points '
         + 'SET pointindex = ?,'
         + '     location = ?,'
@@ -474,7 +442,6 @@ router.post('/update_point', (req, res) => {
 router.post('/delete_point', (req, res) => {
     let id = req.body.id;
 
-    // let queryString = 'DELETE FROM points WHERE idpoint = \'' + id + '\'';
     let queryString = 'DELETE FROM points WHERE idpoint = ?';
     let queryValues = [id];
     queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
