@@ -105,16 +105,6 @@
         "VAGUE": "There's an error!",
         "NOT_IMPLEMENTED": "Not yet implemented!"
     },
-    "ITEMS": {
-        "TOUR_GUIDE": "Guide: {{value}}",
-        "GUESTS": "Guests: {{value}}",
-        "HOTEL1": "Hotel1: {{value}}",
-        "HOTEL2": "Hotel2: {{value}}",
-        "ROUTE": "Route: {{v1}} -> {{v2}}",
-        "ACTIVITY": "Activity: {{value}}",
-        "VEHICLES": "Vehicles: {{value}}",
-        "DRIVING_LOG_NOTICE": "Drive info: {{value}}"
-    },
     "ITEM_LABELS": {
         "TOUR_GUIDE": "Guide:",
         "GUESTS": "Guests:",

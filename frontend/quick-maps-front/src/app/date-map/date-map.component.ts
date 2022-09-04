@@ -123,9 +123,6 @@ function defineTourInfoWindow() {
       renderer.addClass(conContainer, 'popup-bounds');
       renderer.appendChild(conContainer, this.bubbleContainer);
       renderer.appendChild(conContainer, this.bubbleContainerBig);
-      // renderer.listen(conContainer, 'click', event => {
-      //   toggleTOurInfoOverlay(this);
-      // });
 
       // I need the anchor - holds the item container
       let bubbleAnchor = renderer.createElement('div');
@@ -147,6 +144,7 @@ function defineTourInfoWindow() {
       let bubble = renderer.createElement('div');
       renderer.addClass(bubble, 'popup-inner');
       renderer.setStyle(bubble, 'border', '2px solid ' + item.color);
+
       let shortContent = '';
       shortContent += showFields.name       && item.name        ? (shortContent.length > 0 ? ',' : '') + item.name                  : '';
       shortContent += showFields.startDate  && item.startDate   ? (shortContent.length > 0 ? ',' : '') + dateString(item.startDate) : '';
@@ -165,84 +163,29 @@ function defineTourInfoWindow() {
       renderer.addClass(bubbleBig, 'popup-inner');
       renderer.setStyle(bubbleBig, 'border', '2px solid ' + item.color);
 
+      //    Heading
       let headerEl = renderer.createElement('h4');
       renderer.setProperty(headerEl, 'innerHTML', escapeHtml(item.name + ' ' + dateString(item.startDate)));
       renderer.appendChild(bubbleBig, headerEl);
       
-      // let guideEl = renderer.createElement('div');
-      // // renderer.setProperty(
-      // //   guideEl, 'innerHTML', escapeHtml(translateService.instant('ITEMS.TOUR_GUIDE', {value: item.tourGuide ?? '/'})));
-      // renderer.addClass(guideEl, 'row');
-      // let guideLabelEl = renderer.createElement('div');
-      // renderer.addClass(guideLabelEl, 'col-2');
-      // renderer.setProperty(guideLabelEl, 'innerHTML', 'Vodic:');  // TODO: use translateService
-      // let guideValueEl = renderer.createElement('div');
-      // renderer.addClass(guideValueEl, 'col-10');
-      // renderer.setProperty(guideValueEl, 'innerHTML', escapeHtml(item.tourGuide ?? '/'));
-      // renderer.appendChild(guideEl, guideLabelEl);
-      // renderer.appendChild(guideEl, guideValueEl);
-      // renderer.appendChild(bubbleBig, guideEl);
-      // this.addDivider(bubbleBig);
+      //    Mandatory rows
       this.addTableRow(bubbleBig, 'ITEM_LABELS.TOUR_GUIDE', item.tourGuide ?? '/');
-      
-      // let guestsEl = renderer.createElement('div');
-      // renderer.setProperty(
-      //   guestsEl, 'innerHTML', escapeHtml(translateService.instant('ITEMS.GUESTS', {value: item.guests ?? '/'})));
-      // renderer.appendChild(bubbleBig, guestsEl);
-      // this.addDivider(bubbleBig);
       this.addTableRow(bubbleBig, 'ITEM_LABELS.GUESTS', item.guests ?? '/');
-      
-      // let hotel1El = renderer.createElement('div');
-      // renderer.setProperty(
-      //   hotel1El, 'innerHTML', escapeHtml(translateService.instant('ITEMS.HOTEL1', {value: item.hotel1 ?? '/'})));
-      // renderer.appendChild(bubbleBig, hotel1El);
-      // this.addDivider(bubbleBig);
       this.addTableRow(bubbleBig, 'ITEM_LABELS.HOTEL1', item.hotel1 ?? '/');
-      
-      // let hotel2El = renderer.createElement('div');
-      // renderer.setProperty(
-      //   hotel2El, 'innerHTML', escapeHtml(translateService.instant('ITEMS.HOTEL2', {value: item.hotel2 ?? '/'})));
-      // renderer.appendChild(bubbleBig, hotel2El);
-      // this.addDivider(bubbleBig);
       this.addTableRow(bubbleBig, 'ITEM_LABELS.HOTEL2', item.hotel2 ?? '/');
-      
-      // let routeEl = renderer.createElement('div');
-      // renderer.setProperty(
-      //   routeEl, 'innerHTML', escapeHtml(translateService.instant('ITEMS.ROUTE', {
-      //       v1: item.markers[0].label != null ? translateService.instant('LOC.' + item.markers[0].label) : '?',
-      //       v2: item.markers[item.markers.length - 1].label != null ? translateService.instant('LOC.' + item.markers[item.markers.length - 1].label) : '?' 
-      //     })));
-      // renderer.appendChild(bubbleBig, routeEl);
-      // this.addDivider(bubbleBig);
       this.addTableRow(bubbleBig, 'ITEM_LABELS.ROUTE', translateService.instant('ITEM_VALUE_PATTERNS.ROUTE', {
         v1: item.markers[0].label != null ? translateService.instant('LOC.' + item.markers[0].label) : '?',
         v2: item.markers[item.markers.length - 1].label != null ? translateService.instant('LOC.' + item.markers[item.markers.length - 1].label) : '?' 
       }));
       
+      //    Optional rows
       if (item.activities != null) {
-        // let activitiesEl = renderer.createElement('div');
-        // renderer.setProperty(
-        //   activitiesEl, 'innerHTML', escapeHtml(translateService.instant('ITEMS.ACTIVITY', {value: item.activities})));
-        // renderer.appendChild(bubbleBig, activitiesEl);
-        // this.addDivider(bubbleBig);
         this.addTableRow(bubbleBig, 'ITEM_LABELS.ACTIVITY', item.activities);
       }
-      
       if (item.vehicles != null) {
-        // let vehiclesEl = renderer.createElement('div');
-        // renderer.setProperty(
-        //   vehiclesEl, 'innerHTML', escapeHtml(translateService.instant('ITEMS.VEHICLES', {value: item.vehicles})));
-        // renderer.appendChild(bubbleBig, vehiclesEl);
-        // this.addDivider(bubbleBig);
         this.addTableRow(bubbleBig, 'ITEM_LABELS.VEHICLES', item.vehicles);
       }
-      
       if (item.drivingLogNotice != null) {
-        // let drivingLogNoticeEl = renderer.createElement('div');
-        // renderer.setProperty(
-        //   drivingLogNoticeEl, 'innerHTML', escapeHtml(translateService.instant('ITEMS.DRIVING_LOG_NOTICE', {value: item.drivingLogNotice})));
-        // renderer.appendChild(bubbleBig, drivingLogNoticeEl);
-        // this.addDivider(bubbleBig);
         this.addTableRow(bubbleBig, 'ITEM_LABELS.DRIVING_LOG_NOTICE', item.drivingLogNotice);
       }
 
