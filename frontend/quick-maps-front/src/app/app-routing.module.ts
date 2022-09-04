@@ -18,6 +18,7 @@ import { MessageComponent } from './message/message.component';
 import { UserListsComponent } from './user-lists/user-lists.component';
 import { HigherGuard } from './_guards/higher-guard';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { StatMapComponent } from './stat-map/stat-map.component';
 
 const routes: Routes = [
   {
@@ -28,6 +29,7 @@ const routes: Routes = [
       { path: 'new-locations', component: NewLocationsComponent, canActivate: [AdminGuard]},
       { path: 'program-editor', component: ProgramEditorComponent, canActivate: [AdminGuard]},
       { path: 'users', component: UserListsComponent, canActivate: [HigherGuard]},
+      { path: 'stats', component: StatMapComponent, canActivate: [AdminGuard]},
       { path: 'test', component: TestComponent, canActivate: [AdminGuard]},
       { path: 'nav', component: JunkNavComponent, canActivate: [HigherGuard]},
       { path: 'message', component: MessageComponent, canActivate: [UserGuard]},

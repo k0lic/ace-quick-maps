@@ -66,6 +66,10 @@ app.use('/me', meRoutes.router);
 let userRoutes = require('./_routes/user-routes');
 app.use('/users', userRoutes.router);
 
+// Stat routes
+let statRoutes = require('./_routes/stat-routes');
+app.use('/stats', statRoutes.router);
+
 // Test file routes
 let testRoutes = require('./_routes/test-routes');
 app.use('/test', testRoutes.router);

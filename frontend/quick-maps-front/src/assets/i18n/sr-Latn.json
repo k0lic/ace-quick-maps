@@ -122,6 +122,11 @@
         "HOTEL2": "Hotel2",
         "ACTIVITY": "Aktivnosti"
     },
+    "STATS": {
+        "TITLE": "Statistika",
+        "PAX_NIGHTS_BY_LOCATION": "Noćenja po lokaciji",
+        "LOCATION_NUMBER_PATTERN": "{{location}} - {{number}}"
+    },
     "LANG": {
         "sr-Latn": "Srpski (Latinica)",
         "sr-Cyrl": "Srpski (Ćirilica)",

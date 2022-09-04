@@ -27,6 +27,7 @@ import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { UserListsComponent } from './user-lists/user-lists.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { getCookie } from './_helpers/cookieHelper';
+import { StatMapComponent } from './stat-map/stat-map.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -64,7 +65,8 @@ function fetchLanguageCookie(): string {
     UserLayoutComponent,
     MessageComponent,
     UserListsComponent,
-    ResetPasswordComponent
+    ResetPasswordComponent,
+    StatMapComponent
   ],
   imports: [
     BrowserModule,
