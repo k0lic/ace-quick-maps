@@ -94,6 +94,7 @@ function executeQueries(queryStrings: string[], queryValues: any[], res, callbac
     // Check if both arrays are of equal length
     if (queryStrings.length != queryValues.length) {
         errCallback();
+        return;
     }
 
     if (queryStrings.length == 0) {

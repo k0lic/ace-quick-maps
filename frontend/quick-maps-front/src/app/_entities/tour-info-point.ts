@@ -19,4 +19,9 @@ export interface TourInfoPoint {
     ff_lat: number;
     ff_lng: number;
     color: string;
+    driving_log_excel_row_number: number;
+    vehicle1: string;
+    vehicle2: string;
+    vehicle3: string;
+    driving_log_notice: string;
 }

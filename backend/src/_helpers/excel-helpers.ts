@@ -7,15 +7,71 @@ let dateHelpers = require('./date-helpers');
 
 let tourRoutes = require('../_routes/tour-routes');
 
+async function testDrivingLog(res) {
+    let workbook = new Excel.Workbook();
+    await workbook.xlsx.readFile(Environment.FILE_PATHS.DRIVING_LOG);
+
+    let rows = extractAndResolveDrivingLogRows(workbook);
+    let validRows = getValidDrivingLogRows(rows);
+
+    tourRoutes.updateDatabaseWithDrivingLog(validRows, res);
+}
+
 async function testExcelFunction(res) {
     let workbook = new Excel.Workbook();
-    await workbook.xlsx.readFile(Environment.EXCEL_FILE_PATH);
+    await workbook.xlsx.readFile(Environment.FILE_PATHS.TOUR_SCHEDULE);
 
     let rows = extractAndResolveExcelRows(workbook);
 
     let tours = consolidateRowsIntoTourObjects(rows);
 
     tourRoutes.updateDatabaseWithTours(tours, res);
+}
+
+function extractAndResolveDrivingLogRows(workbook): any[] {
+    let worksheet = workbook.getWorksheet('Program vožnje');
+
+    let rowObjs: any[] = [];
+    // let DEBUG_LIMIT = 10;
+    // let DEBUG_COUNTER = 0;
+    worksheet.eachRow((row, rowNumber) => {
+        // if (DEBUG_COUNTER >= DEBUG_LIMIT) {
+        //     return;
+        // }
+        // DEBUG_COUNTER++;
+
+        // Ignore header row
+        if (rowNumber == 1) {
+            return;
+        }
+
+        let date        = extractCellRawValue(workbook, worksheet, row, 1);
+        let tourCode    = extractCellRawValue(workbook, worksheet, row, 2);
+        let dayNumber    = extractCellRawValue(workbook, worksheet, row, 3);
+        let destination    = extractCellRawValue(workbook, worksheet, row, 4);
+        let vehicle1    = extractCellRawValue(workbook, worksheet, row, 5);
+        let vehicle2    = extractCellRawValue(workbook, worksheet, row, 6);
+        let vehicle3    = extractCellRawValue(workbook, worksheet, row, 7);
+        let notice      = extractCellRawValue(workbook, worksheet, row, 11);
+
+        rowObjs.push({
+            rowNumber: rowNumber,
+            date: date,
+            tourCode: tourCode,
+            tourName: '',
+            startDate: null,
+            dayNumber: dayNumber,
+            destination: destination,
+            vehicle1: vehicle1,
+            vehicle2: vehicle2,
+            vehicle3: vehicle3,
+            notice: notice
+        });
+    });
+
+    console.log('Extracted all DRIVING_LOG row objects: ' + rowObjs.length + ' in total');
+    // console.log(rowObjs.slice(0, 5));
+    return rowObjs;
 }
 
 // Read through the rows of the Excel workbook and extract useful fields, resolving any links
@@ -85,6 +141,94 @@ function extractAndResolveExcelRows(workbook): any[] {
     // }
 
     return rowObjs;
+}
+
+function getValidDrivingLogRows(rows): any[] {
+    let tourCodePattern = /^([^-]*)-([0-9]{2})\/([0-9]{2})\/([0-9]{2})$/;
+    let tourNameDic: Map<string, string> = new Map([
+        ['CROSG', 'CRO SG'],
+        ['MCG1', 'MCG 1'],
+        ['MCG2', 'MCG 2'],
+        ['SEMK DE', 'SEMK - DE'],
+        ['KE SER', 'SER'],
+        ['JR BAK', 'JrBAK']
+    ]);
+
+    let validRows: any[] = [];
+    let pretourCount = 0;
+    let posttourCount = 0;
+    let emptyRowCount= 0;
+    rows.forEach((row: {
+        rowNumber: number,
+        date: Date,
+        tourCode: string,
+        tourName: string,
+        startDate: Date,
+        dayNumber: number,
+        destination: string,
+        vehicle1: string,
+        vehicle2: string,
+        vehicle3: string,
+        notice: string
+    }) => {
+        // Check if date is not null
+        if (row.date == null) {
+            return;
+        }
+
+        // Check if tourCode represents a <name>-<date> combination
+        let tourCodeMatch = row.tourCode.match(tourCodePattern);
+        if (tourCodeMatch == null) {
+            // TODO: serious - log it somewhere?
+            console.log('<' + row.tourCode + '> at ' + row.rowNumber);
+            return;
+        }
+
+        // Extract tour name and date
+        row.tourName = tourCodeMatch[1];
+        row.startDate = new Date(2000 + Number(tourCodeMatch[4]), Number(tourCodeMatch[3]) - 1, Number(tourCodeMatch[2]));
+
+        // Perform renaming - some tours have slightly different names between this and the other excel file
+        if (tourNameDic.has(row.tourName)) {
+            // console.log('Found value in dictionary for <' + row.tourName + '>');
+            row.tourName = tourNameDic.get(row.tourName);
+        }
+
+        // Remove pretour rows
+        // TODO: incorporate pretour driving log rows
+        if (row.dayNumber <= 0 || row.destination == 'Pretour') {
+            pretourCount++;
+            return;
+        }
+        if (row.destination.slice(0, 3) == 'Pre') {
+            console.log('Is this a pretour row?\t' + row.destination + ' at ' + row.rowNumber);
+        }
+
+        // Remove post tour rows
+        // TODO: incorporate post tour driving log rows
+        if (row.destination == 'Post tour') {
+            posttourCount++;
+            return;
+        }
+        if (row.destination.slice(0, 4) == 'Post') {
+            console.log('Is this a post tour row?\t' + row.destination + ' at ' + row.rowNumber);
+        }
+
+        // Remove rows with no content - no need to insert rows with no information since this table is gonna be optional in a LEFT JOIN operation
+        // Rows with special values ['Bez Vozila', '-'] are better represented as null in the DB
+        if ((row.vehicle1 == null || row.vehicle1 == 'Bez Vozila' || row.vehicle1 == '-') && row.vehicle2 == null && row.vehicle3 == null && row.notice == null) {
+            emptyRowCount++;
+            return;
+        }
+
+        // Use this row
+        validRows.push(row);
+    });
+
+    console.log('Of which ' + (validRows.length + emptyRowCount + pretourCount + posttourCount) + ' are valid');
+    console.log('Of which ' + validRows.length + ' are meaningful');
+    // console.log(validRows.slice(0, 5));
+    return validRows;
 }
 
 function consolidateRowsIntoTourObjects(rows): any[] {
@@ -363,5 +507,6 @@ function checkIfExcelLinkAndEvaluate(workbook, worksheet, cell) {
 }
 
 export {
-    testExcelFunction
+    testExcelFunction,
+    testDrivingLog
 }

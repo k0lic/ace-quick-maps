@@ -111,16 +111,32 @@
         "HOTEL1": "Hotel1: {{value}}",
         "HOTEL2": "Hotel2: {{value}}",
         "ROUTE": "Ruta: {{v1}} -> {{v2}}",
-        "ACTIVITY": "Aktivnost: {{value}}"
+        "ACTIVITY": "Aktivnost: {{value}}",
+        "VEHICLES": "Vozila: {{value}}",
+        "DRIVING_LOG_NOTICE": "Vožnja info: {{value}}"
     },
     "ITEM_LABELS": {
+        "TOUR_GUIDE": "Vodič:",
+        "GUESTS": "Gosti:",
+        "HOTEL1": "Hotel1:",
+        "HOTEL2": "Hotel2:",
+        "ROUTE": "Ruta:",
+        "ACTIVITY": "Aktivnost:",
+        "VEHICLES": "Vozila:",
+        "DRIVING_LOG_NOTICE": "Vožnja info:"
+    },
+    "ITEM_VALUE_PATTERNS": {
+        "ROUTE": "{{v1}} -> {{v2}}"
+    },
+    "FIELD_PICKER": {
         "NAME": "Naziv",
         "START_DATE": "Početni datum",
         "TOUR_GUIDE": "Vodič",
         "GUESTS": "Gosti",
         "HOTEL1": "Hotel1",
         "HOTEL2": "Hotel2",
-        "ACTIVITY": "Aktivnosti"
+        "ACTIVITY": "Aktivnosti",
+        "VEHICLES": "Vozila"
     },
     "STATS": {
         "TITLE": "Statistika",

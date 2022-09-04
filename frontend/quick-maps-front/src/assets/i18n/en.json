@@ -111,16 +111,32 @@
         "HOTEL1": "Hotel1: {{value}}",
         "HOTEL2": "Hotel2: {{value}}",
         "ROUTE": "Route: {{v1}} -> {{v2}}",
-        "ACTIVITY": "Activity: {{value}}"
+        "ACTIVITY": "Activity: {{value}}",
+        "VEHICLES": "Vehicles: {{value}}",
+        "DRIVING_LOG_NOTICE": "Drive info: {{value}}"
     },
     "ITEM_LABELS": {
+        "TOUR_GUIDE": "Guide:",
+        "GUESTS": "Guests:",
+        "HOTEL1": "Hotel1:",
+        "HOTEL2": "Hotel2:",
+        "ROUTE": "Route:",
+        "ACTIVITY": "Activity:",
+        "VEHICLES": "Vehicles:",
+        "DRIVING_LOG_NOTICE": "Drive info:"
+    },
+    "ITEM_VALUE_PATTERNS": {
+        "ROUTE": "{{v1}} -> {{v2}}"
+    },
+    "FIELD_PICKER": {
         "NAME": "Name",
         "START_DATE": "Start date",
         "TOUR_GUIDE": "Tour leader",
         "GUESTS": "Guests",
         "HOTEL1": "Hotel1",
         "HOTEL2": "Hotel2",
-        "ACTIVITY": "Activities"
+        "ACTIVITY": "Activities",
+        "VEHICLES": "Vehicles"
     },
     "STATS": {
         "TITLE": "Statistics",

@@ -29,4 +29,13 @@ export class TestComponent implements OnInit {
     });
   }
 
+  onDrivingLogClick(): void {
+    this.testService.testDrivingLogProcessing().subscribe(res => {
+      // skip
+      console.log('SUCCESS');
+    }, err => {
+      console.log(err);
+    });
+  }
+
 }

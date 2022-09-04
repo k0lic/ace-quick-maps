@@ -12,4 +12,8 @@ export class TestService {
   testExcelFileProcessing() {
     return this.http.get(uri + '/test/process_excel_test_file', optionsWithCookieEmpty);
   }
+
+  testDrivingLogProcessing() {
+    return this.http.get(uri + '/test/process_driving_log', optionsWithCookieEmpty);
+  }
 }

@@ -15,6 +15,10 @@ router.get('/process_excel_test_file', (req, res) => {
     excelHelpers.testExcelFunction(res);
 });
 
+router.get('/process_driving_log', (req, res) => {
+    excelHelpers.testDrivingLog(res);
+})
+
 // Export router
 export {
     router

@@ -18,22 +18,27 @@ router.post('/date_tour_info_confirmed', (req, res) => {
 });
 
 function getTourInfoForDate(date, statusValues, res) {
-    let queryString = 'SELECT p.name as program, t.depart_num as depart, t.excel_row_number as excel_row, t.status as \'status\', t.start_date as start_date, t.end_date as end_date, '
-                    + '     d.date as \'date\', d.hotel1 as hotel1, d.hotel2 as hotel2, t.tour_guide as tour_guide, t.guests_raw as guests, a.description as activities, '
-                    + '     po.pointindex as point_index, po.location as location, po.idtype as point_type, l.lat as lat, l.lng as lng, po.lat as ff_lat, po.lng as ff_lng, '
-                    + '     p.preferred_ui_color as color '
-                    + 'FROM tour_days d '
-                    + 'INNER JOIN tours t '
-                    + 'ON d.tour_id = t.id '
-                    + 'INNER JOIN programs p '
-                    + 'ON t.program_id = p.idprogram '
-                    + 'LEFT JOIN activities a '
-                    + 'ON d.id = a.tour_day_id '
-                    + 'LEFT JOIN points po '
-                    + 'ON t.program_id = po.idprogram AND datediff(d.date, t.start_date) + 1 = po.daynumber '
-                    + 'LEFT JOIN locations l '
-                    + 'ON po.location = l.name '
-                    + 'WHERE d.date = ? AND t.status in ?';
+    let queryString = ''
+        + 'SELECT p.name as program, t.depart_num as depart, t.excel_row_number as excel_row, t.status as \'status\', '
+        + '     t.start_date as start_date, t.end_date as end_date, d.date as \'date\', d.hotel1 as hotel1, d.hotel2 as hotel2, t.tour_guide as tour_guide, '
+        + '     t.guests_raw as guests, a.description as activities, po.pointindex as point_index, po.location as location, po.idtype as point_type, '
+        + '     l.lat as lat, l.lng as lng, po.lat as ff_lat, po.lng as ff_lng, p.preferred_ui_color as color, '
+        + '     dl.excel_row_number as driving_log_excel_row_number, '
+        + '     dl.vehicle1 as vehicle1, dl.vehicle2 as vehicle2, dl.vehicle3 as vehicle3, dl.notice as driving_log_notice '
+        + 'FROM tour_days d '
+        + 'INNER JOIN tours t '
+        + 'ON d.tour_id = t.id '
+        + 'INNER JOIN programs p '
+        + 'ON t.program_id = p.idprogram '
+        + 'LEFT JOIN activities a '
+        + 'ON d.id = a.tour_day_id '
+        + 'LEFT JOIN points po '
+        + 'ON t.program_id = po.idprogram AND datediff(d.date, t.start_date) + 1 = po.daynumber '
+        + 'LEFT JOIN locations l '
+        + 'ON po.location = l.name '
+        + 'LEFT JOIN tour_days_driving_log dl '
+        + 'ON d.tour_id = dl.tour_id AND d.date = dl.date '
+        + 'WHERE d.date = ? AND t.status in ?';
     let queryValues = [dateHelpers.getYYYYMMDDdashed(date), [statusValues]];
 
     queryHelpers.executeQuery(queryString, queryValues, res);
@@ -143,8 +148,60 @@ function updateDatabaseWithTours(tours, res): void {
     }, null);
 }
 
+function updateDatabaseWithDrivingLog(rows ,res): void {
+    // Driving log contains tour instance names, while database uses auto-generated keys for tour objects
+    let allToursQuery = 'SELECT t.id as id, p.name as `name`, t.start_date as `start_date` '
+                        + 'FROM tours t '
+                        + 'INNER JOIN programs p '
+                        + 'ON t.program_id = p.idprogram';
+    queryHelpers.executeQueryWithCallback(allToursQuery, [], res, tours => {
+        // Create mapping from tour instance name (eg. MCG1-01/01/22) to program id (eg. 31)
+        let tourIdMap: Map<string, number> = new Map();
+        tours.forEach(t => {
+            let tourInstanceName = t.name + '-' + dateHelpers.getDDMMYYslashed(t.start_date);
+            tourIdMap.set(tourInstanceName, t.id);
+        });
+
+        // Cleanup old driving log rows
+        let cleanupQuery = 'DELETE FROM tour_days_driving_log';
+
+        // Insert new driving log rows
+        let insertDrivingLogQueryString = 'INSERT INTO tour_days_driving_log (excel_row_number, tour_id, day_number, date, vehicle1, vehicle2, vehicle3, notice) VALUES ?';
+
+        let insertDrivingLogQueryValues: any[] = [[]];
+        rows.forEach(r => {
+            // Check if we can fetch the tour id for this driving log row
+            let tourId = tourIdMap.get(r.tourName + '-' + dateHelpers.getDDMMYYslashed(r.startDate));
+            if (tourId == null) {
+                // Could not fetch tour id, report this to someone
+                // TODO: report to someone
+                console.log('Failed fetching tour id for <' + r.tourCode + '>');
+                return;
+            }
+
+            insertDrivingLogQueryValues[0].push([
+                r.rowNumber,
+                tourId,
+                r.dayNumber,
+                r.date,
+                r.vehicle1,
+                r.vehicle2,
+                r.vehicle3,
+                r.notice
+            ]);
+        });
+
+        queryHelpers.executeTransaction(
+            [cleanupQuery, insertDrivingLogQueryString],
+            [[], insertDrivingLogQueryValues],
+            res
+        );
+    });
+}
+
 // Export router
 export {
     router,
-    updateDatabaseWithTours
+    updateDatabaseWithTours,
+    updateDatabaseWithDrivingLog
 }
