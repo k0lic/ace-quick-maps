@@ -32,15 +32,7 @@ function extractAndResolveDrivingLogRows(workbook): any[] {
     let worksheet = workbook.getWorksheet('Program vožnje');
 
     let rowObjs: any[] = [];
-    // let DEBUG_LIMIT = 10;
-    // let DEBUG_COUNTER = 0;
     worksheet.eachRow((row, rowNumber) => {
-        // if (DEBUG_COUNTER >= DEBUG_LIMIT) {
-        //     return;
-        // }
-        // DEBUG_COUNTER++;
-
-        // Ignore header row
         if (rowNumber == 1) {
             return;
         }
@@ -70,7 +62,6 @@ function extractAndResolveDrivingLogRows(workbook): any[] {
     });
 
     console.log('Extracted all DRIVING_LOG row objects: ' + rowObjs.length + ' in total');
-    // console.log(rowObjs.slice(0, 5));
     return rowObjs;
 }
 
@@ -97,12 +88,6 @@ function extractAndResolveExcelRows(workbook): any[] {
         let status      = extractCellRawValue(workbook, worksheet, row, 10);
         let junkString  = extractCellRawValue(workbook, worksheet, row, 13);
 
-        // console.log([operator, tour, departNum, dayNum, hotel1, status].join(','));
-        // if (status != null && ['status', 'potvrdjena', 'otkazana', 'nepoznat', 'potvrdjen', 'potvrđena'].indexOf(status) == -1) {
-        //     console.log('Weird status value: <' + status + '> at row ' + rowNumber);
-        //     console.log(JSON.stringify(status));
-        // }
-
         rowObjs.push({
             rowNumber: rowNumber,
             operator: operator,
@@ -120,26 +105,6 @@ function extractAndResolveExcelRows(workbook): any[] {
     });
 
     console.log('Extracted all row objects: ' + rowObjs.length + ' in total');
-    // console.log(rowObjs);
-    // console.log(rowObjs.slice(0, 5));
-    // console.log(rowObjs.slice(rowObjs.length - 5, rowObjs.length));
-    // console.log(rowObjs.slice(1275, 1285));
-
-    // let statusMap: Map<string, number> = new Map();
-    // rowObjs.forEach(obj => {
-    //     let key = obj.status ?? "<<NULL>>";
-    //     statusMap.set(key, (statusMap.get(key)??0) + 1);
-    // });
-    // console.log(statusMap);
-    // Map(6) {
-    //     'potvrdjena' => 1643,
-    //     '<<NULL>>' => 368,
-    //     'otkazana' => 939,
-    //     'nepoznat' => 279,
-    //     'potvrđena' => 28,
-    //     'potvrdjen' => 28
-    // }
-
     return rowObjs;
 }
 
@@ -216,7 +181,9 @@ function getValidDrivingLogRows(rows): any[] {
 
         // Remove rows with no content - no need to insert rows with no information since this table is gonna be optional in a LEFT JOIN operation
         // Rows with special values ['Bez Vozila', '-'] are better represented as null in the DB
-        if ((row.vehicle1 == null || row.vehicle1 == 'Bez Vozila' || row.vehicle1 == '-') && row.vehicle2 == null && row.vehicle3 == null && row.notice == null) {
+        if ((row.vehicle1 == null || row.vehicle1.toLowerCase() == 'Bez Vozila'.toLowerCase() || row.vehicle1 == '-') 
+            && row.vehicle2 == null && row.vehicle3 == null && row.notice == null
+        ) {
             emptyRowCount++;
             return;
         }
@@ -227,7 +194,6 @@ function getValidDrivingLogRows(rows): any[] {
 
     console.log('Of which ' + (validRows.length + emptyRowCount + pretourCount + posttourCount) + ' are valid');
     console.log('Of which ' + validRows.length + ' are meaningful');
-    // console.log(validRows.slice(0, 5));
     return validRows;
 }
 
@@ -440,12 +406,9 @@ function consolidateRowsIntoTourObjects(rows): any[] {
     let canceledTours = validTours.filter(t => t.status == statusCanceled);
     let unknownTours = validTours.filter(t => t.status == statusUnknown);
 
-    // console.log(invalidTours);
-
     console.log('Created all tour objects: ' + tours.length + ' in total');
     console.log('Of which ' + validTours.length + ' have valid data');
     console.log('Of which ' + confirmedTours.length + ' are confirmed, ' + canceledTours.length + ' are canceled, and ' + unknownTours.length + ' are unknown');
-    // console.log(tours.filter(t => t.name == 'CRO003'));
 
     return validTours;
 }
