@@ -66,8 +66,31 @@ function downloadDrivingLog(successCallback, errCallback) {
     downloadFromDrive(Secrets.DRIVE_FILE_IDS.DRIVING_LOG, Environment.FILE_PATHS.DRIVING_LOG, successCallback, errCallback);
 }
 
+async function uploadFile(filePath: string, successCallback, errCallback) {
+    try {
+        let lastPos = filePath.lastIndexOf(Environment.FILE_PATH_SEPARATOR);
+        let driveFileName = filePath.slice(lastPos + 1);
+
+        let response = await drive.files.create({
+            requestBody: {
+                name: driveFileName,
+                mimeType: 'application/sql'
+            },
+            media: {
+                mimeType: 'application/sql',
+                body: fs.createReadStream(filePath)
+            }
+        });
+
+        successCallback();
+    } catch (err) {
+        errCallback(err);
+    }
+}
+
 export {
     listFiles,
     downloadTourSchedule,
-    downloadDrivingLog
+    downloadDrivingLog,
+    uploadFile
 }
