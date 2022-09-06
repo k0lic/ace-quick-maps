@@ -58,7 +58,7 @@ function reportInvalidConfig(cronName) {
 
 // Meat functions
 function createBackup(fileName) {
-    exec('mysqldump -u ' + Secrets.MY_SQL.USER + ' -p ' + Secrets.MY_SQL.PASSWORD + ' ' + Secrets.MY_SQL.DATABASE + ' > ' + fileName);
+    exec('mysqldump -u ' + Secrets.MY_SQL.USER + ' -p' + Secrets.MY_SQL.PASSWORD + ' ' + Secrets.MY_SQL.DATABASE + ' > ' + fileName);
 }
 
 function uploadBackup(fileName, successCallback, errCallback) {
