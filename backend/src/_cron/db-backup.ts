@@ -113,8 +113,7 @@ cron.schedule('0 3 * * *', () => {
 });
 
 // Perform backup every tuesday at 02:55 - middle of the night
-// TODO: every tuesday?
-cron.schedule('55 2 * * *', () => {
+cron.schedule('55 2 * * tue', () => {
     runBackup('WEEKLY', 'weekly', 'weeklyBackupPaths', 'weeklyPathIndex');
 });
 
