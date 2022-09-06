@@ -57,8 +57,15 @@ function reportInvalidConfig(cronName) {
 }
 
 // Meat functions
-function createBackup(fileName) {
-    exec('mysqldump -u ' + Secrets.MY_SQL.USER + ' -p' + Secrets.MY_SQL.PASSWORD + ' ' + Secrets.MY_SQL.DATABASE + ' > ' + fileName);
+function createBackup(fileName, successCallback, errCallback) {
+    let cmd = 'mysqldump -u ' + Secrets.MY_SQL.USER + ' -p' + Secrets.MY_SQL.PASSWORD + ' ' + Secrets.MY_SQL.DATABASE + ' > ' + fileName;
+    exec(cmd, (err, stdout, stderr) => {
+        if (err) {
+            errCallback(err);
+        } else {
+            successCallback();
+        }
+    });
 }
 
 function uploadBackup(fileName, successCallback, errCallback) {
@@ -87,10 +94,10 @@ function runBackup(cronName, typeEnabledKey, pathsKey, indexKey) {
     // Run job
     let fileName = backupConfig[pathsKey][backupConfig[indexKey]];
 
-    createBackup(fileName);
-
-    uploadBackup(fileName, () => {
-        reportSuccess(cronName);
+    createBackup(fileName, () => {
+        uploadBackup(fileName, () => {
+            reportSuccess(cronName);
+        }, err => reportFailure(cronName, err));
     }, err => reportFailure(cronName, err));
 
     // Update config for next run
@@ -103,83 +110,12 @@ function runBackup(cronName, typeEnabledKey, pathsKey, indexKey) {
 // Perform backup every day at 03:00 - middle of the night
 cron.schedule('0 3 * * *', () => {
     runBackup('DAILY', 'daily', 'dailyBackupPaths', 'dailyPathIndex');
-    // let cronName = 'DAILY';
-
-    // // Read json config, maybe changes were made since last run
-    // tryAndReadJsonConfig();
-
-    // // Check if enabled
-    // if (!backupConfig.enabled || !backupConfig.daily) {
-    //     reportDisabled(cronName);
-    //     return;
-    // }
-
-    // // Prep config
-    // if (backupConfig.dailyBackupPaths.length == 0) {
-    //     reportInvalidConfig(cronName);
-    //     return;
-    // }
-    // if (backupConfig.dailyPathIndex >= backupConfig.dailyBackupPaths.length) {
-    //     backupConfig.dailyPathIndex = 0;
-    // }
-
-    // // Run job
-    // if (backupConfig.enabled && backupConfig.daily) {
-    //     let fileName = backupConfig.dailyBackupPaths[backupConfig.dailyPathIndex];
-
-    //     createBackup(fileName);
-
-    //     uploadBackup(fileName, () => {
-    //         reportSuccess(cronName);
-    //     }, err => reportFailure(cronName, err));
-    // }
-
-    // // Update config for next run
-    // backupConfig.dailyPathIndex = (backupConfig.dailyPathIndex + 1) % backupConfig.dailyBackupPaths.length;
-
-    // // Saving is not really needed for this cron job, since the settings don't change, except when manually changed
-    // tryAndSaveJsonConfig();
 });
 
 // Perform backup every tuesday at 02:55 - middle of the night
+// TODO: every tuesday?
 cron.schedule('55 2 * * *', () => {
     runBackup('WEEKLY', 'weekly', 'weeklyBackupPaths', 'weeklyPathIndex');
-    // let cronName = 'WEEKLY';
-
-    // // Read json config, maybe changes were made since last run
-    // tryAndReadJsonConfig();
-
-    // // Check if enabled
-    // if (!backupConfig.enabled || !backupConfig.weekly) {
-    //     reportDisabled(cronName);
-    //     return;
-    // }
-
-    // // Prep config
-    // if (backupConfig.weeklyBackupPaths.length == 0) {
-    //     reportInvalidConfig(cronName);
-    //     return;
-    // }
-    // if (backupConfig.weeklyPathIndex >= backupConfig.weeklyBackupPaths.length) {
-    //     backupConfig.weeklyPathIndex = 0;
-    // }
-
-    // // Run job
-    // if (backupConfig.enabled && backupConfig.weekly) {
-    //     let fileName = backupConfig.weeklyBackupPaths[backupConfig.weeklyPathIndex];
-
-    //     createBackup(fileName);
-
-    //     uploadBackup(fileName, () => {
-    //         reportSuccess(cronName);
-    //     }, err => reportFailure(cronName, err));
-    // }
-
-    // // Update config for next run
-    // backupConfig.weeklyPathIndex = (backupConfig.weeklyPathIndex + 1) % backupConfig.weeklyBackupPaths.length;
-
-    // // Saving is not really needed for this cron job, since the settings don't change, except when manually changed
-    // tryAndSaveJsonConfig();
 });
 
 function testBackup() {
