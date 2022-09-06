@@ -38,4 +38,31 @@ export class TestComponent implements OnInit {
     });
   }
 
+  onDriveListClick(): void {
+    this.testService.testDriveFileList().subscribe(res => {
+      // skip
+      console.log('SUCCESS');
+    }, err => {
+      console.log(err);
+    });
+  }
+
+  tourSchedule(): void {
+    this.testService.downloadTourSchedule().subscribe(res => {
+      // skip
+      console.log('SUCCESS');
+    }, err => {
+      console.log(err);
+    });
+  }
+
+  drivingLog(): void {
+    this.testService.downloadDrivingLog().subscribe(res => {
+      // skip
+      console.log('SUCCESS');
+    }, err => {
+      console.log(err);
+    });
+  }
+
 }

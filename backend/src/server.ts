@@ -1,4 +1,4 @@
-import { Environment } from "../environment";
+import { Environment } from "../config/environment";
 
 declare var require: any;
 let express = require('express');
@@ -27,6 +27,9 @@ let queryHelpers = require('./_helpers/query-helpers');
 
 // Initialize the mail helper
 let mailHelpers = require('./_helpers/mail-helpers');
+
+// Setup cron jobs
+let datasetRefresherCrons = require('./_cron/dataset-refresher');
 
 // !!! Routes
 // Default routes

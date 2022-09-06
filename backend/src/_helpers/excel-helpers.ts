@@ -1,31 +1,23 @@
-import { Environment } from "../../environment";
+import { Environment } from "../../config/environment";
 
 declare var require: any;
 let Excel = require('exceljs');
 
 let dateHelpers = require('./date-helpers');
 
-let tourRoutes = require('../_routes/tour-routes');
-
-async function testDrivingLog(res) {
+// ************************************************************************************************************************************* //
+// ************************************************************************************************************************************* //
+// ************************************************************************************************************************************* //
+// Driving Log functions
+async function processDrivingLogExcelFile() {
     let workbook = new Excel.Workbook();
     await workbook.xlsx.readFile(Environment.FILE_PATHS.DRIVING_LOG);
 
     let rows = extractAndResolveDrivingLogRows(workbook);
     let validRows = getValidDrivingLogRows(rows);
 
-    tourRoutes.updateDatabaseWithDrivingLog(validRows, res);
-}
-
-async function testExcelFunction(res) {
-    let workbook = new Excel.Workbook();
-    await workbook.xlsx.readFile(Environment.FILE_PATHS.TOUR_SCHEDULE);
-
-    let rows = extractAndResolveExcelRows(workbook);
-
-    let tours = consolidateRowsIntoTourObjects(rows);
-
-    tourRoutes.updateDatabaseWithTours(tours, res);
+    // tourRoutes.updateDatabaseWithDrivingLog(validRows, res);
+    return validRows;
 }
 
 function extractAndResolveDrivingLogRows(workbook): any[] {
@@ -62,49 +54,6 @@ function extractAndResolveDrivingLogRows(workbook): any[] {
     });
 
     console.log('Extracted all DRIVING_LOG row objects: ' + rowObjs.length + ' in total');
-    return rowObjs;
-}
-
-// Read through the rows of the Excel workbook and extract useful fields, resolving any links
-function extractAndResolveExcelRows(workbook): any[] {
-    let worksheet = workbook.getWorksheet('link');
-    
-    let rowObjs: any[] = [];
-    worksheet.eachRow((row, rowNumber) => {
-        // Ignore header row
-        if (rowNumber == 1) {
-            return;
-        }
-
-        let operator    = extractCellRawValue(workbook, worksheet, row, 1);
-        let tour        = extractCellRawValue(workbook, worksheet, row, 2);
-        let departNum   = extractCellRawValue(workbook, worksheet, row, 3);
-        let hotel1      = extractCellRawValue(workbook, worksheet, row, 4);
-        let hotel2      = extractCellRawValue(workbook, worksheet, row, 5);
-        let activities  = extractCellRawValue(workbook, worksheet, row, 6);
-        let dayNum      = extractCellRawValue(workbook, worksheet, row, 7);
-        let arrDate     = extractCellRawValue(workbook, worksheet, row, 8);
-        let depDate     = extractCellRawValue(workbook, worksheet, row, 9);
-        let status      = extractCellRawValue(workbook, worksheet, row, 10);
-        let junkString  = extractCellRawValue(workbook, worksheet, row, 13);
-
-        rowObjs.push({
-            rowNumber: rowNumber,
-            operator: operator,
-            tour: tour,
-            departNum: departNum,
-            dayNum: dayNum,
-            hotel1: hotel1,
-            hotel2: hotel2,
-            activities: activities,
-            arrDate: arrDate,
-            depDate: depDate,
-            status: status,
-            junkString: junkString
-        });
-    });
-
-    console.log('Extracted all row objects: ' + rowObjs.length + ' in total');
     return rowObjs;
 }
 
@@ -195,6 +144,65 @@ function getValidDrivingLogRows(rows): any[] {
     console.log('Of which ' + (validRows.length + emptyRowCount + pretourCount + posttourCount) + ' are valid');
     console.log('Of which ' + validRows.length + ' are meaningful');
     return validRows;
+}
+
+// ************************************************************************************************************************************* //
+// ************************************************************************************************************************************* //
+// ************************************************************************************************************************************* //
+// Tour Schedule functions
+async function processTourScheduleExcelFile() {
+    let workbook = new Excel.Workbook();
+    await workbook.xlsx.readFile(Environment.FILE_PATHS.TOUR_SCHEDULE);
+
+    let rows = extractAndResolveExcelRows(workbook);
+
+    let tours = consolidateRowsIntoTourObjects(rows);
+
+    // tourRoutes.updateDatabaseWithTours(tours, res);
+    return tours;
+}
+
+// Read through the rows of the Excel workbook and extract useful fields, resolving any links
+function extractAndResolveExcelRows(workbook): any[] {
+    let worksheet = workbook.getWorksheet('link');
+    
+    let rowObjs: any[] = [];
+    worksheet.eachRow((row, rowNumber) => {
+        // Ignore header row
+        if (rowNumber == 1) {
+            return;
+        }
+
+        let operator    = extractCellRawValue(workbook, worksheet, row, 1);
+        let tour        = extractCellRawValue(workbook, worksheet, row, 2);
+        let departNum   = extractCellRawValue(workbook, worksheet, row, 3);
+        let hotel1      = extractCellRawValue(workbook, worksheet, row, 4);
+        let hotel2      = extractCellRawValue(workbook, worksheet, row, 5);
+        let activities  = extractCellRawValue(workbook, worksheet, row, 6);
+        let dayNum      = extractCellRawValue(workbook, worksheet, row, 7);
+        let arrDate     = extractCellRawValue(workbook, worksheet, row, 8);
+        let depDate     = extractCellRawValue(workbook, worksheet, row, 9);
+        let status      = extractCellRawValue(workbook, worksheet, row, 10);
+        let junkString  = extractCellRawValue(workbook, worksheet, row, 13);
+
+        rowObjs.push({
+            rowNumber: rowNumber,
+            operator: operator,
+            tour: tour,
+            departNum: departNum,
+            dayNum: dayNum,
+            hotel1: hotel1,
+            hotel2: hotel2,
+            activities: activities,
+            arrDate: arrDate,
+            depDate: depDate,
+            status: status,
+            junkString: junkString
+        });
+    });
+
+    console.log('Extracted all row objects: ' + rowObjs.length + ' in total');
+    return rowObjs;
 }
 
 function consolidateRowsIntoTourObjects(rows): any[] {
@@ -413,6 +421,10 @@ function consolidateRowsIntoTourObjects(rows): any[] {
     return validTours;
 }
 
+// ************************************************************************************************************************************* //
+// ************************************************************************************************************************************* //
+// ************************************************************************************************************************************* //
+// Helper functions
 function extractCellRawValue(workbook, worksheet, row, cellIndex) {
     // Fetch cell value
     let cellValue = row.getCell(cellIndex).value;
@@ -470,6 +482,6 @@ function checkIfExcelLinkAndEvaluate(workbook, worksheet, cell) {
 }
 
 export {
-    testExcelFunction,
-    testDrivingLog
+    processTourScheduleExcelFile,
+    processDrivingLogExcelFile
 }

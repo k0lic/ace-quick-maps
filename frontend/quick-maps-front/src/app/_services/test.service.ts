@@ -16,4 +16,16 @@ export class TestService {
   testDrivingLogProcessing() {
     return this.http.get(uri + '/test/process_driving_log', optionsWithCookieEmpty);
   }
+
+  testDriveFileList() {
+    return this.http.get(uri + '/test/list_drive_files', optionsWithCookieEmpty);
+  }
+
+  downloadTourSchedule() {
+    return this.http.get(uri + '/test/download_tour_schedule', optionsWithCookieEmpty);
+  }
+
+  downloadDrivingLog() {
+    return this.http.get(uri + '/test/download_driving_log', optionsWithCookieEmpty);
+  }
 }
