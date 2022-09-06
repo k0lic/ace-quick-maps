@@ -1,4 +1,4 @@
-import { Secrets } from "../../secrets";
+import { Secrets } from "../../config/secrets";
 
 declare var require: any;
 let jsonwebtoken = require('jsonwebtoken');

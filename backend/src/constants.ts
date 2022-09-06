@@ -1,4 +1,4 @@
-import { Environment } from "../environment";
+import { Environment } from "../config/environment";
 
 export class Constants {
     public static USER_TYPE : string = 'USER_TYPE';
