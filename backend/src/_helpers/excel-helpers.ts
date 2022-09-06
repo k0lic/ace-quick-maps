@@ -228,6 +228,7 @@ function consolidateRowsIntoTourObjects(rows): any[] {
                 // Posttour day, just add to special posttour array for now
                 if (currentTour == null) {
                     // Unexpected post tour day - no existing tour to append to
+                    // TODO: report to someone
                     console.log('Row ' + excelRowNumber + ' contains unexpected post tour day - could not find to which tour to attach it to');
                     return;
                 }
@@ -237,12 +238,14 @@ function consolidateRowsIntoTourObjects(rows): any[] {
                 return;
             } else {
                 // Unexpected value - skip row
+                // TODO: report to someone
                 console.log('Row ' + excelRowNumber + ' contains unexpected departNum value: <' + row.departNum + '>');
                 return;
             }
         } else if (typeof row.dayNum != 'number') {
             if (typeof row.dayNum != 'string') {
                 // Unexpected dayNum value
+                // TODO: report to someone
                 console.log('Row ' + excelRowNumber + ' contains unexpected dayNum value: ' + JSON.stringify(row.dayNum));
                 return;
             }
@@ -258,11 +261,13 @@ function consolidateRowsIntoTourObjects(rows): any[] {
                 return;
             } else {
                 // Unexpected dayNum value
+                // TODO: report to someone
                 console.log('Row ' + excelRowNumber + ' contains unexpected dayNum value: ' + JSON.stringify(row.dayNum));
                 return;
             }
         } else if (typeof row.departNum != 'number') {
             // Unexpected value - skip row
+            // TODO: report to someone
             console.log('Row ' + excelRowNumber + ' contains unexpected departNum value: <' + row.departNum + '>');
             return;
         }
@@ -308,6 +313,7 @@ function consolidateRowsIntoTourObjects(rows): any[] {
         // Establish tour status
         let firstDay = tour.days[0];
         if (typeof firstDay.status != 'string') {
+            // TODO: report to someone - less serious
             console.log('Unexpected status at row ' + firstDay.rowNumber + ': <' + firstDay.status + '> regarded as \'unknown\'');
             tour.status = statusUnknown;
         } else if (firstDay.status.slice(0, 5) == 'potvr') {
@@ -317,6 +323,7 @@ function consolidateRowsIntoTourObjects(rows): any[] {
         } else if (firstDay.status.slice(0, 5) == 'nepoz') {
             tour.status = statusUnknown;
         } else {
+            // TODO: report to someone - less serious
             console.log('Unexpected status at row ' + firstDay.rowNumber + ': <' + firstDay.status + '> regarded as \'unknown\'');
             tour.status = statusUnknown;
         }
@@ -352,6 +359,7 @@ function consolidateRowsIntoTourObjects(rows): any[] {
                 }
 
                 if (tour.guestNum == null || isNaN(tour.guestNum)) {
+                    // Don't need to report this since guestNum field is not important - used for stats right now
                     console.log('Unsuccessful string to number cast at row ' + firstDay.rowNumber + ' - tried to cast \'' + paxMatch[1] + '\'');
                 }
             }
@@ -361,6 +369,7 @@ function consolidateRowsIntoTourObjects(rows): any[] {
         } else {
             // Ignore null values - report everything else that's unexpected only for confirmed tours
             if (firstDay.junkString != null && tour.status == statusConfirmed) {
+                // Don't report - the other failure branches for guestNumRaw and tourGuide fields are not covered - if we cover all branches we can report
                 console.log('Unexpected value for \'pax / rooms /  structure\' column at row ' + firstDay.rowNumber);
             }
         }
@@ -379,6 +388,7 @@ function consolidateRowsIntoTourObjects(rows): any[] {
                 } else {
                     // Field is empty, and there's no previous value to use - report issue only for confirmed tours
                     if (tour.status == statusConfirmed) {
+                        // TODO: report to someone
                         console.log('Missing arrDate value at row ' + day.rowNumber);
                     }
                     tour.invalidData = true;
@@ -386,6 +396,7 @@ function consolidateRowsIntoTourObjects(rows): any[] {
             }
             if (arrDate != null && !(arrDate instanceof Date)) {
                 if (tour.status == statusConfirmed) {
+                    // TODO: report to someone
                     console.log('Unexpected arrDate type at row ' + day.rowNumber + ': expected a Date');
                 }
                 tour.invalidData = true;
@@ -395,6 +406,7 @@ function consolidateRowsIntoTourObjects(rows): any[] {
                 if (tour.status == statusConfirmed) {
                     let expectedDateString = dateHelpers.getDDMMYYYYslashed(expectedDate);
                     let foundDateString = dateHelpers.getDDMMYYYYslashed(arrDate);
+                    // TODO: report to someone
                     console.log('Unexpected arrDate value at row ' + day.rowNumber + ': expected ' + expectedDateString + ' but found ' + foundDateString);
                 }
                 tour.invalidData = true;
