@@ -48,6 +48,7 @@ interface TourInfoOverlay extends google.maps.OverlayView {
 
   addItem(item: MarkerContainer, showFields: any): void;
   toggle(): void;
+  popToFront(): void;
 }
 
 let TourInfoWindow: { new (position: google.maps.LatLng, content: string, color: string): TourInfoOverlay};
@@ -86,6 +87,7 @@ function dateStringDashed(d: Date): string {
 
 function toggleTOurInfoOverlay(tio: TourInfoOverlay): void {
   tio.toggle();
+  tio.popToFront();
 }
 
 function defineTourInfoWindow() {
@@ -231,6 +233,14 @@ function defineTourInfoWindow() {
         renderer.setStyle(this.bubbleContainer, 'display', 'none');
         renderer.setStyle(this.bubbleContainerBig, 'display', 'block');
       }
+    }
+
+    popToFront() {
+      document.querySelectorAll('.tour-info-container').forEach(el => {
+        renderer.setStyle(el, 'z-index', -1);
+      });
+
+      renderer.setStyle(this.containerDiv, 'z-index', 1);
     }
   
     onAdd() {
