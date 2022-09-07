@@ -1,28 +1,45 @@
 <div class="container container-wide">
-    <div class="row mb-3">
-        <div class="col-4">
-            <a routerLink="/ok/nav" class="d-inline-flex align-items-center">
+    <div class="row d-flex mb-3">
+        <!-- LOGO -->
+        <div class="col-6 col-sm-3 col-md-3 align-self-start">
+            <a routerLink="/ok/nav" class="d-inline-flex align-items-center mb-1">
                 <img src="../../assets/ace/EYE-icon-subtle.png" class="eye-image-logo">
                 <span class="ms-1" translate>TITLE</span>
             </a>
         </div>
-        <div class="col-8">
-            <div class="row d-flex justify-content-end">
-                <!-- USER -->
-                <div *ngIf="user != null" class="col-7 col-xxl-4">
-                    <div class="row"> 
-                        <div class="col-7 col-lg-9 text-end">
-                            {{user.name + ' ' + user.lastName}}
-                        </div>
-                        <button *ngIf="user != null" type="button" class="btn btn-danger col-5 col-lg-3 p-0" (click)="logout()" translate>BUTTONS.LOGOUT</button>
-                    </div>
-                </div>
-                <!-- LANGUAGE -->
-                <div class="col-5 col-xl-4 col-xxl-3">
-                    <select class="form-select" [ngModel]="selectedLanguage" (ngModelChange)="onLanguageChange($event)">
-                        <option *ngFor="let lang of languages" [value]="lang" [translate]="'LANG.' + lang"></option>
-                    </select>
-                </div>
+
+        <!-- USER NAME -->
+        <div *ngIf="user != null" class="col-6 col-md-4 text-end align-self-end mb-1">
+            {{user.name + ' ' + user.lastName}}
+        </div>
+
+        <!-- LOG OUT -->
+        <button *ngIf="user != null" type="button" class="btn btn-danger col-3 col-md-2 align-self-end p-0 mb-1" (click)="logout()" translate>
+            BUTTONS.LOGOUT
+        </button>
+
+        <!-- LANGUAGE -->
+        <div class="col-7 col-sm-10 col-md-2 align-self-end mb-1">
+            <select class="form-select" [ngModel]="selectedLanguage" (ngModelChange)="onLanguageChange($event)">
+                <option *ngFor="let lang of languages" [value]="lang" [translate]="'LANG.' + lang"></option>
+            </select>
+        </div>
+
+        <!-- NAV MENU BUTTON -->
+        <div *ngIf="user != null && isHigher" class="col-2 col-md-1 col-lg-1 align-self-end mb-1">
+            <button 
+                class="btn btn-outline-secondary nav-button" 
+                type="button" 
+                (click)="isCollapsed = !isCollapsed"
+            >
+                <img src="../../assets/gen-icons/hamburger.svg" class="nav-icon">
+            </button>
+        </div>
+
+        <!-- NAV MENU - COLLAPSABLE -->
+        <div *ngIf="isCollapsed == false" class="col-12">
+            <div class="row">   
+                <a *ngIf="user != null && isHigher" routerLink="/ok/users" class="col-12 bg-light" translate>USERS.ALL</a>
             </div>
         </div>
     </div>

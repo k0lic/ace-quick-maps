@@ -22,6 +22,10 @@ export class UserLayoutComponent implements OnInit {
   selectedLanguage: string = this.languages[0];
 
   user: UserShort | null = null;
+  isHigher: boolean = false;
+  isAdmin: boolean = false;
+
+  isCollapsed: boolean = true;
 
   constructor(private router: Router, private translateService: TranslateService, private meService: MeService) {
     let cookie = getCookie(Secrets.LANGUAGE);
@@ -47,6 +51,9 @@ export class UserLayoutComponent implements OnInit {
 
       console.log(err);
     });
+
+    // Check user type in order to know which (if any) nav menu options to show
+    this.checkUserType();
   }
 
   logout(): void {
@@ -63,6 +70,18 @@ export class UserLayoutComponent implements OnInit {
     setCookie(Secrets.LANGUAGE, language);
 
     this.translateService.use(language);
+  }
+
+  checkUserType(): void {
+    let cookie = getCookie(Secrets.USER_TYPE);
+
+    if (cookie != null && ['user_manager', 'admin'].indexOf(cookie) != -1) {
+      this.isHigher = true;
+    }
+
+    if (cookie != null && ['admin'].indexOf(cookie) != -1) {
+      this.isAdmin = true;
+    }
   }
 
 }
