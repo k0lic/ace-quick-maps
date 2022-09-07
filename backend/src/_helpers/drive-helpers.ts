@@ -1,5 +1,6 @@
 import { Environment } from "../../config/environment";
 import { Secrets } from "../../config/secrets";
+import { DatasetErrorReport } from "./dataset-error-report";
 
 declare var require: any;
 let fs = require('fs');
@@ -56,14 +57,12 @@ function downloadFromDrive(fileId, fileDestPath, successCallback, errCallback) {
     });
 }
 
-function downloadTourSchedule(successCallback, errCallback) {
-    // console.log('Initiated download of tour schedule.');
-    downloadFromDrive(Secrets.DRIVE_FILE_IDS.TOUR_SCHEDULE, Environment.FILE_PATHS.TOUR_SCHEDULE, successCallback, errCallback);
+function downloadTourSchedule(report: DatasetErrorReport, successCallback, errCallback) {
+    downloadFromDrive(Secrets.DRIVE_FILE_IDS.TOUR_SCHEDULE, Environment.FILE_PATHS.TOUR_SCHEDULE, () => successCallback(report), errCallback);
 }
 
-function downloadDrivingLog(successCallback, errCallback) {
-    // console.log('Initiated download of driving log.');
-    downloadFromDrive(Secrets.DRIVE_FILE_IDS.DRIVING_LOG, Environment.FILE_PATHS.DRIVING_LOG, successCallback, errCallback);
+function downloadDrivingLog(report: DatasetErrorReport, successCallback, errCallback) {
+    downloadFromDrive(Secrets.DRIVE_FILE_IDS.DRIVING_LOG, Environment.FILE_PATHS.DRIVING_LOG, () => successCallback(report), errCallback);
 }
 
 async function uploadFile(filePath: string, successCallback, errCallback) {

@@ -15,6 +15,9 @@ export class Constants {
             SUBJECT: '[ACE Oko] Zahtev za promenom lozinke',
             TEXT: 'Poštovani,<br/><br/>Kako je zatražena promena lozinke za Vaš nalog, istu je moguće obaviti u kratkom roku klikom na <a href="' + Environment.WEBSITE_URL + '/reset-password/<reset-code>' + '">link</a>.<br/><br/>Ako Vi niste podneli ovaj zahtev, slobodno ignorišite ovaj mejl.'
         },
+        ERROR_REPORT: {
+            SUBJECT: '[ACE Oko] Izveštaj o greškama'
+        },
         SIGNATURE: '<br/><br/><br/>ACE Oko<br/>Ovaj mejl je automatski generisan. Molimo Vas da ne šaljete mejlove na ovu adresu.'
     };
 }

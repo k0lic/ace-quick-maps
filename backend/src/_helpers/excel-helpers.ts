@@ -1,4 +1,5 @@
 import { Environment } from "../../config/environment";
+import { atRowMessage, DatasetErrorReport, missingValueMsg, unexpectedValueMsg } from "./dataset-error-report";
 
 declare var require: any;
 let Excel = require('exceljs');
@@ -9,18 +10,17 @@ let dateHelpers = require('./date-helpers');
 // ************************************************************************************************************************************* //
 // ************************************************************************************************************************************* //
 // Driving Log functions
-async function processDrivingLogExcelFile() {
+async function processDrivingLogExcelFile(report: DatasetErrorReport) {
     let workbook = new Excel.Workbook();
     await workbook.xlsx.readFile(Environment.FILE_PATHS.DRIVING_LOG);
 
-    let rows = extractAndResolveDrivingLogRows(workbook);
-    let validRows = getValidDrivingLogRows(rows);
+    let rows = extractAndResolveDrivingLogRows(workbook, report);
+    let validRows = getValidDrivingLogRows(rows, report);
 
-    // tourRoutes.updateDatabaseWithDrivingLog(validRows, res);
     return validRows;
 }
 
-function extractAndResolveDrivingLogRows(workbook): any[] {
+function extractAndResolveDrivingLogRows(workbook, report: DatasetErrorReport): any[] {
     let worksheet = workbook.getWorksheet('Program vožnje');
 
     let rowObjs: any[] = [];
@@ -53,11 +53,12 @@ function extractAndResolveDrivingLogRows(workbook): any[] {
         });
     });
 
-    console.log('Extracted all DRIVING_LOG row objects: ' + rowObjs.length + ' in total');
+    // report.info.push('Extracted all DRIVING_LOG row objects: ' + rowObjs.length + ' in total');
+    report.addInfo('Extracted all DRIVING_LOG row objects: ' + rowObjs.length + ' in total');
     return rowObjs;
 }
 
-function getValidDrivingLogRows(rows): any[] {
+function getValidDrivingLogRows(rows, report: DatasetErrorReport): any[] {
     let tourCodePattern = /^([^-]*)-([0-9]{2})\/([0-9]{2})\/([0-9]{2})$/;
     let tourNameDic: Map<string, string> = new Map([
         ['CROSG', 'CRO SG'],
@@ -93,8 +94,9 @@ function getValidDrivingLogRows(rows): any[] {
         // Check if tourCode represents a <name>-<date> combination
         let tourCodeMatch = row.tourCode.match(tourCodePattern);
         if (tourCodeMatch == null) {
-            // TODO: serious - log it somewhere?
-            console.log('<' + row.tourCode + '> at ' + row.rowNumber);
+            // Serious error - Include it in the report
+            // report.errors.push(unexpectedValueMsg('TourCode', row.tourCode, row.rowNumber, null));
+            report.addError(unexpectedValueMsg('TourCode', row.tourCode, row.rowNumber, null))
             return;
         }
 
@@ -104,7 +106,6 @@ function getValidDrivingLogRows(rows): any[] {
 
         // Perform renaming - some tours have slightly different names between this and the other excel file
         if (tourNameDic.has(row.tourName)) {
-            // console.log('Found value in dictionary for <' + row.tourName + '>');
             row.tourName = tourNameDic.get(row.tourName);
         }
 
@@ -115,7 +116,7 @@ function getValidDrivingLogRows(rows): any[] {
             return;
         }
         if (row.destination.slice(0, 3) == 'Pre') {
-            console.log('Is this a pretour row?\t' + row.destination + ' at ' + row.rowNumber);
+            // console.log('Is this a pretour row?\t' + row.destination + ' at ' + row.rowNumber);
         }
 
         // Remove post tour rows
@@ -125,7 +126,7 @@ function getValidDrivingLogRows(rows): any[] {
             return;
         }
         if (row.destination.slice(0, 4) == 'Post') {
-            console.log('Is this a post tour row?\t' + row.destination + ' at ' + row.rowNumber);
+            // console.log('Is this a post tour row?\t' + row.destination + ' at ' + row.rowNumber);
         }
 
         // Remove rows with no content - no need to insert rows with no information since this table is gonna be optional in a LEFT JOIN operation
@@ -141,8 +142,10 @@ function getValidDrivingLogRows(rows): any[] {
         validRows.push(row);
     });
 
-    console.log('Of which ' + (validRows.length + emptyRowCount + pretourCount + posttourCount) + ' are valid');
-    console.log('Of which ' + validRows.length + ' are meaningful');
+    // report.info.push('Of which ' + (validRows.length + emptyRowCount + pretourCount + posttourCount) + ' are valid');
+    report.addInfo('Of which ' + (validRows.length + emptyRowCount + pretourCount + posttourCount) + ' are valid');
+    // report.info.push('Of which ' + validRows.length + ' are meaningful');
+    report.addInfo('Of which ' + validRows.length + ' are meaningful');
     return validRows;
 }
 
@@ -150,20 +153,19 @@ function getValidDrivingLogRows(rows): any[] {
 // ************************************************************************************************************************************* //
 // ************************************************************************************************************************************* //
 // Tour Schedule functions
-async function processTourScheduleExcelFile() {
+async function processTourScheduleExcelFile(report: DatasetErrorReport) {
     let workbook = new Excel.Workbook();
     await workbook.xlsx.readFile(Environment.FILE_PATHS.TOUR_SCHEDULE);
 
-    let rows = extractAndResolveExcelRows(workbook);
+    let rows = extractAndResolveExcelRows(workbook, report);
 
-    let tours = consolidateRowsIntoTourObjects(rows);
+    let tours = consolidateRowsIntoTourObjects(rows, report);
 
-    // tourRoutes.updateDatabaseWithTours(tours, res);
     return tours;
 }
 
 // Read through the rows of the Excel workbook and extract useful fields, resolving any links
-function extractAndResolveExcelRows(workbook): any[] {
+function extractAndResolveExcelRows(workbook, report: DatasetErrorReport): any[] {
     let worksheet = workbook.getWorksheet('link');
     
     let rowObjs: any[] = [];
@@ -201,19 +203,17 @@ function extractAndResolveExcelRows(workbook): any[] {
         });
     });
 
-    console.log('Extracted all row objects: ' + rowObjs.length + ' in total');
+    // report.info.push('Extracted all row objects: ' + rowObjs.length + ' in total');
+    report.addInfo('Extracted all row objects: ' + rowObjs.length + ' in total');
     return rowObjs;
 }
 
-function consolidateRowsIntoTourObjects(rows): any[] {
+function consolidateRowsIntoTourObjects(rows, report: DatasetErrorReport): any[] {
     let tours: any[] = [];
     let currentTour: any = null;
     let preCollection: any[] = [];
 
     rows.forEach((row, rowNumber) => {
-        // Adjust for 2 things: index starting from 0, deleted header row
-        let excelRowNumber = rowNumber + 2;
-
         // Process special cases where departNum/dayNum is not a number
         if (typeof row.departNum == 'string') {
             if (row.departNum.slice(0, 4) == 'priv') {
@@ -227,9 +227,9 @@ function consolidateRowsIntoTourObjects(rows): any[] {
             } else if (row.departNum.slice(0, 4) == 'post') {
                 // Posttour day, just add to special posttour array for now
                 if (currentTour == null) {
-                    // Unexpected post tour day - no existing tour to append to
-                    // TODO: report to someone
-                    console.log('Row ' + excelRowNumber + ' contains unexpected post tour day - could not find to which tour to attach it to');
+                    // Unexpected post tour day - no existing tour to append to - Serious error - Include it in the report
+                    // report.errors.push(atRowMessage('Unexpected post tour day, could not find to which tour to attach it to', row.rowNumber, null));
+                    report.addError(atRowMessage('Neočekivan \'post tour\' red, nije jasno kojoj turi pripada', row.rowNumber, null));
                     return;
                 }
 
@@ -237,16 +237,16 @@ function consolidateRowsIntoTourObjects(rows): any[] {
                 currentTour.postDays.push(row);
                 return;
             } else {
-                // Unexpected value - skip row
-                // TODO: report to someone
-                console.log('Row ' + excelRowNumber + ' contains unexpected departNum value: <' + row.departNum + '>');
+                // Unexpected value - skip row - Serious error - Include it in the report
+                // report.errors.push(unexpectedValueMsg('depart.', row.departNum, row.rowNumber, null));
+                report.addError(unexpectedValueMsg('depart.', row.departNum, row.rowNumber, null));
                 return;
             }
         } else if (typeof row.dayNum != 'number') {
             if (typeof row.dayNum != 'string') {
-                // Unexpected dayNum value
-                // TODO: report to someone
-                console.log('Row ' + excelRowNumber + ' contains unexpected dayNum value: ' + JSON.stringify(row.dayNum));
+                // Unexpected dayNum value - Serious error - Include it in the report
+                // report.errors.push(unexpectedValueMsg('day', JSON.stringify(row.dayNum), row.rowNumber, null));
+                report.addError(unexpectedValueMsg('day', JSON.stringify(row.dayNum), row.rowNumber, null));
                 return;
             }
 
@@ -260,15 +260,15 @@ function consolidateRowsIntoTourObjects(rows): any[] {
                 currentTour.postDays.push(row);
                 return;
             } else {
-                // Unexpected dayNum value
-                // TODO: report to someone
-                console.log('Row ' + excelRowNumber + ' contains unexpected dayNum value: ' + JSON.stringify(row.dayNum));
+                // Unexpected dayNum value - Serious error - Include it in the report
+                // report.errors.push(unexpectedValueMsg('day', JSON.stringify(row.dayNum), row.rowNumber, null));
+                report.addError(unexpectedValueMsg('day', JSON.stringify(row.dayNum), row.rowNumber, null));
                 return;
             }
         } else if (typeof row.departNum != 'number') {
-            // Unexpected value - skip row
-            // TODO: report to someone
-            console.log('Row ' + excelRowNumber + ' contains unexpected departNum value: <' + row.departNum + '>');
+            // Unexpected value - skip row - Serious error - Include it in the report
+            // report.errors.push(unexpectedValueMsg('depart.', row.departNum, row.rowNumber, null));
+            report.addError(unexpectedValueMsg('depart.', row.departNum, row.rowNumber, null));
             return;
         }
 
@@ -313,27 +313,36 @@ function consolidateRowsIntoTourObjects(rows): any[] {
         // Establish tour status
         let firstDay = tour.days[0];
         if (typeof firstDay.status != 'string') {
-            // TODO: report to someone - less serious
-            console.log('Unexpected status at row ' + firstDay.rowNumber + ': <' + firstDay.status + '> regarded as \'unknown\'');
+            // Less serious error - Include it in the report as warning
+            // report.warnings.push(unexpectedValueMsg('status', firstDay.status, firstDay.rowNumber, ' interpreted as \'' + 'nepoznat' + '\''));
+            report.addWarning(unexpectedValueMsg('status', firstDay.status, firstDay.rowNumber, ' interpreted as \'' + 'nepoznat' + '\''));
             tour.status = statusUnknown;
         } else if (firstDay.status.slice(0, 5) == 'potvr') {
-            tour.status = statusConfirmed;
+            // Special exception - 'pax / rooms / structure' column says it's cancelled -> then it's cancelled ???
+            if (firstDay.junkString != null && typeof firstDay.junkString == 'string' && firstDay.junkString.slice(0, 5) == 'otkaz') {
+                // Less serious error - Include it in the report as warning
+                // report.warnings.push(atRowMessage('Registering tour as cancelled only cause the \'pax / rooms / structure\' column says so', firstDay.rowNumber, null));
+                report.addWarning(atRowMessage('Registering tour as cancelled only cause the \'pax / rooms / structure\' column says so', firstDay.rowNumber, null));
+                tour.status = statusCanceled;
+            } else {
+                tour.status = statusConfirmed;
+            }
         } else if (firstDay.status.slice(0, 5) == 'otkaz') {
             tour.status = statusCanceled;
         } else if (firstDay.status.slice(0, 5) == 'nepoz') {
             tour.status = statusUnknown;
         } else {
-            // TODO: report to someone - less serious
-            console.log('Unexpected status at row ' + firstDay.rowNumber + ': <' + firstDay.status + '> regarded as \'unknown\'');
+            // Less serious error - Include it in the report as warning
+            // report.warnings.push(unexpectedValueMsg('status', firstDay.status, firstDay.rowNumber, ' interpreted as \'' + 'nepoznat' + '\''));
+            report.addWarning(unexpectedValueMsg('status', firstDay.status, firstDay.rowNumber, ' interpreted as \'' + 'nepoznat' + '\''));
             tour.status = statusUnknown;
         }
 
         // Extract guest number and tour guide name from junkString - use the first day
         if (firstDay.junkString != null && typeof firstDay.junkString == 'string') {
-            let paxRegex = /^([0-9\(\)\+ ]+)pax/;
-            let guideRegex = /^[0-9\(\)\+]+pax\s+\S+\s+(.+)$/;
+            let paxRegex    = /^(?:\([0-9]+\)\s+)?([0-9\(\)\+ ]+)pax/;
+            let guideRegex  = /^(?:\([0-9]+\)\s+)?[0-9\(\)\+ ]+pax\s+\S+\s+(.+)$/;
 
-            // console.log(firstDay.rowNumber + '\t' + JSON.stringify(firstDay.junkString));
             let paxMatch = firstDay.junkString.match(paxRegex);
             let guideMatch = firstDay.junkString.match(guideRegex);
 
@@ -360,17 +369,35 @@ function consolidateRowsIntoTourObjects(rows): any[] {
 
                 if (tour.guestNum == null || isNaN(tour.guestNum)) {
                     // Don't need to report this since guestNum field is not important - used for stats right now
-                    console.log('Unsuccessful string to number cast at row ' + firstDay.rowNumber + ' - tried to cast \'' + paxMatch[1] + '\'');
+                    // Less serious error - Include it in the report as warning
+                    // report.warnings.push(atRowMessage('Unsuccessful string to number cast. Tried to cast \'' + paxMatch[1] + '\'', firstDay.rowNumber, null));
+                    report.addWarning(atRowMessage('Unsuccessful string to number cast. Tried to cast \'' + paxMatch[1] + '\'', firstDay.rowNumber, null));
+                }
+            } else {
+                if (tour.status == statusConfirmed) {
+                    // Don't report - don't have a reason, just repeating what I said for tour guide :shrug:
+                    // Less serious error - Include it in the report as warning
+                    // report.warnings.push(unexpectedValueMsg('pax / rooms / structure', firstDay.junkString, firstDay.rowNumber, null));
+                    report.addWarning(unexpectedValueMsg('pax / rooms / structure', firstDay.junkString, firstDay.rowNumber, null));
                 }
             }
             if (guideMatch != null) {
                 tour.tourGuide = guideMatch[1].trim();
+            } else {
+                if (tour.status == statusConfirmed) {
+                    // Don't report - tours in the future that are confirmed don't have a tour guide assigned yet
+                    // Less serious error - Include it in the report as warning
+                    // report.warnings.push(atRowMessage('Could not find guide in \'' + 'pax / rooms / structure' + '\' <' + firstDay.junkString + '>', firstDay.rowNumber, null));
+                    report.addWarning(atRowMessage('Could not find guide in \'' + 'pax / rooms / structure' + '\' <' + firstDay.junkString + '>', firstDay.rowNumber, null));
+                }
             }
         } else {
-            // Ignore null values - report everything else that's unexpected only for confirmed tours
+            // Ignore null values
             if (firstDay.junkString != null && tour.status == statusConfirmed) {
-                // Don't report - the other failure branches for guestNumRaw and tourGuide fields are not covered - if we cover all branches we can report
-                console.log('Unexpected value for \'pax / rooms /  structure\' column at row ' + firstDay.rowNumber);
+                // Don't report - tours in the future that are confirmed don't have a tour guide assigned yet
+                // Less serious error - Include it in the report as warning
+                // report.warnings.push(unexpectedValueMsg('pax / rooms / structure', firstDay.junkString, firstDay.rowNumber, null));
+                report.addWarning(unexpectedValueMsg('pax / rooms / structure', firstDay.junkString, firstDay.rowNumber, null));
             }
         }
 
@@ -388,16 +415,18 @@ function consolidateRowsIntoTourObjects(rows): any[] {
                 } else {
                     // Field is empty, and there's no previous value to use - report issue only for confirmed tours
                     if (tour.status == statusConfirmed) {
-                        // TODO: report to someone
-                        console.log('Missing arrDate value at row ' + day.rowNumber);
+                        // Serious error - Include it in the report
+                        // report.errors.push(missingValueMsg('arr date', day.rowNumber, null));
+                        report.addError(missingValueMsg('arr date', day.rowNumber, null));
                     }
                     tour.invalidData = true;
                 }
             }
             if (arrDate != null && !(arrDate instanceof Date)) {
                 if (tour.status == statusConfirmed) {
-                    // TODO: report to someone
-                    console.log('Unexpected arrDate type at row ' + day.rowNumber + ': expected a Date');
+                    // Serious error - Include it in the report
+                    // report.errors.push(unexpectedValueMsg('arr date', dateHelpers.getDDMMYYYYslashed(arrDate), day.rowNumber, ' expected a Date'));
+                    report.addError(unexpectedValueMsg('arr date', dateHelpers.getDDMMYYYYslashed(arrDate), day.rowNumber, ' očekivan je datum'));
                 }
                 tour.invalidData = true;
             } else if (expectedDate != null && (arrDate.getFullYear() != expectedDate.getFullYear() 
@@ -406,8 +435,9 @@ function consolidateRowsIntoTourObjects(rows): any[] {
                 if (tour.status == statusConfirmed) {
                     let expectedDateString = dateHelpers.getDDMMYYYYslashed(expectedDate);
                     let foundDateString = dateHelpers.getDDMMYYYYslashed(arrDate);
-                    // TODO: report to someone
-                    console.log('Unexpected arrDate value at row ' + day.rowNumber + ': expected ' + expectedDateString + ' but found ' + foundDateString);
+                    // Serious error - Include it in the report
+                    // report.errors.push(unexpectedValueMsg('arr date', foundDateString, day.rowNumber, '. Expected <' + expectedDateString + '>. Issue might be at \'' + 'depart.' + '\''));
+                    report.addError(unexpectedValueMsg('arr date', foundDateString, day.rowNumber, '. Očekivana vrednost: <' + expectedDateString + '>. Problem može biti i u \'' + 'depart.' + '\' koloni.'));
                 }
                 tour.invalidData = true;
             }
@@ -426,9 +456,12 @@ function consolidateRowsIntoTourObjects(rows): any[] {
     let canceledTours = validTours.filter(t => t.status == statusCanceled);
     let unknownTours = validTours.filter(t => t.status == statusUnknown);
 
-    console.log('Created all tour objects: ' + tours.length + ' in total');
-    console.log('Of which ' + validTours.length + ' have valid data');
-    console.log('Of which ' + confirmedTours.length + ' are confirmed, ' + canceledTours.length + ' are canceled, and ' + unknownTours.length + ' are unknown');
+    // report.info.push('Created all tour objects: ' + tours.length + ' in total');
+    // report.info.push('Of which ' + validTours.length + ' have valid data');
+    // report.info.push('Of which ' + confirmedTours.length + ' are confirmed, ' + canceledTours.length + ' are canceled, and ' + unknownTours.length + ' are unknown');
+    report.addInfo('Created all tour objects: ' + tours.length + ' in total');
+    report.addInfo('Of which ' + validTours.length + ' have valid data');
+    report.addInfo('Of which ' + confirmedTours.length + ' are confirmed, ' + canceledTours.length + ' are canceled, and ' + unknownTours.length + ' are unknown');
 
     return validTours;
 }

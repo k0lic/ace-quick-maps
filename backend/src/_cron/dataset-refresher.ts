@@ -1,3 +1,6 @@
+import { Environment } from "../../config/environment";
+import { Constants } from "../constants";
+import { atRowMessage, DatasetErrorReport } from "../_helpers/dataset-error-report";
 import { CronConfig } from "./cron-config";
 
 declare var require: any;
@@ -8,6 +11,7 @@ let queryHelpers = require('../_helpers/query-helpers');
 let driveHelpers = require('../_helpers/drive-helpers');
 let dateHelpers = require('../_helpers/date-helpers');
 let excelHelpers = require('../_helpers/excel-helpers');
+let mailHelpers = require('../_helpers/mail-helpers');
 
 // Setup config object
 let refreshConfig = CronConfig.DATASET_REFRESHER.DEFAULT_CONFIG;
@@ -45,23 +49,26 @@ function runRefresh() {
         return;
     }
 
+    // Create report
+    let ogReport: DatasetErrorReport = new DatasetErrorReport();
+
     // First step - fetch Tour-Schedule excel file from drive
-    jobStep(refreshConfig.fetchTourSchedule, driveHelpers.downloadTourSchedule, () => {
+    jobStep(refreshConfig.fetchTourSchedule, ogReport, driveHelpers.downloadTourSchedule, report => {
         // Second step - fetch Driving-Log excel file from drive
-        jobStep(refreshConfig.fetchDrivingLog, driveHelpers.downloadDrivingLog, () => {
+        jobStep(refreshConfig.fetchDrivingLog, report, driveHelpers.downloadDrivingLog, report => {
             // Start transaction
             queryHelpers.beginTransaction(null, () => {
                 // Third step - update DB with Tour-Schedule values
-                jobStep(refreshConfig.updateTourSchedule, updateTourSchedule, () => {
+                jobStep(refreshConfig.updateTourSchedule, report, updateTourSchedule, report => {
                     // Fourth step - update DB with Driving-Log values
-                    jobStep(refreshConfig.updateDrivingLog, updateDrivingLog, () => {
+                    jobStep(refreshConfig.updateDrivingLog, report, updateDrivingLog, report => {
                         // Commit transaction
                         queryHelpers.coreCommitTransaction(() => {
                             // Log successful job
                             console.log(''
                                 + '[' + new Date() + '] Dataset Refresher Cron Job successfully finished '
                                 + '\n\tWith settings: (fetchSchedule:' + refreshConfig.fetchTourSchedule + ', fetchDrivingLog:' + refreshConfig.fetchDrivingLog 
-                                + ', updateSchedule:' + refreshConfig.updateTourSchedule + ', updateDrivingLog' + refreshConfig.updateDrivingLog + ')'
+                                + ', updateSchedule:' + refreshConfig.updateTourSchedule + ', updateDrivingLog:' + refreshConfig.updateDrivingLog + ')'
                             );
                         }, reportFailure);
                     }, rollback);
@@ -71,14 +78,14 @@ function runRefresh() {
     }, reportFailure);
 }
 
-function jobStep(stepEnabled, jobFunc, nextStep, errCallback) {
+function jobStep(stepEnabled, report: DatasetErrorReport, jobFunc, nextStep, errCallback) {
     if (!stepEnabled) {
         // skip to next step
-        nextStep();
+        nextStep(report);
         return;
     }
 
-    jobFunc(nextStep, errCallback);
+    jobFunc(report, nextStep, errCallback);
 }
 
 function rollback(err) {
@@ -95,18 +102,61 @@ function reportFailure(err) {
     console.log(err);
 }
 
+function sendReport(resourceName: string, ownerEmailAddress: string, report: DatasetErrorReport) {
+    if (report.hasErrors() == false) {
+        // Don't send report if there are no errors - don't want to spam people
+        return;
+    }
+
+    if (ownerEmailAddress == null) {
+        console.log('Could not send report, owner of resource \'' + resourceName + '\' not found');
+        return;
+    }
+
+    // Only send the email if there are errors
+    mailHelpers.sendMailConsoleLog(ownerEmailAddress, Constants.MAIL_TEMPLATES.ERROR_REPORT.SUBJECT, report.renderHtml(resourceName));
+}
+
 // Meat functions
-async function updateTourSchedule(successCallback, errCallback) {
-    let tours = await excelHelpers.processTourScheduleExcelFile();
-    updateDatabaseWithTours(tours, successCallback, errCallback);
+async function updateTourSchedule(report: DatasetErrorReport, successCallback, errCallback) {
+    // Only send report to the first component that fires errors, since later components depend on the previous ones
+    let noErrorsOnEntry = report.hasErrors() == false;
+
+    let tours = await excelHelpers.processTourScheduleExcelFile(report);
+    updateDatabaseWithTours(tours, report, report => {
+        if (noErrorsOnEntry) {
+            // Send report before calling the callback
+            sendReport('Raspored tura', Environment.RESOURCE_OWNERS.TOUR_SCHEDULE, report);
+        }
+
+        successCallback(report);
+    }, (err, report) => {
+        // Do we send a report on failure? I think it's better not to - 
+        // The report will not contain the reason for the failure, any errors in the report are minor compared to the one that failed the DB update
+        errCallback(err);
+    });
 }
 
-async function updateDrivingLog(successCallback, errCallback) {
-    let rows = await excelHelpers.processDrivingLogExcelFile();
-    updateDatabaseWithDrivingLog(rows, successCallback, errCallback);
+async function updateDrivingLog(report: DatasetErrorReport, successCallback, errCallback) {
+    // Only send report to the first component that fires errors, since later components depend on the previous ones
+    let noErrorsOnEntry = report.hasErrors() == false;
+
+    let rows = await excelHelpers.processDrivingLogExcelFile(report);
+    updateDatabaseWithDrivingLog(rows, report, report => {
+        if (noErrorsOnEntry) {
+            // Send report before calling the callback
+            sendReport('DRIVING LOG', Environment.RESOURCE_OWNERS.DRIVING_LOG, report);
+        }
+
+        successCallback(report);
+    }, (err, report) => {
+        // Do we send a report on failure? I think it's better not to - 
+        // The report will not contain the reason for the failure, any errors in the report are minor compared to the one that failed the DB update
+        errCallback(err);
+    });
 }
 
-function updateDatabaseWithTours(tours, successCallback, errCallback): void {
+function updateDatabaseWithTours(tours, report: DatasetErrorReport, successCallback, errCallback): void {
     // TODO: don't just copy these 3 into every function, come on man...
     const statusUnknown = 'unknown';
     const statusConfirmed = 'confirmed';
@@ -195,19 +245,19 @@ function updateDatabaseWithTours(tours, successCallback, errCallback): void {
                             // Only execute query if there are activities to add
                             if (!firstActivity) {
                                 queryHelpers.coreExecuteQueryWithCallback(
-                                    insertActivitiesQueryString, insertActivitiesQueryValues, rows => successCallback(), errCallback);
+                                    insertActivitiesQueryString, insertActivitiesQueryValues, rows => successCallback(report), err => errCallback(err, report));
                             } else {
-                                successCallback();
+                                successCallback(report);
                             }
-                        }, errCallback);
-                    }, errCallback);
-                }, errCallback);
-            }, errCallback);
-        }, errCallback);
-    }, errCallback);
+                        }, err => errCallback(err, report));
+                    }, err => errCallback(err, report));
+                }, err => errCallback(err, report));
+            }, err => errCallback(err, report));
+        }, err => errCallback(err, report));
+    }, err => errCallback(err, report));
 }
 
-function updateDatabaseWithDrivingLog(rows, successCallback, errCallback): void {
+function updateDatabaseWithDrivingLog(rows, report: DatasetErrorReport, successCallback, errCallback): void {
     // Driving log contains tour instance names, while database uses auto-generated keys for tour objects
     let allToursQuery = 'SELECT t.id as id, p.name as `name`, t.start_date as `start_date` '
                         + 'FROM tours t '
@@ -232,9 +282,9 @@ function updateDatabaseWithDrivingLog(rows, successCallback, errCallback): void 
             // Check if we can fetch the tour id for this driving log row
             let tourId = tourIdMap.get(r.tourName + '-' + dateHelpers.getDDMMYYslashed(r.startDate));
             if (tourId == null) {
-                // Could not fetch tour id, report this to someone
-                // TODO: report to someone
-                console.log('Failed fetching tour id for <' + r.tourCode + '>');
+                // Could not fetch tour id - Serious error - Include it in the report
+                // report.errors.push(atRowMessage('Could not find tour <' + r.tourCode + '> in database. Tour appears in driving-log', r.rowNumber, '. Check the name and the date of the tour.'));
+                report.addError(atRowMessage('Tura <' + r.tourCode + '> se ne nalazi u bazi, a pojavljuje se', r.rowNumber, '. Proveri naziv i datum.'));
                 return;
             }
 
@@ -253,10 +303,10 @@ function updateDatabaseWithDrivingLog(rows, successCallback, errCallback): void 
         queryHelpers.coreExecuteQueries(
             [cleanupQuery, insertDrivingLogQueryString],
             [[], insertDrivingLogQueryValues],
-            successCallback,
-            errCallback
+            () => successCallback(report),
+            err => errCallback(err, report)
         );
-    }, errCallback);
+    }, err => errCallback(err, report));
 }
 
 // Jobs
@@ -273,3 +323,20 @@ cron.schedule('5 3 * * *', () => {
     // Saving is not really needed for this cron job, since the settings don't change, except when manually changed
     tryAndSaveJsonConfig();
 });
+
+function testRefresh() {
+    // Read json config, maybe changes were made since last run
+    tryAndReadJsonConfig();
+
+    // Run job
+    runRefresh();
+
+    // Saving is not really needed for this cron job, since the settings don't change, except when manually changed
+    tryAndSaveJsonConfig();
+}
+
+export {
+    updateTourSchedule,
+    updateDrivingLog,
+    testRefresh
+}

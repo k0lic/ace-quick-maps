@@ -17,6 +17,7 @@ import { UserListsComponent } from './user-lists/user-lists.component';
 import { HigherGuard } from './_guards/higher-guard';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { StatMapComponent } from './stat-map/stat-map.component';
+import { TestComponent } from './test/test.component';
 
 const routes: Routes = [
   {
@@ -29,6 +30,7 @@ const routes: Routes = [
       { path: 'users', component: UserListsComponent, canActivate: [HigherGuard]},
       { path: 'stats', component: StatMapComponent, canActivate: [AdminGuard]},
       { path: 'message', component: MessageComponent, canActivate: [UserGuard]},
+      // { path: 'test', component: TestComponent, canActivate: [AdminGuard]},  // FOR TESTING ONLY
       { path: '**', redirectTo: 'date-map'}
     ]
   },
