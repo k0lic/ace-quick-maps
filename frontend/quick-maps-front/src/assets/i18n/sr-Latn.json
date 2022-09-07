@@ -9,6 +9,7 @@
         "TEST": "Proba"
     },
     "ACE": "ACE",
+    "HOME": "Početna",
     "LOCATIONS": {
         "TITLE": "Lokacije",
         "INPUT_NEW_LOCATION": "Unesi ime mesta"

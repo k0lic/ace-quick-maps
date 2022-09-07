@@ -9,6 +9,7 @@
         "TEST": "Test"
     },
     "ACE": "ACE",
+    "HOME": "Home",
     "LOCATIONS": {
         "TITLE": "Locations",
         "INPUT_NEW_LOCATION": "Input place name"

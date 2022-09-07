@@ -1,7 +1,7 @@
 <div class="container container-wide">
-    <div class="row d-flex mb-3">
+    <div class="row mb-3">
         <!-- LOGO -->
-        <div class="col-6 col-sm-3 col-md-3 align-self-start">
+        <div class="col-6 col-sm-3 col-md-3 col-lg-2 mb-1 mr-auto">
             <a routerLink="/" class="d-inline-flex align-items-center mb-1">
                 <img src="../../assets/ace/EYE-icon-subtle.png" class="eye-image-logo">
                 <span class="ms-1" translate>TITLE</span>
@@ -9,24 +9,24 @@
         </div>
 
         <!-- USER NAME -->
-        <div *ngIf="user != null" class="col-6 col-md-4 text-end align-self-end mb-1">
+        <div *ngIf="user != null" class="col-6 col-md-4 col-lg-5 col-xl-6 text-end mb-1">
             {{user.name + ' ' + user.lastName}}
         </div>
 
         <!-- LOG OUT -->
-        <button *ngIf="user != null" type="button" class="btn btn-danger col-3 col-md-2 align-self-end p-0 mb-1" (click)="logout()" translate>
+        <button *ngIf="user != null" type="button" class="btn btn-danger col-3 col-md-2 col-lg-1 p-0 mb-1" (click)="logout()" translate>
             BUTTONS.LOGOUT
         </button>
 
         <!-- LANGUAGE -->
-        <div class="col-7 col-sm-10 col-md-2 align-self-end mb-1">
+        <div class="col-7 col-sm-10 col-md-2 col-lg-3 col-xl-2 mb-1">
             <select class="form-select" [ngModel]="selectedLanguage" (ngModelChange)="onLanguageChange($event)">
                 <option *ngFor="let lang of languages" [value]="lang" [translate]="'LANG.' + lang"></option>
             </select>
         </div>
 
         <!-- NAV MENU BUTTON -->
-        <div *ngIf="user != null && isHigher" class="col-2 col-md-1 col-lg-1 align-self-end mb-1">
+        <div *ngIf="user != null && isHigher" class="col-2 col-md-1 mb-1">
             <button 
                 class="btn btn-outline-secondary nav-button" 
                 type="button" 
@@ -38,8 +38,12 @@
 
         <!-- NAV MENU - COLLAPSABLE -->
         <div *ngIf="isCollapsed == false" class="col-12">
-            <div class="row">   
-                <a *ngIf="user != null && isHigher" routerLink="/ok/users" class="col-12 bg-light" translate>USERS.ALL</a>
+            <div class="row justify-content-center border border-secondary rounded m-2 p-1">
+                <a *ngIf="user != null && isHigher" routerLink="/ok/date-map" class="col-12 col-lg bg-light rounded m-1" translate>HOME</a>
+                <a *ngIf="user != null && isHigher" routerLink="/ok/users" class="col-12 col-lg bg-light rounded m-1" translate>USERS.ALL</a>
+                <a *ngIf="user != null && isAdmin" routerLink="/ok/new-locations" class="col-12 col-lg bg-light rounded m-1" translate>LOCATIONS.TITLE</a>
+                <a *ngIf="user != null && isAdmin" routerLink="/ok/program-editor" class="col-12 col-lg bg-light rounded m-1" translate>SUBTITLES.PROGRAM_EDITOR</a>
+                <a *ngIf="user != null && isAdmin" routerLink="/ok/stats" class="col-12 col-lg bg-light rounded m-1" translate>STATS.TITLE</a>
             </div>
         </div>
     </div>

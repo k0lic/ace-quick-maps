@@ -2,9 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { NewLocationsComponent } from './new-locations/new-locations.component';
-import { JunkNavComponent } from './junk-nav/junk-nav.component';
 import { ProgramEditorComponent } from './program-editor/program-editor.component';
-import { TestComponent } from './test/test.component';
 import { DateMapComponent } from './date-map/date-map.component';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
@@ -30,8 +28,6 @@ const routes: Routes = [
       { path: 'program-editor', component: ProgramEditorComponent, canActivate: [AdminGuard]},
       { path: 'users', component: UserListsComponent, canActivate: [HigherGuard]},
       { path: 'stats', component: StatMapComponent, canActivate: [AdminGuard]},
-      { path: 'test', component: TestComponent, canActivate: [AdminGuard]},
-      { path: 'nav', component: JunkNavComponent, canActivate: [HigherGuard]},
       { path: 'message', component: MessageComponent, canActivate: [UserGuard]},
       { path: '**', redirectTo: 'date-map'}
     ]
@@ -50,7 +46,7 @@ const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'nav'
+    redirectTo: 'login'
   }
 ];
 
