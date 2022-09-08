@@ -6,7 +6,7 @@ ACE Eye is a web app used to track active tours across a region and across time.
 
 In order to use the application it is necessary to register an account and wait for approval from staff. The restriction of access is needed because the data shown on the website is sensitive.
 
-There are currently three types of accounts arranged in a hierarchical order (from lowest to highest): Viewer, Manager, and Admin. An account higher in the hierarchy has all the rights account lower than it have, and then some.
+There are currently three types of accounts arranged in a hierarchical order (from lowest to highest): Viewer, Manager, and Admin. An account higher in the hierarchy has all the rights accounts lower than it have, and then some.
 
 ## Viewer
 
