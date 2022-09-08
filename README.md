@@ -1,6 +1,6 @@
 # Project description
 
-ACE Eye is a web app used to track active tours across a region and across time.
+ACE Eye is a web app used to track active tours across a region and across time. It was implemented to enable easier managing and locating of tours, tour leaders, vehicles, and other resources.
 
 # Types of users
 
@@ -37,6 +37,10 @@ The whole platform is built using Typescript, using Angular for the front-end an
 The data is stored in a MySQL database.
 
 The platform utilises the Google Maps Javascript API to draw the tour routes on a map. It also uses the Google Drive API to fetch the data files.
+
+# Data
+
+The data is pulled from two xlsx files which are used for administration purposes. These files contain details about tours, like the dates, the number of guests, the tour leader, etc. The files are fetched from a Google Drive by the server every night in order to stay up to date. The data is parsed using ExcelJS and then entered into the database.
 
 # Author
 
