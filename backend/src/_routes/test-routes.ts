@@ -16,28 +16,11 @@ router.use(userCheckers.assertIsAdmin);
 
 // List routes here
 router.get('/process_excel_test_file', (req, res) => {
-    // excelHelpers.testExcelFunction(res);
-    // backupCron.testBackup();
-    // res.sendStatus(200);
-
-    // let report: DatasetErrorReport = newDatasetErrorReport();
-    //
-    // refresherCron.updateTourSchedule(report, report => {
-    //     console.log('SUCCESSFUL TEST');
-    //     res.sendStatus(200);
-    // }, err => {
-    //     console.log(err);
-    //     console.log('FAILED TEST');
-    //     res.sendStatus(500);
-    // });
-
     refresherCron.testRefresh();
     res.sendStatus(200);
 });
 
 router.get('/process_driving_log', (req, res) => {
-    // console.log('MAINTENANCE');
-    // res.sendStatus(500);
     let report: DatasetErrorReport = new DatasetErrorReport();
 
     refresherCron.updateDrivingLog(report, report => {

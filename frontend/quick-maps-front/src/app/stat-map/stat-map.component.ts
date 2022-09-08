@@ -83,7 +83,6 @@ export class StatMapComponent implements OnInit {
 
   refreshPaxNightsByLocationMap(): void {
     this.statService.getPaxNightsByLocation().subscribe((rows: PaxNightsByLocation[]) => {
-      console.log(rows);
       // Convert PaxNightsByLocation into markers we can show on the map
       let tmpList: Marker[] = [];
       rows.forEach(row => {

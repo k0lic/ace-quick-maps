@@ -31,7 +31,6 @@ router.post('/login', (req, res) => {
     let queryValues = [email, todayString];
     queryHelpers.executeQueryWithCallback(queryString, queryValues, res, rows => {
         if (rows.length == 0) {
-            console.log('User not found');
             res.sendStatus(500);
             return;
         }
@@ -46,7 +45,6 @@ router.post('/login', (req, res) => {
 
             // Wrong password
             if (!cmp) {
-                console.log('Wrong password');
                 res.sendStatus(500);
                 return;
             }
@@ -98,7 +96,6 @@ router.post('/forgot', (req, res) => {
     let queryValues = [email, todayString];
     queryHelpers.executeQueryWithCallback(queryString, queryValues, res, rows => {
         if (rows.length == 0) {
-            console.log('User not found');
             res.sendStatus(500);
             return;
         }
