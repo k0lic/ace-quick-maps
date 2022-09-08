@@ -2,7 +2,7 @@
 
 ACE Eye is a web app used to track active tours across a region and across time.
 
-# Types of users :boy:
+# Types of users
 
 In order to use the application it is necessary to register an account and wait for approval from staff. The restriction of access is needed because the data shown on the website is sensitive.
 
@@ -20,7 +20,7 @@ This account carries the same rights as the 'Viewer' account. Additionaly, the '
 
 This account carries the same rights as the 'Manager' account. Additionaly, the 'Admin' has the ability to edit routes for tour programs and view the statistics page.
 
-# Features :sparkles:
+# Features
 
 - All users can view all active tours for a chosen date, layed out on a map, the day's route shown for each one.
 - All users can select what information they want to view at a glance, whether it be the tour name, the tour leader, the number of guests, and more, or any combination of these.
@@ -30,7 +30,7 @@ This account carries the same rights as the 'Manager' account. Additionaly, the 
 - Admins can view all tour programs and edit them. The editing process includes adding/removing days, and adding points of various types to a day.
 - Admins can view the statistics page which show some interesting information compiled from the available data.
 
-# Tech :computer:
+# Tech
 
 The whole platform is built using Typescript, using Angular for the front-end and Express for the back-end.
 
@@ -38,6 +38,6 @@ The data is stored in a MySQL database.
 
 The platform utilises the Google Maps Javascript API to draw the tour routes on a map. It also uses the Google Drive API to fetch the data files.
 
-# Author :construction_worker:
+# Author
 
 - Andrija Kolić ([Github](https://github.com/k0lic))
