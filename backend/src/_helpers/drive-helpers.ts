@@ -1,6 +1,7 @@
 import { Environment } from "../../config/environment";
 import { Secrets } from "../../config/secrets";
 import { DatasetErrorReport } from "./dataset-error-report";
+import { normalLog } from "./logger";
 
 declare var require: any;
 let fs = require('fs');
@@ -34,7 +35,7 @@ async function listFiles(res) {
         console.log(listResults);
         res.sendStatus(200);
     } catch (err) {
-        console.log(err);
+        normalLog(err);
         res.sendStatus(500);
     }
 }

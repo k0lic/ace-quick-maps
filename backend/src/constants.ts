@@ -5,7 +5,9 @@ export class Constants {
     public static PASSWORD_RESET = {
         CODE_LENGTH: 32
     };
-    public static RESET_KEY_LENGTH: number = 32;
+    public static REFRESH_TOKEN = {
+        CODE_LENGTH: 32
+    };
     public static MAIL_TEMPLATES = {
         WELCOME: {
             SUBJECT: '[ACE Oko] Pristup sajtu odobren',

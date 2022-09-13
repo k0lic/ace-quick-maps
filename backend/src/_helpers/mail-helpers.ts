@@ -1,5 +1,6 @@
 import { Secrets } from "../../config/secrets";
 import { Constants } from "../constants";
+import { normalLog } from "./logger";
 
 declare var require: any;
 let nodemailer = require('nodemailer');
@@ -37,9 +38,7 @@ function sendMail(to: string, subject: string, text: string, callback, errCallba
 function sendMailConsoleLog(to: string, subject: string, text: string): void {
     sendMail(to, subject, text, info => {
         // skip
-    }, err => {
-        console.log(err);
-    });
+    }, normalLog);
 }
 
 export {

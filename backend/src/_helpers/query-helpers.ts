@@ -1,4 +1,5 @@
 import { Secrets } from "../../config/secrets";
+import { normalLog } from "./logger";
 
 declare var require: any;
 let mysql = require('mysql');
@@ -33,7 +34,7 @@ function executeQuery(queryString: string, queryValues: any, res): void {
 
 function executeQueryWithCallback(queryString: string, queryValues: any, res, callback, errCallback): void {
     let realErrCallback = errCallback == null ? (err => {
-        console.log(err);
+        normalLog(err);
         res.sendStatus(500);
     }) : errCallback;
     coreExecuteQueryWithCallback(queryString, queryValues, callback, realErrCallback);
@@ -43,14 +44,14 @@ function executeTransaction(queryStrings: string[], queryValues: any[], res): vo
     coreExecuteTransaction(queryStrings, queryValues, () => {
         res.sendStatus(200);
     }, err => {
-        console.log(err);
+        normalLog(err);
         res.sendStatus(500);
     })
 }
 
 function beginTransaction(res, callback, errCallback) {
     let realErrCallback = errCallback == null ? (err => {
-        console.log(err);
+        normalLog(err);
         res.sendStatus(500);
     }) : errCallback;
     coreBeginTransaction(callback, realErrCallback);
@@ -58,21 +59,21 @@ function beginTransaction(res, callback, errCallback) {
 
 function rollbackTransaction(res, err) {
     coreRollbackTransaction(err, err => {
-        console.log(err);
+        normalLog(err);
         res.sendStatus(500);
     });
 }
 
 function commitTransaction(res, callback) {
     coreCommitTransaction(callback, err => {
-        console.log(err);
+        normalLog(err);
         res.sendStatus(500);
     });
 }
 
 function executeQueries(queryStrings: string[], queryValues: any[], res, callback, errCallback): void {
     let realErrCallback = errCallback == null ? (err => {
-        console.log(err);
+        normalLog(err);
         res.sendStatus(500);
     }) : errCallback;
     coreExecuteQueries(queryStrings, queryValues, callback, realErrCallback);

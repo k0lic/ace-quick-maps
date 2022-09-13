@@ -30,6 +30,7 @@ let mailHelpers = require('./_helpers/mail-helpers');
 
 // Setup cron jobs
 let datasetRefresherCrons = require('./_cron/dataset-refresher');
+let backupCrons = require('./_cron/db-backup');
 
 // !!! Routes
 // Default routes

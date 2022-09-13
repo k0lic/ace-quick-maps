@@ -1,4 +1,5 @@
 import { DatasetErrorReport } from "../_helpers/dataset-error-report";
+import { normalLog } from "../_helpers/logger";
 
 declare var require: any;
 let express = require('express');
@@ -27,7 +28,7 @@ router.get('/process_driving_log', (req, res) => {
         console.log('SUCCESSFUL TEST');
         res.sendStatus(200);
     }, err => {
-        console.log(err);
+        normalLog(err);
         console.log('FAILED TEST');
         res.sendStatus(500);
     });
@@ -44,7 +45,7 @@ router.get('/download_tour_schedule', (req, res) => {
         console.log('Downloaded tour schedule file :)');
         res.sendStatus(200);
     }, err => {
-        console.log(err);
+        normalLog(err);
         res.sendStatus(500);
     });
 });
@@ -56,7 +57,7 @@ router.get('/download_driving_log', (req, res) => {
         console.log('Downloaded driving log file :)');
         res.sendStatus(200);
     }, err => {
-        console.log(err);
+        normalLog(err);
         res.sendStatus(500);
     });
 });

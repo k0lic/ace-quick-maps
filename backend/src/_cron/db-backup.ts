@@ -1,4 +1,5 @@
 import { Secrets } from "../../config/secrets";
+import { normalLog, timeStampLog } from "../_helpers/logger";
 import { CronConfig } from "./cron-config";
 
 declare var require: any;
@@ -37,23 +38,23 @@ function tryAndSaveJsonConfig() {
 
 // Structure functions
 function reportFailure(cronName, err) {
-    console.log(''
-        + '[' + new Date() + '] Database Backup Cron Job \'' + cronName + '\' FAILED!'
+    timeStampLog(''
+        + 'Database Backup Cron Job \'' + cronName + '\' FAILED!'
         + '\n\tCause in next line:'
     );
-    console.log(err);
+    normalLog(err);
 }
 
 function reportSuccess(cronName) {
-    console.log('[' + new Date() + '] Database Backup Cron Job \'' + cronName + '\' successfully finished');
+    timeStampLog('Database Backup Cron Job \'' + cronName + '\' successfully finished');
 }
 
 function reportDisabled(cronName) {
-    console.log('[' + new Date() + '] Database Backup Cron Job \'' + cronName + '\' is disabled - did not run');
+    timeStampLog('Database Backup Cron Job \'' + cronName + '\' is disabled - did not run');
 }
 
 function reportInvalidConfig(cronName) {
-    console.log('[' + new Date() + '] Database Backup Cron Job \'' + cronName + '\' FAILED! Config is invalid');
+    timeStampLog('Database Backup Cron Job \'' + cronName + '\' FAILED! Config is invalid');
 }
 
 // Meat functions
@@ -96,15 +97,15 @@ function runBackup(cronName, typeEnabledKey, pathsKey, indexKey) {
 
     createBackup(fileName, () => {
         uploadBackup(fileName, () => {
+            // Update config for next run
+            backupConfig[indexKey] = (backupConfig[indexKey] + 1) % backupConfig[pathsKey].length;
+
+            // Save json config - index was updated
+            tryAndSaveJsonConfig();
+            
             reportSuccess(cronName);
         }, err => reportFailure(cronName, err));
     }, err => reportFailure(cronName, err));
-
-    // Update config for next run
-    backupConfig[indexKey] = (backupConfig[indexKey] + 1) % backupConfig[pathsKey].length;
-
-    // Save json config - index was updated
-    tryAndSaveJsonConfig();
 }
 
 // Perform backup every day at 03:00 - middle of the night

@@ -1,6 +1,7 @@
 import { Environment } from "../../config/environment";
 import { Constants } from "../constants";
 import { atRowMessage, DatasetErrorReport } from "../_helpers/dataset-error-report";
+import { normalLog, timeStampLog } from "../_helpers/logger";
 import { CronConfig } from "./cron-config";
 
 declare var require: any;
@@ -39,13 +40,13 @@ function tryAndSaveJsonConfig() {
 
 // Structure Functions
 function yell() {
-    console.log('[' + new Date() + '] HELLO ');
+    timeStampLog('HELLO');
 }
 
 function runRefresh() {
     // Check if cron job is enabled
     if (!refreshConfig.enabled) {
-        console.log('[' + new Date() + '] Dataset Refresher Cron Job is disabled - did not run');
+        timeStampLog('Dataset Refresher Cron Job is disabled - did not run');
         return;
     }
 
@@ -65,8 +66,8 @@ function runRefresh() {
                         // Commit transaction
                         queryHelpers.coreCommitTransaction(() => {
                             // Log successful job
-                            console.log(''
-                                + '[' + new Date() + '] Dataset Refresher Cron Job successfully finished '
+                            timeStampLog(''
+                                + 'Dataset Refresher Cron Job successfully finished '
                                 + '\n\tWith settings: (fetchSchedule:' + refreshConfig.fetchTourSchedule + ', fetchDrivingLog:' + refreshConfig.fetchDrivingLog 
                                 + ', updateSchedule:' + refreshConfig.updateTourSchedule + ', updateDrivingLog:' + refreshConfig.updateDrivingLog + ')'
                             );
@@ -93,13 +94,13 @@ function rollback(err) {
 }
 
 function reportFailure(err) {
-    console.log(''
-        + '[' + new Date() + '] Dataset refresher cron job FAILED!'
+    timeStampLog(''
+        + 'Dataset refresher cron job FAILED!'
         + '\n\tWith settings: (fetchSchedule:' + refreshConfig.fetchTourSchedule + ', fetchDrivingLog:' + refreshConfig.fetchDrivingLog 
         + ', updateSchedule:' + refreshConfig.updateTourSchedule + ', updateDrivingLog' + refreshConfig.updateDrivingLog + ')'
         + '\n\tCause in next line:'
     );
-    console.log(err);
+    normalLog(err);
 }
 
 function sendReport(resourceName: string, ownerEmailAddress: string, report: DatasetErrorReport) {

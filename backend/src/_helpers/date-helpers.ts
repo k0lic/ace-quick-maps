@@ -25,9 +25,15 @@ function getFebruaryNextYear(): Date {
     return date;
 }
 
+function getTimestampForLog(): string {
+    let now = new Date();
+    return getDDMMYYYYslashed(now) + ' ' + padZerosToTwo(now.getHours()) + ':' + padZerosToTwo(now.getMinutes()) + ':' + padZerosToTwo(now.getSeconds());
+}
+
 export {
     getYYYYMMDDdashed,
     getDDMMYYYYslashed,
     getDDMMYYslashed,
-    getFebruaryNextYear
+    getFebruaryNextYear,
+    getTimestampForLog
 }

@@ -1,5 +1,6 @@
 import { Secrets } from "../../config/secrets";
 import { Constants } from "../constants";
+import { normalLog } from "../_helpers/logger";
 
 declare var require: any;
 let express = require('express');
@@ -38,7 +39,7 @@ router.post('/login', (req, res) => {
         // Check password with hash in DB
         bcrypt.compare(password, rows[0].password, (err, cmp) => {
             if (err) {
-                console.log(err);
+                normalLog(err);
                 res.sendStatus(500);
                 return;
             }
@@ -49,14 +50,21 @@ router.post('/login', (req, res) => {
                 return;
             }
 
-            // Correct password - add jwt to cookies
-            let token = jwtHelpers.createJwt(rows[0]);
-            res.cookie(Secrets.JWT.SESSION_ID, token);
+            // Correct password
+            // Add jwt Refresh Token to DB and cookies
+            jwtHelpers.createNewRefreshToken(email, res, () => {
+                // Add jwt Access Token to cookies
+                let token = jwtHelpers.createAccessToken(rows[0]);
+                jwtHelpers.setAccessToken(token, res);
 
-            // Create another cookie that's used for 'dumb' page restriction by angular - not for security but for QOL
-            res.cookie(Constants.USER_TYPE, rows[0].user_type);
-
-            res.sendStatus(200);
+                // Add User Type to cookies - used on the frontend for page access restriction (QoL)
+                jwtHelpers.setUserTypeCookie(res, rows[0].user_type);
+    
+                res.sendStatus(200);
+            }, err => {
+                normalLog(err);
+                res.sendStatus(500);
+            });
         });
     }, null);
 });
@@ -70,7 +78,7 @@ router.post('/register', (req, res) => {
     // Hash password
     bcrypt.hash(password, 10, (err, hash) => {
         if (err) {
-            console.log(err);
+            normalLog(err);
             res.sendStatus(500);
             return;
         }
@@ -103,7 +111,7 @@ router.post('/forgot', (req, res) => {
         // Create random reset string
         crypto.randomBytes(Constants.PASSWORD_RESET.CODE_LENGTH, (err, buf) => {
             if (err) {
-                console.log(err);
+                normalLog(err);
                 res.sendStatus(500);
                 return;
             }
@@ -192,7 +200,7 @@ router.post('/reset_password', (req, res) => {
         // Hash password
         bcrypt.hash(password, 10, (err, hash) => {
             if (err) {
-                console.log(err);
+                normalLog(err);
                 res.sendStatus(500);
                 return;
             }
@@ -208,9 +216,15 @@ router.post('/reset_password', (req, res) => {
 
 router.get('/clear_cookies', (req, res) => {
     // Same as the logout route in login-routes - just does not require you to be logged in
-    jwtHelpers.clearJwt(res);
-    res.clearCookie(Constants.USER_TYPE);
-    res.sendStatus(200);
+    // Delete Refresh Token, Access Token and User Type (used for frontend page access control) cookies
+    jwtHelpers.deleteRefreshTokenIfExists(req, res, () => {
+        jwtHelpers.clearAccessToken(res);
+        jwtHelpers.clearUserTypeCookie(res);
+        res.sendStatus(200);
+    }, err => {
+        normalLog(err);
+        res.sendStatus(500);
+    });
 });
 
 // Export router

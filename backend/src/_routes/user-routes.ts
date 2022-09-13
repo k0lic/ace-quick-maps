@@ -58,7 +58,7 @@ router.post('/approve_user', (req, res) => {
         }
 
         // Check if user is allowed to approve user of type
-        let content = jwtHelpers.extractJwtContent(req, res);
+        let content = jwtHelpers.extractAccessTokenContent(req, res);
         let loggedType = content?.type;
         if (loggedType == null || !isHigherOrEqual(loggedType, type)) {
             // Logged user is not allowed to approve new user of type
@@ -110,7 +110,7 @@ router.post('/change_user_type', (req, res) => {
         let oldType = rows[0].user_type;
 
         // Check if user is allowed to perform the requested type change
-        let content = jwtHelpers.extractJwtContent(req, res);
+        let content = jwtHelpers.extractAccessTokenContent(req, res);
         let loggedType = content?.type;
         if (loggedType == null || !isHigher(loggedType, oldType)) {
             // Logged user is not allowed to change user type from oldType
@@ -149,7 +149,7 @@ router.post('/revoke_access', (req, res) => {
         let type = rows[0].user_type;
 
         // Check if user is allowed to approve user of type
-        let content = jwtHelpers.extractJwtContent(req, res);
+        let content = jwtHelpers.extractAccessTokenContent(req, res);
         let loggedType = content?.type;
         if (loggedType == null || !isHigher(loggedType, type)) {
             // Logged user is not allowed to revoke access to user of type
@@ -183,7 +183,7 @@ router.post('/renew_access', (req, res) => {
         let type = rows[0].user_type;
 
         // Check if user is allowed to renew access to user of type
-        let content = jwtHelpers.extractJwtContent(req, res);
+        let content = jwtHelpers.extractAccessTokenContent(req, res);
         let loggedType = content?.type;
         if (loggedType == null || !isHigherOrEqual(loggedType, type)) {
             // Logged user is not allowed to renew access to user of type
