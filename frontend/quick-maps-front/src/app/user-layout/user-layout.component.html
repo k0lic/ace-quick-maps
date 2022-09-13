@@ -47,5 +47,14 @@
             </div>
         </div>
     </div>
-    <router-outlet></router-outlet>
+    <!-- CHILD COMPONENT -->
+    <router-outlet *ngIf="user != null"></router-outlet>
+    <!-- LOADING COMPONENT -->
+    <!-- TODO: Loading component improvement/replacement?
+        Either make the loading element more presentable, or fix the original issue another way.
+        The original issue was that the UserLayoutComponent and the nested Component both had http server requests in the ngOnInit method.
+        Resulting in simultaneous requests, which is problematic with the newly added refresh tokens.
+        The second request would try and use the now invalid refresh token, prompting session closure every time page was loaded while access token is expired.
+    -->
+    <div *ngIf="user == null">LOADING...</div>
 </div>

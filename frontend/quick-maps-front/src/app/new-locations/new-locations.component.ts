@@ -1,9 +1,14 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { Route, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { LoggedInComponent } from '../_abstracts/logged-in.component';
 import { Location } from '../_entities/location';
+import { consoleLogShortSignature } from '../_helpers/errHandler';
 import { setTitle } from '../_helpers/titleHelper';
 import { LocationService } from '../_services/location.service';
+import { MeService } from '../_services/me.service';
 // import { MouseEvent } from '@agm/core';
 
 // Marker interface, used for presenting the places on the map, and then for sending the newly created places to the backend.
@@ -20,7 +25,7 @@ interface Marker {
   templateUrl: './new-locations.component.html',
   styleUrls: ['./new-locations.component.css']
 })
-export class NewLocationsComponent implements OnInit, OnDestroy {
+export class NewLocationsComponent extends LoggedInComponent implements OnInit, OnDestroy {
 
   @ViewChild('inputPlaceNameTag') inputPlaceNameElement!: ElementRef<HTMLInputElement>;
   newPlaceName : string = '';
@@ -38,11 +43,15 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
   iconObj : any;
 
   constructor(
+    protected router: Router,
+    protected meService: MeService,
     private zone: NgZone, 
     public translateService: TranslateService, 
     private titleService: Title,
     private locationService: LocationService
-  ) { }
+  ) {
+    super(router, meService);
+  }
 
   ngOnInit(): void {
     // Retrieve locations from the server
@@ -85,10 +94,7 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
           isSaved: true
         });
       });
-    }, err => {
-      // Layout will perform redirect if necessary
-      console.log(err);
-    });
+    }, err => this.checkErrUnauthorized(err));
   }
 
   onMapClick($event : google.maps.MouseEvent): void {
@@ -147,9 +153,12 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
     this.locationService.addLocation(newLocation.label, newLocation.lat, newLocation.lng).subscribe(res => {
       // skip
     }, err => {
-      console.log(err);
-      // Server failed adding the marker, remove it from ui
-      this.markers.splice(index, 1);
+      this.checkErrUnauthorizedCustom(err, [(err: HttpErrorResponse, router: Router, meService: MeService, callbacks: any[]) => {
+        consoleLogShortSignature(err);
+
+        // Server failed adding the marker, remove it from ui
+        this.markers.splice(index, 1);
+      }]);
     });
   }
 
@@ -174,9 +183,12 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
       this.locationService.deleteLocation(label).subscribe(res => {
         // skip
       }, err => {
-        console.log(err);
-        // Server failed removing the marker, add it back to ui
-        this.addNewMarker(label, lat, lng);
+        this.checkErrUnauthorizedCustom(err, [(err: HttpErrorResponse, router: Router, meService: MeService, callbacks: any[]) => {
+          consoleLogShortSignature(err);
+  
+          // Server failed removing the marker, add it back to ui
+          this.addNewMarker(label, lat, lng);
+        }]);
       });
     }
 
@@ -197,10 +209,13 @@ export class NewLocationsComponent implements OnInit, OnDestroy {
       this.locationService.moveLocation(marker.label, marker.lat, marker.lng).subscribe(res => {
         // skip
       }, err => {
-        console.log(err);
-        // Server failed moving the marker, move it back to where it was
-        this.markers[index].lat = oldLat;
-        this.markers[index].lng = oldLng;
+        this.checkErrUnauthorizedCustom(err, [(err: HttpErrorResponse, router: Router, meService: MeService, callbacks: any[]) => {
+          consoleLogShortSignature(err);
+  
+          // Server failed moving the marker, move it back to where it was
+          this.markers[index].lat = oldLat;
+          this.markers[index].lng = oldLng;
+        }]);
       });
     }
 

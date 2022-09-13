@@ -1,9 +1,12 @@
 import { Component, NgZone, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { LoggedInComponent } from '../_abstracts/logged-in.component';
 import { PaxNightsByLocation } from '../_entities/pax-nights-by-location';
 import { defaultSvgPath } from '../_helpers/svgHelper';
 import { setTitle } from '../_helpers/titleHelper';
+import { MeService } from '../_services/me.service';
 import { StatService } from '../_services/stat.service';
 
 // Marker interface, used for presenting the points on the map
@@ -24,7 +27,7 @@ interface Marker {
   templateUrl: './stat-map.component.html',
   styleUrls: ['./stat-map.component.css']
 })
-export class StatMapComponent implements OnInit {
+export class StatMapComponent extends LoggedInComponent implements OnInit {
 
   // Default parameters for the map element. Some of these could be dynamic (TODO).
   map_lat : number = 43;
@@ -40,11 +43,15 @@ export class StatMapComponent implements OnInit {
   labelOriginConst: any;
 
   constructor(
+    protected router: Router,
+    protected meService: MeService,
     private zone: NgZone,
     private titleService: Title,
     private translateService: TranslateService,
     private statService: StatService
-  ) { }
+  ) {
+    super(router, meService);
+  }
 
   ngOnInit(): void {
     this.refreshStats();
@@ -103,10 +110,7 @@ export class StatMapComponent implements OnInit {
       });
 
       this.markers = tmpList;
-    }, err => {
-      // Layout will perform redirect if necessary
-      console.log(err);
-    });
+    }, err => this.checkErrUnauthorized(err));
   }
 
   createCirclePath(centerLat: number, centerLng: number, radiusQ: number): Coord[] {

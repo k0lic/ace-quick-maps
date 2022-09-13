@@ -1,11 +1,14 @@
 import { Component, NgZone, OnInit, Renderer2, SecurityContext } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { TranslateCompiler, TranslateService } from '@ngx-translate/core';
+import { LoggedInComponent } from '../_abstracts/logged-in.component';
 import { PointType } from '../_entities/point-type';
 import { TourInfoPoint } from '../_entities/tour-info-point';
 import { escapeHtml } from '../_helpers/stringHelper';
 import { defaultSvgPath, svgMap } from '../_helpers/svgHelper';
 import { setTitle } from '../_helpers/titleHelper';
+import { MeService } from '../_services/me.service';
 import { ProgramService } from '../_services/program.service';
 import { TourService } from '../_services/tour.service';
 
@@ -268,7 +271,7 @@ function defineTourInfoWindow() {
   templateUrl: './date-map.component.html',
   styleUrls: ['./date-map.component.css']
 })
-export class DateMapComponent implements OnInit {
+export class DateMapComponent extends LoggedInComponent implements OnInit {
 
   // Default parameters for the map element. Some of these could be dynamic (TODO).
   map_lat : number = 43;
@@ -305,17 +308,20 @@ export class DateMapComponent implements OnInit {
   };
 
   constructor(
+    protected router: Router,
+    protected meService: MeService,
     private zone: NgZone, 
     private renderer: Renderer2, 
     private translateService: TranslateService,
     private titleService: Title,
     private tourService: TourService, 
     private programService: ProgramService
-  ) { }
+  ) {
+    super(router, meService);
+  }
 
   ngOnInit(): void {
     this.getAllPointTypes();
-    this.getTourInfo();
 
     this.anchorConst = {x: 12, y: 12};
     this.labelOriginConst = {x: 12, y: 12};
@@ -398,10 +404,7 @@ export class DateMapComponent implements OnInit {
       }
 
       this.refreshMarkerContainers();
-    }, err => {
-      // Layout will perform redirect if necessary
-      console.log(err);
-    });
+    }, err => this.checkErrUnauthorized(err));
   }
 
   refreshMarkerContainers(): void {
@@ -507,10 +510,10 @@ export class DateMapComponent implements OnInit {
           );
         }
       });
-    }, err => {
-      // Layout will perform redirect if necessary
-      console.log(err);
-    });
+
+      // Serialize server requests
+      this.getTourInfo();
+    }, err => this.checkErrUnauthorized(err));
   }
 
   getSvgPath(key: string): string {

@@ -1,6 +1,8 @@
 import { Component, NgZone, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { LoggedInComponent } from '../_abstracts/logged-in.component';
 import { Location } from '../_entities/location';
 import { Partner } from '../_entities/partner';
 import { PointType } from '../_entities/point-type';
@@ -8,6 +10,7 @@ import { TourProgram } from '../_entities/program';
 import { ProgramDayPoint } from '../_entities/program-day-point';
 import { setTitle } from '../_helpers/titleHelper';
 import { LocationService } from '../_services/location.service';
+import { MeService } from '../_services/me.service';
 import { ProgramService } from '../_services/program.service';
 
 // Marker interface, used for presenting the places on the map
@@ -43,7 +46,7 @@ interface ProgramDay {
   templateUrl: './program-editor.component.html',
   styleUrls: ['./program-editor.component.css']
 })
-export class ProgramEditorComponent implements OnInit {
+export class ProgramEditorComponent extends LoggedInComponent implements OnInit {
 
   // Default parameters for the map element. Some of these could be dynamic (TODO).
   map_lat : number = 43;
@@ -80,18 +83,20 @@ export class ProgramEditorComponent implements OnInit {
   };
 
   constructor(
+    protected router: Router,
+    protected meService: MeService,
     private zone: NgZone, 
     public translateService: TranslateService, 
     private titleService: Title,
     private locationService: LocationService, 
     private programService: ProgramService
-  ) { }
+  ) {
+    super(router, meService);
+  }
 
   ngOnInit(): void {
-    this.getAllPartners();
-    this.getAllPrograms();
-    this.getAllPointTypes();
-    this.getAllLocations();
+    // Get all server requests one after another
+    this.getAllChained();
 
     setTitle('SUBTITLES.PROGRAM_EDITOR', this.titleService, this.translateService);
   }
@@ -152,9 +157,7 @@ export class ProgramEditorComponent implements OnInit {
     ).subscribe((res) => {
       // Fetch all the points, which should now contain the newly added point
       this.getAllDayPoints(null);
-    }, err => {
-      console.log(err);
-    });
+    }, err => this.checkErrUnauthorized(err));
   }
 
   flipEditMode(): void {
@@ -231,9 +234,7 @@ export class ProgramEditorComponent implements OnInit {
     this.programService.addProgramDay(this.selectedTourProgramId, newDayNumber, "").subscribe(res => {
       // Fetch all the points, which should now contain the newly added day
       this.getAllDayPoints(newDayNumber);
-    }, err => {
-      console.log(err);
-    });
+    }, err => this.checkErrUnauthorized(err));
   }
 
   deleteLastTourProgramDay(): void {
@@ -241,9 +242,7 @@ export class ProgramEditorComponent implements OnInit {
     this.programService.deleteProgramDay(this.selectedTourProgramId, dayNumber).subscribe(res => {
       // Fetch all the points, which should now contain one less day
       this.getAllDayPoints(this.selectedDay == dayNumber ? (dayNumber == 1 ? null : dayNumber - 1) : null);
-    }, err => {
-      console.log(err);
-    });
+    }, err => this.checkErrUnauthorized(err));
   }
 
   onPointTypeClick(name: string): void {
@@ -254,9 +253,7 @@ export class ProgramEditorComponent implements OnInit {
     this.programService.fixupTourProgram(this.selectedTourProgramId).subscribe(res => {
       // Fetch all the points, which should now contain new points created by the fixup function
       this.getAllDayPoints(null);
-    }, err => {
-      console.log(err);
-    })
+    }, err => this.checkErrUnauthorized(err))
   }
 
   // Fetch data from server
@@ -264,20 +261,17 @@ export class ProgramEditorComponent implements OnInit {
     this.programService.getAllPartners().subscribe((partners: [Partner]) => {
       let partnersWithJoker = [this.jokerPartner].concat(partners);
       this.partners = partnersWithJoker;
-    }, err => {
-      // Layout will perform redirect if necessary
-      console.log(err);
-    });
+
+      // Perform next server request in the chain
+      this.getAllPrograms();
+    }, err => this.checkErrUnauthorized(err));
   }
 
   getAllPrograms(): void {
     this.programService.getAllTourPrograms().subscribe((programs: [TourProgram]) => {
       this.tourPrograms = programs;
       this.onPartnerSelect(this.jokerPartner.idpartner);
-    }, err => {
-      // Layout will perform redirect if necessary
-      console.log(err);
-    });
+    }, err => this.checkErrUnauthorized(err));
   }
 
   getAllPointTypes(): void {
@@ -301,10 +295,10 @@ export class ProgramEditorComponent implements OnInit {
           });
         }
       });
-    }, err => {
-      // Layout will perform redirect if necessary
-      console.log(err);
-    });
+
+      // Perform next server request in the chain
+      this.getAllPartners();
+    }, err => this.checkErrUnauthorized(err));
   }
 
   getAllDayPoints(focus_on_day: number | null): void {
@@ -361,10 +355,7 @@ export class ProgramEditorComponent implements OnInit {
       }
 
       this.refreshPointMarkers();
-    }, err => {
-      // Layout will perform redirect if necessary
-      console.log(err);
-    });
+    }, err => this.checkErrUnauthorized(err));
   }
 
   getAllLocations(): void {
@@ -388,10 +379,15 @@ export class ProgramEditorComponent implements OnInit {
           show_label: true
         });
       });
-    }, err => {
-      // Layout will perform redirect if necessary
-      console.log(err);
-    });
+
+      // Perform next server request in the chain
+      this.getAllPointTypes();
+    }, err => this.checkErrUnauthorized(err));
+  }
+
+  getAllChained() {
+    // Perform all startup server requests sequentially
+    this.getAllLocations();
   }
 
   // OTHER

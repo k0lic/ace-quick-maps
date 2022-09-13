@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { consoleLogShortSignature } from '../_helpers/errHandler';
 import { setTitle } from '../_helpers/titleHelper';
 import { LoginService } from '../_services/login.service';
 
@@ -48,7 +49,7 @@ export class LoginComponent implements OnInit {
     this.loginService.login(this.loginForm.value.email, this.loginForm.value.password).subscribe(res => {
       this.router.navigate(['/ok/date-map']);
     }, err => {
-      console.log(err);
+      consoleLogShortSignature(err);
 
       this.errorMessage = true;
       this.loginForm.patchValue({

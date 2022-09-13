@@ -3,6 +3,7 @@ import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/fo
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { consoleLogShortSignature } from '../_helpers/errHandler';
 import { setTitle } from '../_helpers/titleHelper';
 import { LoginService } from '../_services/login.service';
 
@@ -77,7 +78,7 @@ export class RegisterComponent implements OnInit {
         linkUrl: '/login'
       }});
     }, err => {
-      console.log(err);
+      consoleLogShortSignature(err);
 
       this.errorMessage = true;
       this.registerForm.patchValue({

@@ -3,6 +3,7 @@ import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/fo
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { consoleLogShortSignature } from '../_helpers/errHandler';
 import { setTitle } from '../_helpers/titleHelper';
 import { LoginService } from '../_services/login.service';
 
@@ -105,7 +106,7 @@ export class ResetPasswordComponent implements OnInit {
         linkUrl: '/login'
       }});
     }, err => {
-      console.log(err);
+      consoleLogShortSignature(err);
 
       this.invalidCodeRedirect();
     });

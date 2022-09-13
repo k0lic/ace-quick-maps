@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { consoleLogShortSignature } from '../_helpers/errHandler';
 import { setTitle } from '../_helpers/titleHelper';
 import { LoginService } from '../_services/login.service';
 
@@ -53,7 +54,7 @@ export class ForgotPasswordComponent implements OnInit {
         linkUrl: '/login'
       }});
     }, err => {
-      console.log(err);
+      consoleLogShortSignature(err);
       this.errorMessage = true;
     });
   }
