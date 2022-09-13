@@ -25,6 +25,15 @@ function getFebruaryNextYear(): Date {
     return date;
 }
 
+function getCookieExpireDate(): Date {
+    // Expire cookies after 30 days
+    // We don't actually need a carefully chosen date as expiration is controlled either by JWT (access token) or our database (refresh token).
+    // So this value just needs to be greather than those, which are 1h, and 7d at time of writing this comment.
+    let date = new Date();
+    date.setDate(date.getDate() + 30);
+    return date;
+}
+
 function getTimestampForLog(): string {
     let now = new Date();
     return getDDMMYYYYslashed(now) + ' ' + padZerosToTwo(now.getHours()) + ':' + padZerosToTwo(now.getMinutes()) + ':' + padZerosToTwo(now.getSeconds());
@@ -35,5 +44,6 @@ export {
     getDDMMYYYYslashed,
     getDDMMYYslashed,
     getFebruaryNextYear,
+    getCookieExpireDate,
     getTimestampForLog
 }

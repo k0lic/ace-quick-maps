@@ -1,5 +1,6 @@
 import { Secrets } from "../../config/secrets";
 import { Constants } from "../constants";
+import { getCookieExpireDate } from "./date-helpers";
 import { coreCommitTransaction } from "./query-helpers";
 
 declare var require: any;
@@ -11,7 +12,9 @@ let dateHelpers = require('./date-helpers');
 // Angular dumb page access cookie
 function setUserTypeCookie(res, userType: string): void {
     // Create another cookie that's used for 'dumb' page restriction by angular - not for security but for QOL
-    res.cookie(Constants.USER_TYPE, userType);
+    res.cookie(Constants.USER_TYPE, userType, {
+        expires: getCookieExpireDate()
+    });
 }
 
 function clearUserTypeCookie(res): void {
@@ -47,7 +50,9 @@ function clearAccessToken(res): void {
 }
 
 function setAccessToken(token, res): void {
-    res.cookie(Secrets.JWT.SESSION_ID, token);
+    res.cookie(Secrets.JWT.SESSION_ID, token, {
+        expires: getCookieExpireDate()
+    });
 }
 
 // Refresh token
@@ -189,7 +194,9 @@ function signRefreshToken(email: string, family: string, code: string): any {
 
 function setRefreshToken(res, token: any): void {
     // Set cookie
-    res.cookie(Secrets.JWT.REFRESH_COOKIE, token);
+    res.cookie(Secrets.JWT.REFRESH_COOKIE, token, {
+        expires: getCookieExpireDate()
+    });
 }
 
 function forgeNewRefreshCode(successCallback, errCallback): void {
