@@ -1,5 +1,5 @@
 import { Secrets } from "../../config/secrets";
-import { normalLog } from "./logger";
+import { normalLog, timeStampLog } from "./logger";
 
 declare var require: any;
 let mysql = require('mysql');
@@ -13,11 +13,11 @@ const connection = mysql.createConnection({
 
 connection.connect((err) => {
     if (err) {
-        console.error('error connecting to the DB: ' + err.stack);
+        normalLog('error connecting to the DB: ' + err.stack);
         return;
     }
 
-    console.log('Successfully connected to the DB!');
+    timeStampLog('Successfully connected to the DB!');
 });
 
 function executeQueryWithoutResults(queryString: string, queryValues: any, res): void {

@@ -1,4 +1,5 @@
 import { Environment } from "../config/environment";
+import { timeStampLog } from "./_helpers/logger";
 
 declare var require: any;
 let express = require('express');
@@ -92,11 +93,11 @@ if (Environment.SSL.ENABLED) {
     let httpsServer = https.createServer(sslCredentials, app);
 
     httpsServer.listen(4000, () => {
-        console.log('Express https server listening on port 4000');
+        timeStampLog('Express https server listening on port 4000');
     });
 } else {
     // Http server
     app.listen(4000, () => {
-        console.log('Express unsecure server listening on port 4000')
+        timeStampLog('Express unsecure server listening on port 4000')
     });
 }
