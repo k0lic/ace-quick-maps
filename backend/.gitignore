@@ -8,3 +8,4 @@ build/
 config/*
 data/*
 backups/*
+ecosystem.config.js
