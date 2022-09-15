@@ -1,4 +1,6 @@
 import { Constants } from "../constants";
+import { respondWith200, respondWith500, respondWithJust200 } from "../_helpers/http-responses";
+import { executeQuery } from "../_helpers/query-helpers";
 
 declare var require: any;
 let express = require('express');
@@ -6,7 +8,6 @@ let express = require('express');
 let router = express.Router();
 
 let userCheckers = require('../_middleware/user-checkers');
-let queryHelpers = require('../_helpers/query-helpers');
 let mailHelpers = require('../_helpers/mail-helpers');
 let jwtHelpers = require('../_helpers/jwt-helpers');
 let dateHelpers = require('../_helpers/date-helpers');
@@ -21,7 +22,7 @@ router.get('/active_users', (req, res) => {
     let todayString = dateHelpers.getYYYYMMDDdashed(today);
     let queryValues = [todayString];
 
-    queryHelpers.executeQuery(queryString, queryValues, res);
+    executeQuery(queryString, queryValues, rows => respondWith200(res, rows), err => respondWith500(res, err));
 });
 
 router.get('/expired_users', (req, res) => {
@@ -30,17 +31,17 @@ router.get('/expired_users', (req, res) => {
     let todayString = dateHelpers.getYYYYMMDDdashed(today);
     let queryValues = [todayString];
 
-    queryHelpers.executeQuery(queryString, queryValues, res);
+    executeQuery(queryString, queryValues, rows => respondWith200(res, rows), err => respondWith500(res, err));
 });
 
 router.get('/user_requests', (req, res) => {
     let queryString = 'SELECT email, name, last_name, user_type FROM users WHERE approved = 0';
-    queryHelpers.executeQuery(queryString, [], res);
+    executeQuery(queryString, [], rows => respondWith200(res, rows), err => respondWith500(res, err));
 });
 
 router.get('/types', (req, res) => {
     let queryString = 'SELECT * FROM user_types';
-    queryHelpers.executeQuery(queryString, [], res);
+    executeQuery(queryString, [], rows => respondWith200(res, rows), err => respondWith500(res, err));
 });
 
 router.post('/approve_user', (req, res) => {
@@ -51,7 +52,7 @@ router.post('/approve_user', (req, res) => {
     let fetchQueryString = 'SELECT * FROM users WHERE email = ? AND approved = 0';
     let fetchQueryValues = [user];
 
-    queryHelpers.executeQueryWithCallback(fetchQueryString, fetchQueryValues, res, rows => {
+    executeQuery(fetchQueryString, fetchQueryValues, rows => {
         if (rows.length == 0) {
             res.sendStatus(500);
             return;
@@ -69,7 +70,7 @@ router.post('/approve_user', (req, res) => {
         let queryString = 'UPDATE users SET approved = 1, revoke_access_date = ?, user_type = ? WHERE email = ?';
         let queryValues = [dateHelpers.getYYYYMMDDdashed(dateHelpers.getFebruaryNextYear()), type, user];
 
-        queryHelpers.executeQueryWithCallback(queryString, queryValues, res, result => {
+        executeQuery(queryString, queryValues, result => {
             // User successfully approved, send a greeting mail to them
             mailHelpers.sendMailConsoleLog(
                 user,
@@ -78,9 +79,9 @@ router.post('/approve_user', (req, res) => {
             );
 
             // Send success status regardless of the mailing result
-            res.sendStatus(200);
-        }, null);
-    }, null);
+            respondWithJust200(res);
+        }, err => respondWith500(res, err));
+    }, err => respondWith500(res, err));
 });
 
 router.post('/delete_request', (req, res) => {
@@ -90,7 +91,7 @@ router.post('/delete_request', (req, res) => {
     let queryString = 'DELETE FROM users WHERE email = ? AND approved = 0';
     let queryValues = [user];
 
-    queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
+    executeQuery(queryString, queryValues, rows => respondWithJust200(res), err => respondWith500(res, err));
 });
 
 router.post('/change_user_type', (req, res) => {
@@ -101,7 +102,7 @@ router.post('/change_user_type', (req, res) => {
     let fetchQueryString = 'SELECT * FROM users WHERE email = ? AND approved = 1';
     let fetchQueryValues = [user];
 
-    queryHelpers.executeQueryWithCallback(fetchQueryString, fetchQueryValues, res, rows => {
+    executeQuery(fetchQueryString, fetchQueryValues, rows => {
         if (rows.length == 0) {
             res.sendStatus(500);
             return;
@@ -127,8 +128,8 @@ router.post('/change_user_type', (req, res) => {
         let changeTypeQueryString = 'UPDATE users SET user_type = ? WHERE email = ?';
         let changeTypeQueryValues = [type, user];
 
-        queryHelpers.executeQueryWithoutResults(changeTypeQueryString, changeTypeQueryValues, res);
-    }, null);
+        executeQuery(changeTypeQueryString, changeTypeQueryValues, rows => respondWithJust200(res), err => respondWith500(res, err));
+    }, err => respondWith500(res, err));
 });
 
 router.post('/revoke_access', (req, res) => {
@@ -140,7 +141,7 @@ router.post('/revoke_access', (req, res) => {
     let todayString = dateHelpers.getYYYYMMDDdashed(today);
     let fetchQueryValues = [user, todayString];
 
-    queryHelpers.executeQueryWithCallback(fetchQueryString, fetchQueryValues, res, rows => {
+    executeQuery(fetchQueryString, fetchQueryValues, rows => {
         if (rows.length == 0) {
             res.sendStatus(500);
             return;
@@ -161,8 +162,8 @@ router.post('/revoke_access', (req, res) => {
         let revokeQueryString = 'UPDATE users SET revoke_access_date = ? WHERE email = ?';
         let revokeQueryValues = ['1970-01-01', user];
 
-        queryHelpers.executeQueryWithoutResults(revokeQueryString, revokeQueryValues, res);
-    }, null);
+        executeQuery(revokeQueryString, revokeQueryValues, rows => respondWithJust200(res), err => respondWith500(res, err));
+    }, err => respondWith500(res, err));
 });
 
 router.post('/renew_access', (req, res) => {
@@ -174,7 +175,7 @@ router.post('/renew_access', (req, res) => {
     let todayString = dateHelpers.getYYYYMMDDdashed(today);
     let fetchQueryValues = [user, todayString];
 
-    queryHelpers.executeQueryWithCallback(fetchQueryString, fetchQueryValues, res, rows => {
+    executeQuery(fetchQueryString, fetchQueryValues, rows => {
         if (rows.length == 0) {
             res.sendStatus(500);
             return;
@@ -195,8 +196,8 @@ router.post('/renew_access', (req, res) => {
         let renewQueryString = 'UPDATE users SET revoke_access_date = ? WHERE email = ?';
         let renewQueryValues = [dateHelpers.getYYYYMMDDdashed(dateHelpers.getFebruaryNextYear()), user];
 
-        queryHelpers.executeQueryWithoutResults(renewQueryString, renewQueryValues, res);
-    }, null);
+        executeQuery(renewQueryString, renewQueryValues, rows => respondWithJust200(res), err => respondWith500(res, err));
+    }, err => respondWith500(res, err));
 });
 
 // Quick and dirty user hierarchy solution

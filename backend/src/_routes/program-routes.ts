@@ -1,10 +1,12 @@
+import { respondWith200, respondWith500, respondWithJust200 } from "../_helpers/http-responses";
+import { executeQuery, executeTransaction } from "../_helpers/query-helpers";
+
 declare var require: any;
 let express = require('express');
 
 let router = express.Router();
 
 let userCheckers = require('../_middleware/user-checkers');
-let queryHelpers = require('../_helpers/query-helpers');
 
 // Make sure only 'admin' users have access
 router.use(userCheckers.assertIsAdmin);
@@ -12,7 +14,7 @@ router.use(userCheckers.assertIsAdmin);
 // List routes here
 router.get('/all_partners', (req, res) => {
     let queryString = 'SELECT * FROM partners';
-    queryHelpers.executeQuery(queryString, [], res);
+    executeQuery(queryString, [], rows => respondWith200(res, rows), err => respondWith500(res, err));
 });
 
 router.get('/all_tour_programs', (req, res) => {
@@ -21,7 +23,7 @@ router.get('/all_tour_programs', (req, res) => {
         + 'FROM programs pr, partners pa '
         + 'WHERE pr.idpartner = pa.idpartner';  // join with partners might be unneeded
         
-    queryHelpers.executeQuery(queryString, [], res);
+    executeQuery(queryString, [], rows => respondWith200(res, rows), err => respondWith500(res, err));
 });
 
 function getDayPointLocationJoinQuery(programId: number): [string, any] {
@@ -48,7 +50,7 @@ router.post('/tour_program_days', (req, res) => {
     let queryString = joinQuery[0];
     let queryValues = joinQuery[1];
 
-    queryHelpers.executeQuery(queryString, queryValues, res);
+    executeQuery(queryString, queryValues, rows => respondWith200(res, rows), err => respondWith500(res, err));
 });
 
 router.post('/tour_program_fixup', (req, res) => {
@@ -58,7 +60,7 @@ router.post('/tour_program_fixup', (req, res) => {
     let queryString = joinQuery[0];
     let queryValues = joinQuery[1];
 
-    queryHelpers.executeQueryWithCallback(queryString, queryValues, res, rows => {
+    executeQuery(queryString, queryValues, rows => {
         // TODO: are there other cases where nothing should be done?
         if (rows.length == 0) {
             res.sendStatus(200);
@@ -97,8 +99,8 @@ router.post('/tour_program_fixup', (req, res) => {
             queryValues.push(insertNewRowsQueryValues);
         }
 
-        queryHelpers.executeTransaction(queryStrings, queryValues, res);
-    }, null);
+        executeTransaction(queryStrings, queryValues, () => respondWithJust200(res), err => respondWith500(res, err));
+    }, err => respondWith500(res, err));
 });
 
 function fixupProgramRows(programId: number, rows: any[]): any[] {
@@ -374,7 +376,7 @@ router.post('/add_program_day', (req, res) => {
 
     let queryString = 'INSERT INTO program_days (idprogram, number, description) VALUES ?';
     let queryValues = [[[programId, number, description]]];
-    queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
+    executeQuery(queryString, queryValues, rows => respondWithJust200(res), err => respondWith500(res, err));
 });
 
 router.post('/delete_program_day', (req, res) => {
@@ -388,7 +390,7 @@ router.post('/delete_program_day', (req, res) => {
     let queryString2 = 'DELETE FROM program_days WHERE idprogram = ? AND number = ?';
     let queryValues2 = [programId, number];
 
-    queryHelpers.executeTransaction([queryString1, queryString2], [queryValues1, queryValues2], res);
+    executeTransaction([queryString1, queryString2], [queryValues1, queryValues2], () => respondWithJust200(res), err => respondWith500(res, err));
 });
 
 router.post('/add_point', (req, res) => {
@@ -414,7 +416,7 @@ router.post('/add_point', (req, res) => {
         description
     ]]];
 
-    queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
+    executeQuery(queryString, queryValues, rows => respondWithJust200(res), err => respondWith500(res, err));
 });
 
 router.post('/update_point', (req, res) => {
@@ -436,7 +438,7 @@ router.post('/update_point', (req, res) => {
         + 'WHERE idpoint = ?';
     let queryValues = [pointIndex, location, lat, lng, type, description, id];
 
-    queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
+    executeQuery(queryString, queryValues, rows => respondWithJust200(res), err => respondWith500(res, err));
 });
 
 router.post('/delete_point', (req, res) => {
@@ -444,7 +446,7 @@ router.post('/delete_point', (req, res) => {
 
     let queryString = 'DELETE FROM points WHERE idpoint = ?';
     let queryValues = [id];
-    queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
+    executeQuery(queryString, queryValues, rows => respondWithJust200(res), err => respondWith500(res, err));
 });
 
 // Export router

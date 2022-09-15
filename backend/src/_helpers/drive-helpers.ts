@@ -58,12 +58,12 @@ function downloadFromDrive(fileId, fileDestPath, successCallback, errCallback) {
     });
 }
 
-function downloadTourSchedule(report: DatasetErrorReport, successCallback, errCallback) {
-    downloadFromDrive(Secrets.DRIVE_FILE_IDS.TOUR_SCHEDULE, Environment.FILE_PATHS.TOUR_SCHEDULE, () => successCallback(report), errCallback);
+function downloadTourSchedule(conn: any, report: DatasetErrorReport, successCallback, errCallback) {
+    downloadFromDrive(Secrets.DRIVE_FILE_IDS.TOUR_SCHEDULE, Environment.FILE_PATHS.TOUR_SCHEDULE, () => successCallback(conn, report), err => errCallback(conn, err));
 }
 
-function downloadDrivingLog(report: DatasetErrorReport, successCallback, errCallback) {
-    downloadFromDrive(Secrets.DRIVE_FILE_IDS.DRIVING_LOG, Environment.FILE_PATHS.DRIVING_LOG, () => successCallback(report), errCallback);
+function downloadDrivingLog(conn: any, report: DatasetErrorReport, successCallback, errCallback) {
+    downloadFromDrive(Secrets.DRIVE_FILE_IDS.DRIVING_LOG, Environment.FILE_PATHS.DRIVING_LOG, () => successCallback(conn, report), err => errCallback(conn, err));
 }
 
 async function uploadFile(filePath: string, successCallback, errCallback) {

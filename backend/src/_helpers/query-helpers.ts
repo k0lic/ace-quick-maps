@@ -4,84 +4,26 @@ import { normalLog, timeStampLog } from "./logger";
 declare var require: any;
 let mysql = require('mysql');
 
-const connection = mysql.createConnection({
+const pool = mysql.createPool({
     host: Secrets.MY_SQL.HOST,
     user: Secrets.MY_SQL.USER,
     password: Secrets.MY_SQL.PASSWORD,
     database: Secrets.MY_SQL.DATABASE
 });
 
-connection.connect((err) => {
+pool.getConnection((err, conn) => {
     if (err) {
         normalLog('error connecting to the DB: ' + err.stack);
         return;
     }
 
     timeStampLog('Successfully connected to the DB!');
+    conn.release();
 });
 
-function executeQueryWithoutResults(queryString: string, queryValues: any, res): void {
-    executeQueryWithCallback(queryString, queryValues, res, rows => {
-        res.sendStatus(200);
-    }, null);
-}
-
-function executeQuery(queryString: string, queryValues: any, res): void {
-    executeQueryWithCallback(queryString, queryValues, res, rows => {
-        res.status(200).send(rows);
-    }, null);
-}
-
-function executeQueryWithCallback(queryString: string, queryValues: any, res, callback, errCallback): void {
-    let realErrCallback = errCallback == null ? (err => {
-        normalLog(err);
-        res.sendStatus(500);
-    }) : errCallback;
-    coreExecuteQueryWithCallback(queryString, queryValues, callback, realErrCallback);
-}
-
-function executeTransaction(queryStrings: string[], queryValues: any[], res): void {
-    coreExecuteTransaction(queryStrings, queryValues, () => {
-        res.sendStatus(200);
-    }, err => {
-        normalLog(err);
-        res.sendStatus(500);
-    })
-}
-
-function beginTransaction(res, callback, errCallback) {
-    let realErrCallback = errCallback == null ? (err => {
-        normalLog(err);
-        res.sendStatus(500);
-    }) : errCallback;
-    coreBeginTransaction(callback, realErrCallback);
-}
-
-function rollbackTransaction(res, err) {
-    coreRollbackTransaction(err, err => {
-        normalLog(err);
-        res.sendStatus(500);
-    });
-}
-
-function commitTransaction(res, callback) {
-    coreCommitTransaction(callback, err => {
-        normalLog(err);
-        res.sendStatus(500);
-    });
-}
-
-function executeQueries(queryStrings: string[], queryValues: any[], res, callback, errCallback): void {
-    let realErrCallback = errCallback == null ? (err => {
-        normalLog(err);
-        res.sendStatus(500);
-    }) : errCallback;
-    coreExecuteQueries(queryStrings, queryValues, callback, realErrCallback);
-}
-
 // Core functions - no 'res' objects
-function coreExecuteQueryWithCallback(queryString: string, queryValues: any, callback, errCallback): void {
-    connection.query(queryString, queryValues, (err, rows, fields) => {
+function executeQuery(queryString: string, queryValues: any, callback, errCallback): void {
+    pool.query(queryString, queryValues, (err, rows, fields) => {
         if (err) {
             errCallback(err);
             return;
@@ -91,32 +33,57 @@ function coreExecuteQueryWithCallback(queryString: string, queryValues: any, cal
     });
 }
 
-function coreBeginTransaction(callback, errCallback) {
-    connection.beginTransaction(err => {
+function executeQueryInTransaction(conn: any, queryString: string, queryValues: any, callback, errCallback): void {
+    conn.query(queryString, queryValues, (err, rows, fields) => {
+        if (err) {
+            errCallback(conn, err);
+            return;
+        }
+
+        callback(conn, rows);
+    });
+}
+
+function beginTransaction(callback, errCallback) {
+    pool.getConnection((err, conn) => {
         if (err) {
             errCallback(err);
             return;
         }
-        
-        callback();
+
+        conn.beginTransaction(err => {
+            if (err) {
+                conn.release();
+                errCallback(err);
+                return;
+            }
+            
+            callback(conn);
+        });
     });
 }
 
-function coreRollbackTransaction(err, errCallback) {
-    return connection.rollback(() => errCallback(err));
+function rollbackTransaction(conn, err, errCallback) {
+    conn.rollback(() => {
+        conn.release();
+        errCallback(err);
+    });
 }
 
-function coreCommitTransaction(callback, errCallback) {
-    connection.commit(err => {
+function commitTransaction(conn, callback, errCallback) {
+    conn.commit(err => {
         if (err) {
-            coreRollbackTransaction(err, errCallback);
+            rollbackTransaction(conn, err, errCallback);
+            return;
         }
 
+        conn.release();
         callback();
     });
 }
 
-function coreExecuteQueries(queryStrings: string[], queryValues: any[], callback, errCallback): void {
+// Packaged functions
+function executeMultipleQueries(conn: any, queryStrings: string[], queryValues: any[], callback, errCallback): void {
     // Check if both arrays are of equal length
     if (queryStrings.length != queryValues.length) {
         errCallback('ERR: executeQueries function called with different length arrays!');
@@ -125,36 +92,29 @@ function coreExecuteQueries(queryStrings: string[], queryValues: any[], callback
 
     if (queryStrings.length == 0) {
         // Job is done - all queries were executed
-        callback();
+        callback(conn);
         return;
     }
 
-    coreExecuteQueryWithCallback(queryStrings[0], queryValues[0], rows => {
-        coreExecuteQueries(queryStrings.slice(1), queryValues.slice(1), callback, errCallback);
+    executeQueryInTransaction(conn, queryStrings[0], queryValues[0], (conn, rows) => {
+        executeMultipleQueries(conn, queryStrings.slice(1), queryValues.slice(1), callback, errCallback);
     }, errCallback);
 }
 
-function coreExecuteTransaction(queryStrings: string[], queryValues: any[], callback, errCallback): void {
-    coreBeginTransaction(() => {
-        coreExecuteQueries(queryStrings, queryValues, () => {
-            coreCommitTransaction(callback, errCallback);
-        }, err => coreRollbackTransaction(err, errCallback));
+function executeTransaction(queryStrings: string[], queryValues: any[], callback, errCallback): void {
+    beginTransaction((conn) => {
+        executeMultipleQueries(conn, queryStrings, queryValues, conn => {
+            commitTransaction(conn, callback, errCallback);
+        }, (conn, err) => rollbackTransaction(conn, err, errCallback));
     }, errCallback);
 }
 
 export {
-    executeQueryWithoutResults,
     executeQuery,
-    executeQueryWithCallback,
-    executeTransaction,
+    executeQueryInTransaction,
     beginTransaction,
     rollbackTransaction,
     commitTransaction,
-    executeQueries,
-    coreExecuteQueryWithCallback,
-    coreBeginTransaction,
-    coreRollbackTransaction,
-    coreCommitTransaction,
-    coreExecuteQueries,
-    coreExecuteTransaction
+    executeMultipleQueries,
+    executeTransaction
 };

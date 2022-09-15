@@ -1,10 +1,12 @@
+import { respondWith200, respondWith500 } from "../_helpers/http-responses";
+import { executeQuery } from "../_helpers/query-helpers";
+
 declare var require: any;
 let express = require('express');
 
 let router = express.Router();
 
 let userCheckers = require('../_middleware/user-checkers');
-let queryHelpers = require('../_helpers/query-helpers');
 let dateHelpers = require('../_helpers/date-helpers');
 
 // Make sure only users have access
@@ -40,7 +42,7 @@ function getTourInfoForDate(date, statusValues, res) {
         + 'WHERE d.date = ? AND t.status in ?';
     let queryValues = [dateHelpers.getYYYYMMDDdashed(date), [statusValues]];
 
-    queryHelpers.executeQuery(queryString, queryValues, res);
+    executeQuery(queryString, queryValues, rows => respondWith200(res, rows), err => respondWith500(res, err));
 }
 
 // Export router

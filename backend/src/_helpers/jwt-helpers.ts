@@ -1,12 +1,11 @@
 import { Secrets } from "../../config/secrets";
 import { Constants } from "../constants";
 import { getCookieExpireDate } from "./date-helpers";
-import { coreCommitTransaction } from "./query-helpers";
+import { beginTransaction, commitTransaction, executeQuery, executeQueryInTransaction, rollbackTransaction } from "./query-helpers";
 
 declare var require: any;
 let jsonwebtoken = require('jsonwebtoken');
 let crypto = require('crypto');
-let queryHelpers = require('./query-helpers');
 let dateHelpers = require('./date-helpers');
 
 // Angular dumb page access cookie
@@ -83,7 +82,7 @@ function renewTokens(req, res, successCallback, failureCallback, errCallback): v
     let family = refreshToken.family;
     let code = refreshToken.code;
 
-    queryHelpers.coreBeginTransaction(() => {
+    beginTransaction(conn => {
         // Check the current refresh token's validity
         let fetchRenewTokenQueryString = ''
             + 'SELECT r.user, r.token_family, r.code, u.user_type, u.name, u.last_name '
@@ -94,21 +93,21 @@ function renewTokens(req, res, successCallback, failureCallback, errCallback): v
         let todayString = dateHelpers.getYYYYMMDDdashed(new Date());
         let fetchRenewTokenQueryValues = [email, family, code, todayString, todayString];
 
-        queryHelpers.coreExecuteQueryWithCallback(fetchRenewTokenQueryString, fetchRenewTokenQueryValues, rows => {
+        executeQueryInTransaction(conn, fetchRenewTokenQueryString, fetchRenewTokenQueryValues, (conn, rows) => {
             if (rows.length == 0) {
                 // The refresh token is not valid - it was already used / the code's validity expired - revoke the whole refresh token family
-                revokeRefreshFamily(email, family, () => {
+                revokeRefreshFamily(conn, email, family, conn => {
                     clearRefreshToken(res);
-                    coreCommitTransaction(failureCallback, errCallback);
-                }, err => rollbackCallback(err, errCallback));
+                    commitTransaction(conn, failureCallback, errCallback);
+                }, err => rollbackCallback(conn, err, errCallback));
                 return;
             }
 
             // Create new refresh code
             forgeNewRefreshCode(newCode => {
                 // Update refresh token DB entry
-                updateRefreshToken(email, family, newCode, () => {
-                    queryHelpers.coreCommitTransaction(() => {
+                updateRefreshToken(conn, email, family, newCode, conn => {
+                    commitTransaction(conn, () => {
                         // Set new refresh token - in the request as well
                         let newRefreshToken = signRefreshToken(email, family, newCode);
                         setRefreshToken(res, newRefreshToken);
@@ -136,14 +135,14 @@ function renewTokens(req, res, successCallback, failureCallback, errCallback): v
                             lastName: rawAccessToken.last_name
                         });
                     }, errCallback);
-                }, err => rollbackCallback(err, errCallback));
-            }, err => rollbackCallback(err, errCallback));
-        }, err => rollbackCallback(err, errCallback));
+                }, err => rollbackCallback(conn, err, errCallback));
+            }, err => rollbackCallback(conn, err, errCallback));
+        }, err => rollbackCallback(conn, err, errCallback));
     }, errCallback);
 }
 
-function rollbackCallback(err, errCallback) {
-    queryHelpers.coreRollbackTransaction(err, errCallback);
+function rollbackCallback(conn, err, errCallback) {
+    rollbackTransaction(conn, err, errCallback);
 };
 
 function deleteRefreshTokenIfExists(req, res, successCallback, errCallback): void {
@@ -160,7 +159,7 @@ function deleteRefreshTokenIfExists(req, res, successCallback, errCallback): voi
     let family = refreshToken.family;
 
     // Delete token from DB
-    revokeRefreshFamily(email, family, () => {
+    revokeRefreshFamily(null, email, family, () => {
         // Clear cookie
         clearRefreshToken(res);
 
@@ -217,7 +216,7 @@ function getNextRefreshTokenFamily(email, successCallback, errCallback) {
     let nextFamilyQueryString = 'SELECT coalesce(max(token_family), 0) + 1 as `next_family` FROM refresh_tokens WHERE user = ?';
     let nextFamilyQueryValues = [email];
 
-    queryHelpers.coreExecuteQueryWithCallback(nextFamilyQueryString, nextFamilyQueryValues, rows => {
+    executeQuery(nextFamilyQueryString, nextFamilyQueryValues, rows => {
         let nextFamily = rows[0].next_family;
         successCallback(nextFamily);
     }, errCallback);
@@ -227,21 +226,25 @@ function saveRefreshTokenToDatabase(email, family, code, successCallback, errCal
     let queryString = 'INSERT INTO refresh_tokens (user, token_family, code, validity_date) VALUES ?';
     let queryValues = [[[email, family, code, dateHelpers.getYYYYMMDDdashed(getNewRefreshTokenValidity())]]];
 
-    queryHelpers.coreExecuteQueryWithCallback(queryString, queryValues, rows => successCallback(), errCallback);
+    executeQuery(queryString, queryValues, rows => successCallback(), errCallback);
 }
 
-function updateRefreshToken(email: string, family: number, code: string, successCallback, errCallback) {
+function updateRefreshToken(conn: any, email: string, family: number, code: string, successCallback, errCallback) {
     let queryString = 'UPDATE refresh_tokens SET code = ?, validity_date = ? WHERE user = ? AND token_family = ?';
     let queryValues = [code, dateHelpers.getYYYYMMDDdashed(getNewRefreshTokenValidity()), email, family];
 
-    queryHelpers.coreExecuteQueryWithCallback(queryString, queryValues, rows => successCallback(), errCallback);
+    executeQueryInTransaction(conn, queryString, queryValues, (conn, rows) => successCallback(conn), errCallback);
 }
 
-function revokeRefreshFamily(email: string, family: number, successCallback, errCallback) {
+function revokeRefreshFamily(conn: any, email: string, family: number, successCallback, errCallback) {
     let queryString = 'DELETE FROM refresh_tokens WHERE user = ? AND token_family = ?';
     let queryValues = [email, family];
 
-    queryHelpers.coreExecuteQueryWithCallback(queryString, queryValues, rows => successCallback(), errCallback);
+    if (conn != null) {
+        executeQueryInTransaction(conn, queryString, queryValues, (conn, rows) => successCallback(conn), (conn, err) => errCallback(err));
+    } else {
+        executeQuery(queryString, queryValues, rows => successCallback(), errCallback);
+    }
 }
 
 function getNewRefreshTokenValidity(): Date {

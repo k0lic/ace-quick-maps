@@ -7,10 +7,7 @@ let cron = require('node-cron');
 let fs = require('fs');
 let exec = require('child_process').exec;
 
-let queryHelpers = require('../_helpers/query-helpers');
 let driveHelpers = require('../_helpers/drive-helpers');
-let dateHelpers = require('../_helpers/date-helpers');
-let excelHelpers = require('../_helpers/excel-helpers');
 
 // Setup config object
 let backupConfig = CronConfig.DB_BACKUP.DEFAULT_CONFIG;

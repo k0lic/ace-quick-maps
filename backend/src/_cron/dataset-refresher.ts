@@ -2,13 +2,13 @@ import { Environment } from "../../config/environment";
 import { Constants } from "../constants";
 import { atRowMessage, DatasetErrorReport } from "../_helpers/dataset-error-report";
 import { normalLog, timeStampLog } from "../_helpers/logger";
+import { beginTransaction, commitTransaction, executeMultipleQueries, executeQueryInTransaction, rollbackTransaction } from "../_helpers/query-helpers";
 import { CronConfig } from "./cron-config";
 
 declare var require: any;
 let cron = require('node-cron');
 let fs = require('fs');
 
-let queryHelpers = require('../_helpers/query-helpers');
 let driveHelpers = require('../_helpers/drive-helpers');
 let dateHelpers = require('../_helpers/date-helpers');
 let excelHelpers = require('../_helpers/excel-helpers');
@@ -54,17 +54,17 @@ function runRefresh() {
     let ogReport: DatasetErrorReport = new DatasetErrorReport();
 
     // First step - fetch Tour-Schedule excel file from drive
-    jobStep(refreshConfig.fetchTourSchedule, ogReport, driveHelpers.downloadTourSchedule, report => {
+    jobStep(refreshConfig.fetchTourSchedule, ogReport, driveHelpers.downloadTourSchedule, null, (conn, report) => {
         // Second step - fetch Driving-Log excel file from drive
-        jobStep(refreshConfig.fetchDrivingLog, report, driveHelpers.downloadDrivingLog, report => {
+        jobStep(refreshConfig.fetchDrivingLog, report, driveHelpers.downloadDrivingLog, null, (conn, report) => {
             // Start transaction
-            queryHelpers.beginTransaction(null, () => {
+            beginTransaction(conn => {
                 // Third step - update DB with Tour-Schedule values
-                jobStep(refreshConfig.updateTourSchedule, report, updateTourSchedule, report => {
+                jobStep(refreshConfig.updateTourSchedule, report, updateTourSchedule, conn, (conn, report) => {
                     // Fourth step - update DB with Driving-Log values
-                    jobStep(refreshConfig.updateDrivingLog, report, updateDrivingLog, report => {
+                    jobStep(refreshConfig.updateDrivingLog, report, updateDrivingLog, conn, (conn, report) => {
                         // Commit transaction
-                        queryHelpers.coreCommitTransaction(() => {
+                        commitTransaction(conn, () => {
                             // Log successful job
                             timeStampLog(''
                                 + 'Dataset Refresher Cron Job successfully finished '
@@ -79,21 +79,21 @@ function runRefresh() {
     }, reportFailure);
 }
 
-function jobStep(stepEnabled, report: DatasetErrorReport, jobFunc, nextStep, errCallback) {
+function jobStep(stepEnabled, report: DatasetErrorReport, jobFunc, conn: any, nextStep, errCallback) {
     if (!stepEnabled) {
         // skip to next step
-        nextStep(report);
+        nextStep(conn, report);
         return;
     }
 
-    jobFunc(report, nextStep, errCallback);
+    jobFunc(conn, report, nextStep, errCallback);
 }
 
-function rollback(err) {
-    queryHelpers.coreRollbackTransaction(err, reportFailure);
+function rollback(conn: any, err) {
+    rollbackTransaction(conn, err, reportFailure);
 }
 
-function reportFailure(err) {
+function reportFailure(conn: any, err) {
     timeStampLog(''
         + 'Dataset refresher cron job FAILED!'
         + '\n\tWith settings: (fetchSchedule:' + refreshConfig.fetchTourSchedule + ', fetchDrivingLog:' + refreshConfig.fetchDrivingLog 
@@ -119,45 +119,45 @@ function sendReport(resourceName: string, ownerEmailAddress: string, report: Dat
 }
 
 // Meat functions
-async function updateTourSchedule(report: DatasetErrorReport, successCallback, errCallback) {
+async function updateTourSchedule(conn: any, report: DatasetErrorReport, successCallback, errCallback) {
     // Only send report to the first component that fires errors, since later components depend on the previous ones
     let noErrorsOnEntry = report.hasErrors() == false;
 
     let tours = await excelHelpers.processTourScheduleExcelFile(report);
-    updateDatabaseWithTours(tours, report, report => {
+    updateDatabaseWithTours(conn, tours, report, (conn, report) => {
         if (noErrorsOnEntry) {
             // Send report before calling the callback
             sendReport('Raspored tura', Environment.RESOURCE_OWNERS.TOUR_SCHEDULE, report);
         }
 
-        successCallback(report);
-    }, (err, report) => {
+        successCallback(conn, report);
+    }, (conn, err, report) => {
         // Do we send a report on failure? I think it's better not to - 
         // The report will not contain the reason for the failure, any errors in the report are minor compared to the one that failed the DB update
-        errCallback(err);
+        errCallback(conn, err);
     });
 }
 
-async function updateDrivingLog(report: DatasetErrorReport, successCallback, errCallback) {
+async function updateDrivingLog(conn: any, report: DatasetErrorReport, successCallback, errCallback) {
     // Only send report to the first component that fires errors, since later components depend on the previous ones
     let noErrorsOnEntry = report.hasErrors() == false;
 
     let rows = await excelHelpers.processDrivingLogExcelFile(report);
-    updateDatabaseWithDrivingLog(rows, report, report => {
+    updateDatabaseWithDrivingLog(conn, rows, report, (conn, report) => {
         if (noErrorsOnEntry) {
             // Send report before calling the callback
             sendReport('DRIVING LOG', Environment.RESOURCE_OWNERS.DRIVING_LOG, report);
         }
 
-        successCallback(report);
-    }, (err, report) => {
+        successCallback(conn, report);
+    }, (conn, err, report) => {
         // Do we send a report on failure? I think it's better not to - 
         // The report will not contain the reason for the failure, any errors in the report are minor compared to the one that failed the DB update
-        errCallback(err);
+        errCallback(conn, err);
     });
 }
 
-function updateDatabaseWithTours(tours, report: DatasetErrorReport, successCallback, errCallback): void {
+function updateDatabaseWithTours(conn: any, tours, report: DatasetErrorReport, successCallback, errCallback): void {
     // TODO: don't just copy these 3 into every function, come on man...
     const statusUnknown = 'unknown';
     const statusConfirmed = 'confirmed';
@@ -165,7 +165,7 @@ function updateDatabaseWithTours(tours, report: DatasetErrorReport, successCallb
 
     // Excel contains program names, while database uses auto-generated keys for programs
     let allProgramsQuery = 'SELECT * FROM programs';
-    queryHelpers.coreExecuteQueryWithCallback(allProgramsQuery, [], programs => {
+    executeQueryInTransaction(conn, allProgramsQuery, [], (conn, programs) => {
         // Create mapping from program name (eg. MCG1) to program id (eg. 31)
         let programNameMap: Map<string, number> = new Map();
         programs.forEach(p => {
@@ -192,11 +192,11 @@ function updateDatabaseWithTours(tours, report: DatasetErrorReport, successCallb
             ]);
         });
 
-        queryHelpers.coreExecuteQueryWithCallback(cleanupQuery, [], rows => {
-            queryHelpers.coreExecuteQueryWithCallback(insertToursQueryString, insertTourQueryValues, rows => {
+        executeQueryInTransaction(conn, cleanupQuery, [], (conn, rows) => {
+            executeQueryInTransaction(conn, insertToursQueryString, insertTourQueryValues, (conn, rows) => {
 
                 let fetchNewToursQuery = 'SELECT * FROM tours ORDER BY excel_row_number';
-                queryHelpers.coreExecuteQueryWithCallback(fetchNewToursQuery, [], dbTours => {
+                executeQueryInTransaction(conn, fetchNewToursQuery, [], (conn, dbTours) => {
 
                     let insertTourDaysQueryString = 'INSERT INTO tour_days (tour_id, day_number, date, hotel1, hotel2) VALUES ?';
 
@@ -213,10 +213,10 @@ function updateDatabaseWithTours(tours, report: DatasetErrorReport, successCallb
                         });
                     });
 
-                    queryHelpers.coreExecuteQueryWithCallback(insertTourDaysQueryString, insertTourDaysQueryValues, rows => {
+                    executeQueryInTransaction(conn, insertTourDaysQueryString, insertTourDaysQueryValues, (conn, rows) => {
 
                         let fetchNewTourDaysQuery = 'SELECT * FROM tour_days';
-                        queryHelpers.coreExecuteQueryWithCallback(fetchNewTourDaysQuery, [], dbTourDays => {
+                        executeQueryInTransaction(conn, fetchNewTourDaysQuery, [], (conn, dbTourDays) => {
 
                             let insertActivitiesQueryString = 'INSERT INTO activities (tour_day_id, activity_number, point_index, description) VALUES ?';
 
@@ -245,26 +245,29 @@ function updateDatabaseWithTours(tours, report: DatasetErrorReport, successCallb
 
                             // Only execute query if there are activities to add
                             if (!firstActivity) {
-                                queryHelpers.coreExecuteQueryWithCallback(
-                                    insertActivitiesQueryString, insertActivitiesQueryValues, rows => successCallback(report), err => errCallback(err, report));
+                                executeQueryInTransaction(
+                                    conn,
+                                    insertActivitiesQueryString, insertActivitiesQueryValues, 
+                                    (conn, rows) => successCallback(conn, report), 
+                                    (conn, err) => errCallback(conn, err, report));
                             } else {
-                                successCallback(report);
+                                successCallback(conn, report);
                             }
-                        }, err => errCallback(err, report));
-                    }, err => errCallback(err, report));
-                }, err => errCallback(err, report));
-            }, err => errCallback(err, report));
-        }, err => errCallback(err, report));
-    }, err => errCallback(err, report));
+                        }, (conn, err) => errCallback(conn, err, report));
+                    }, (conn, err) => errCallback(conn, err, report));
+                }, (conn, err) => errCallback(conn, err, report));
+            }, (conn, err) => errCallback(conn, err, report));
+        }, (conn, err) => errCallback(conn, err, report));
+    }, (conn, err) => errCallback(conn, err, report));
 }
 
-function updateDatabaseWithDrivingLog(rows, report: DatasetErrorReport, successCallback, errCallback): void {
+function updateDatabaseWithDrivingLog(conn, rows, report: DatasetErrorReport, successCallback, errCallback): void {
     // Driving log contains tour instance names, while database uses auto-generated keys for tour objects
     let allToursQuery = 'SELECT t.id as id, p.name as `name`, t.start_date as `start_date` '
                         + 'FROM tours t '
                         + 'INNER JOIN programs p '
                         + 'ON t.program_id = p.idprogram';
-    queryHelpers.coreExecuteQueryWithCallback(allToursQuery, [], tours => {
+    executeQueryInTransaction(conn, allToursQuery, [], (conn, tours) => {
         // Create mapping from tour instance name (eg. MCG1-01/01/22) to program id (eg. 31)
         let tourIdMap: Map<string, number> = new Map();
         tours.forEach(t => {
@@ -301,13 +304,14 @@ function updateDatabaseWithDrivingLog(rows, report: DatasetErrorReport, successC
             ]);
         });
 
-        queryHelpers.coreExecuteQueries(
+        executeMultipleQueries(
+            conn,
             [cleanupQuery, insertDrivingLogQueryString],
             [[], insertDrivingLogQueryValues],
-            () => successCallback(report),
-            err => errCallback(err, report)
+            conn => successCallback(conn, report),
+            (conn, err) => errCallback(conn, err, report)
         );
-    }, err => errCallback(err, report));
+    }, (conn, err) => errCallback(conn, err, report));
 }
 
 // Jobs
@@ -337,7 +341,5 @@ function testRefresh() {
 }
 
 export {
-    updateTourSchedule,
-    updateDrivingLog,
     testRefresh
 }

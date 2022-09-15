@@ -22,16 +22,7 @@ router.get('/process_excel_test_file', (req, res) => {
 });
 
 router.get('/process_driving_log', (req, res) => {
-    let report: DatasetErrorReport = new DatasetErrorReport();
-
-    refresherCron.updateDrivingLog(report, report => {
-        console.log('SUCCESSFUL TEST');
-        res.sendStatus(200);
-    }, err => {
-        normalLog(err);
-        console.log('FAILED TEST');
-        res.sendStatus(500);
-    });
+    res.sendStatus(404);
 })
 
 router.get('/list_drive_files', (req, res) => {
@@ -41,10 +32,10 @@ router.get('/list_drive_files', (req, res) => {
 router.get('/download_tour_schedule', (req, res) => {
     let report: DatasetErrorReport = new DatasetErrorReport();
 
-    driveHelpers.downloadTourSchedule(report, report => {
+    driveHelpers.downloadTourSchedule(null, report, (conn, report) => {
         console.log('Downloaded tour schedule file :)');
         res.sendStatus(200);
-    }, err => {
+    }, (conn, err) => {
         normalLog(err);
         res.sendStatus(500);
     });
@@ -53,10 +44,10 @@ router.get('/download_tour_schedule', (req, res) => {
 router.get('/download_driving_log', (req, res) => {
     let report: DatasetErrorReport = new DatasetErrorReport();
 
-    driveHelpers.downloadDrivingLog(report, report => {
+    driveHelpers.downloadDrivingLog(null, report, (conn, report) => {
         console.log('Downloaded driving log file :)');
         res.sendStatus(200);
-    }, err => {
+    }, (conn, err) => {
         normalLog(err);
         res.sendStatus(500);
     });

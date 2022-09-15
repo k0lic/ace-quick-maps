@@ -1,6 +1,7 @@
-import { Secrets } from "../../config/secrets";
 import { Constants } from "../constants";
+import { respondWith500, respondWithJust200 } from "../_helpers/http-responses";
 import { normalLog } from "../_helpers/logger";
+import { beginTransaction, commitTransaction, executeQuery, executeQueryInTransaction, rollbackTransaction } from "../_helpers/query-helpers";
 
 declare var require: any;
 let express = require('express');
@@ -10,8 +11,6 @@ let crypto = require('crypto');
 let router = express.Router();
 
 let userCheckers = require('../_middleware/user-checkers');
-let queryHelpers = require('../_helpers/query-helpers');
-let stringHelpers = require('../_helpers/string-helpers');
 let jwtHelpers = require('../_helpers/jwt-helpers');
 let dateHelpers = require('../_helpers/date-helpers');
 let mailHelpers = require('../_helpers/mail-helpers');
@@ -30,7 +29,7 @@ router.post('/login', (req, res) => {
     // Check if user exists - approved and has not had access revoked
     let queryString = 'SELECT * FROM users WHERE email = ? AND approved = 1 AND revoke_access_date > ?';
     let queryValues = [email, todayString];
-    queryHelpers.executeQueryWithCallback(queryString, queryValues, res, rows => {
+    executeQuery(queryString, queryValues, rows => {
         if (rows.length == 0) {
             res.sendStatus(500);
             return;
@@ -66,7 +65,7 @@ router.post('/login', (req, res) => {
                 res.sendStatus(500);
             });
         });
-    }, null);
+    }, err => respondWith500(res, err));
 });
 
 router.post('/register', (req, res) => {
@@ -89,7 +88,7 @@ router.post('/register', (req, res) => {
         let queryString = 'INSERT INTO users (email, user_type, name, last_name, approved, password, revoke_access_date) VALUES ?';
         let queryValues = [[[email, 'viewer', name, lastName, 0, hash, radString]]];
         
-        queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
+        executeQuery(queryString, queryValues, rows => respondWithJust200(res), err => respondWith500(res, err));
     });
 });
 
@@ -102,7 +101,7 @@ router.post('/forgot', (req, res) => {
     // Check if user exists - approved and has not had access revoked
     let queryString = 'SELECT * FROM users WHERE email = ? AND approved = 1 AND revoke_access_date > ?';
     let queryValues = [email, todayString];
-    queryHelpers.executeQueryWithCallback(queryString, queryValues, res, rows => {
+    executeQuery(queryString, queryValues, rows => {
         if (rows.length == 0) {
             res.sendStatus(500);
             return;
@@ -124,8 +123,8 @@ router.post('/forgot', (req, res) => {
             let checkQueryValues: any[] = [email];
 
             // Wrap insert/update in a transaction, so it can be aborted if sending the email fails, since there's no point in creating a reset link that can't be accessed by the user
-            queryHelpers.beginTransaction(res, () => {
-                queryHelpers.executeQueryWithCallback(checkQueryString, checkQueryValues, res, rows => {
+            beginTransaction(conn => {
+                executeQueryInTransaction(conn, checkQueryString, checkQueryValues, (conn, rows) => {
                     let insertUpdateQueryString: string = '';
                     let insertUpdateQueryValues: any[] = [];
     
@@ -139,7 +138,7 @@ router.post('/forgot', (req, res) => {
                         insertUpdateQueryValues = [resetCode, expires, email];
                     }
     
-                    queryHelpers.executeQueryWithCallback(insertUpdateQueryString, insertUpdateQueryValues, res, result => {
+                    executeQueryInTransaction(conn, insertUpdateQueryString, insertUpdateQueryValues, (conn, result) => {
                         // Code successfully created, inform user by sending an email
                         mailHelpers.sendMail(
                             email, 
@@ -149,16 +148,14 @@ router.post('/forgot', (req, res) => {
                                 // User successfully notified, commit transaction
                                 // Might happen that commit fails, and user is left with void link in email, but that poses no security risks so is better than the alternative
                                 // The alternative would be to only send the email after everything is done on the DB, and then the email could fail, leaving an active link that is not reachable by the user - not a real risk since the link is secure and time restricted, but why create an unusable link anyway
-                                queryHelpers.commitTransaction(res, () => {
-                                    res.sendStatus(200);
-                                });
-                            }, err => queryHelpers.rollbackTransaction(res, err)
+                                commitTransaction(conn, () => respondWithJust200(res), err => respondWith500(res, err));
+                            }, err => rollbackTransaction(conn, err, err => respondWith500(res, err))
                         );
-                    }, err => queryHelpers.rollbackTransaction(res, err));
-                }, err => queryHelpers.rollbackTransaction(res, err));
+                    }, (conn, err) => rollbackTransaction(conn, err, err => respondWith500(res, err)));
+                }, (conn, err) => rollbackTransaction(conn, err, err => respondWith500(res, err)));
             }, null);
         });
-    }, null);
+    }, err => respondWith500(res, err));
 });
 
 router.post('/reset_code_check', (req, res) => {
@@ -167,7 +164,7 @@ router.post('/reset_code_check', (req, res) => {
     let queryString = 'SELECT * FROM password_reset_codes WHERE code = ? AND expires > ?';
     let queryValues = [code, new Date()];
 
-    queryHelpers.executeQueryWithCallback(queryString, queryValues, res, rows => {
+    executeQuery(queryString, queryValues, rows => {
         if (rows.length == 0) {
             // Code is non-existant/wrong/expired
             res.sendStatus(401);
@@ -175,8 +172,8 @@ router.post('/reset_code_check', (req, res) => {
         }
 
         // Code is valid
-        res.sendStatus(200);
-    }, null);
+        respondWithJust200(res);
+    }, err => respondWith500(res, err));
 });
 
 router.post('/reset_password', (req, res) => {
@@ -187,7 +184,7 @@ router.post('/reset_password', (req, res) => {
     let fetchEmailQueryString = 'SELECT * FROM password_reset_codes WHERE code = ? AND expires > ?';
     let fetchEmailQueryValues = [code, new Date()];
 
-    queryHelpers.executeQueryWithCallback(fetchEmailQueryString, fetchEmailQueryValues, res, rows => {
+    executeQuery(fetchEmailQueryString, fetchEmailQueryValues, rows => {
         if (rows.length == 0) {
             // Code is non-existant/wrong/expired
             res.sendStatus(401);
@@ -200,8 +197,7 @@ router.post('/reset_password', (req, res) => {
         // Hash password
         bcrypt.hash(password, 10, (err, hash) => {
             if (err) {
-                normalLog(err);
-                res.sendStatus(500);
+                respondWith500(res, err);
                 return;
             }
 
@@ -209,9 +205,9 @@ router.post('/reset_password', (req, res) => {
             let updateQueryString = 'UPDATE users SET password = ? WHERE email = ?';
             let updateQueryValues = [hash, email];
             
-            queryHelpers.executeQueryWithoutResults(updateQueryString, updateQueryValues, res);
+            executeQuery(updateQueryString, updateQueryValues, rows => respondWithJust200(res), err => respondWith500(res, err));
         });
-    }, null);
+    }, err => respondWith500(res, err));
 });
 
 router.get('/clear_cookies', (req, res) => {

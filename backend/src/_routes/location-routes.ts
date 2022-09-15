@@ -1,10 +1,13 @@
+import { respondWith200, respondWith500, respondWithJust200 } from "../_helpers/http-responses";
+import { normalLog } from "../_helpers/logger";
+import { executeQuery } from "../_helpers/query-helpers";
+
 declare var require: any;
 let express = require('express');
 
 let router = express.Router();
 
 let userCheckers = require('../_middleware/user-checkers');
-let queryHelpers = require('../_helpers/query-helpers');
 
 // Make sure only 'admin' users have access
 router.use(userCheckers.assertIsAdmin);
@@ -12,7 +15,7 @@ router.use(userCheckers.assertIsAdmin);
 // List routes here
 router.get('/all_locations', (req, res) => {
     let queryString = 'SELECT * FROM locations';
-    queryHelpers.executeQuery(queryString, [], res);
+    executeQuery(queryString, [], rows => respondWith200(res, rows), err => respondWith500(res, err));
 });
 
 router.post('/add_location', (req, res) => {
@@ -22,7 +25,7 @@ router.post('/add_location', (req, res) => {
 
     let queryString = 'INSERT INTO locations (name, lat, lng) VALUES ?';
     let queryValues = [[[name, lat, lng]]];
-    queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
+    executeQuery(queryString, queryValues, rows => respondWithJust200(res), err => respondWith500(res, err));
 });
 
 router.post('/move_location', (req, res) => {
@@ -32,7 +35,7 @@ router.post('/move_location', (req, res) => {
 
     let queryString = 'UPDATE locations SET lat = ?, lng = ? WHERE name = ?';
     let queryValues = [lat, lng, name];
-    queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
+    executeQuery(queryString, queryValues, rows => respondWithJust200(res), err => respondWith500(res, err));
 });
 
 router.post('/delete_location', (req, res) => {
@@ -40,7 +43,7 @@ router.post('/delete_location', (req, res) => {
 
     let queryString = 'DELETE FROM locations WHERE name = ?';
     let queryValues = [name];
-    queryHelpers.executeQueryWithoutResults(queryString, queryValues, res);
+    executeQuery(queryString, queryValues, rows => respondWithJust200(res), err => respondWith500(res, err));
 });
 
 // Export router
