@@ -75,8 +75,8 @@ function runRefresh() {
                     }, rollback);
                 }, rollback);
             }, reportFailure);
-        }, reportFailure);
-    }, reportFailure);
+        }, (conn, err) => reportFailure(err));
+    }, (conn, err) => reportFailure(err));
 }
 
 function jobStep(stepEnabled, report: DatasetErrorReport, jobFunc, conn: any, nextStep, errCallback) {
@@ -93,7 +93,7 @@ function rollback(conn: any, err) {
     rollbackTransaction(conn, err, reportFailure);
 }
 
-function reportFailure(conn: any, err) {
+function reportFailure(err) {
     timeStampLog(''
         + 'Dataset refresher cron job FAILED!'
         + '\n\tWith settings: (fetchSchedule:' + refreshConfig.fetchTourSchedule + ', fetchDrivingLog:' + refreshConfig.fetchDrivingLog 
@@ -138,6 +138,10 @@ async function updateTourSchedule(conn: any, report: DatasetErrorReport, success
     });
 }
 
+// NOTICE: When opening a excel file that has a filter on Exceljs crashes, so I added a really stupid fix, to a piece of code I don't understand.
+//          Basically, I removed a 'throw' so no error is reported.
+//          ~\node_modules\exceljs\lib\xlsx\xform\table\auto-filter-xform.js AutoFilterXform::parseClose the part where an error is thrown, just comment it out
+// (TODO: fix in a better way? Not sure if possible)
 async function updateDrivingLog(conn: any, report: DatasetErrorReport, successCallback, errCallback) {
     // Only send report to the first component that fires errors, since later components depend on the previous ones
     let noErrorsOnEntry = report.hasErrors() == false;
@@ -263,10 +267,11 @@ function updateDatabaseWithTours(conn: any, tours, report: DatasetErrorReport, s
 
 function updateDatabaseWithDrivingLog(conn, rows, report: DatasetErrorReport, successCallback, errCallback): void {
     // Driving log contains tour instance names, while database uses auto-generated keys for tour objects
-    let allToursQuery = 'SELECT t.id as id, p.name as `name`, t.start_date as `start_date` '
-                        + 'FROM tours t '
-                        + 'INNER JOIN programs p '
-                        + 'ON t.program_id = p.idprogram';
+    let allToursQuery = ''
+        + 'SELECT t.id as id, p.name as `name`, t.start_date as `start_date` '
+        + 'FROM tours t '
+        + 'INNER JOIN programs p '
+        + 'ON t.program_id = p.idprogram';
     executeQueryInTransaction(conn, allToursQuery, [], (conn, tours) => {
         // Create mapping from tour instance name (eg. MCG1-01/01/22) to program id (eg. 31)
         let tourIdMap: Map<string, number> = new Map();
