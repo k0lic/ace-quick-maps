@@ -88,9 +88,29 @@ async function uploadFile(filePath: string, successCallback, errCallback) {
     }
 }
 
+async function updateFile(srcFilePath: string, targetFileId: string, successCallback, errCallback) {
+    try {
+        let response = await drive.files.update({
+            fileId: targetFileId,
+            requestBody: {
+                mimeType: 'application/sql'
+            },
+            media: {
+                mimeType: 'application/sql',
+                body: fs.createReadStream(srcFilePath)
+            }
+        });
+
+        successCallback();
+    } catch (err) {
+        errCallback(err);
+    }
+}
+
 export {
     listFiles,
     downloadTourSchedule,
     downloadDrivingLog,
-    uploadFile
+    uploadFile,
+    updateFile
 }

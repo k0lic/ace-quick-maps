@@ -1,3 +1,4 @@
+import { testBackup } from "../_cron/db-backup";
 import { DatasetErrorReport } from "../_helpers/dataset-error-report";
 import { normalLog } from "../_helpers/logger";
 
@@ -22,7 +23,8 @@ router.get('/process_excel_test_file', (req, res) => {
 });
 
 router.get('/process_driving_log', (req, res) => {
-    res.sendStatus(404);
+    testBackup();
+    res.sendStatus(200);
 })
 
 router.get('/list_drive_files', (req, res) => {

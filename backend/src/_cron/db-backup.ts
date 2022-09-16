@@ -1,4 +1,5 @@
 import { Secrets } from "../../config/secrets";
+import { updateFile } from "../_helpers/drive-helpers";
 import { normalLog, timeStampLog } from "../_helpers/logger";
 import { CronConfig } from "./cron-config";
 
@@ -66,11 +67,11 @@ function createBackup(fileName, successCallback, errCallback) {
     });
 }
 
-function uploadBackup(fileName, successCallback, errCallback) {
-    driveHelpers.uploadFile(fileName, successCallback, errCallback);
+function updateDriveBackup(srcFilePath: string, targetFileId, successCallback, errCallback) {
+    updateFile(srcFilePath, targetFileId, successCallback, errCallback);
 }
 
-function runBackup(cronName, typeEnabledKey, pathsKey, indexKey) {
+function runBackup(cronName, typeEnabledKey, pathsKey, fileIdsKey, indexKey) {
     // Read json config, maybe changes were made since last run
     tryAndReadJsonConfig();
 
@@ -85,15 +86,17 @@ function runBackup(cronName, typeEnabledKey, pathsKey, indexKey) {
         reportInvalidConfig(cronName);
         return;
     }
-    if (backupConfig[indexKey] >= backupConfig[pathsKey].length) {
+    if (backupConfig[indexKey] >= backupConfig[pathsKey].length || backupConfig[indexKey] >= backupConfig[fileIdsKey].length) {
         backupConfig[indexKey] = 0;
     }
 
     // Run job
-    let fileName = backupConfig[pathsKey][backupConfig[indexKey]];
+    let index = backupConfig[indexKey];
+    let localFilePath = backupConfig[pathsKey][index];
+    let driveFileId = backupConfig[fileIdsKey][index];
 
-    createBackup(fileName, () => {
-        uploadBackup(fileName, () => {
+    createBackup(localFilePath, () => {
+        updateDriveBackup(localFilePath, driveFileId, () => {
             // Update config for next run
             backupConfig[indexKey] = (backupConfig[indexKey] + 1) % backupConfig[pathsKey].length;
 
@@ -107,16 +110,16 @@ function runBackup(cronName, typeEnabledKey, pathsKey, indexKey) {
 
 // Perform backup every day at 03:00 - middle of the night
 cron.schedule('0 3 * * *', () => {
-    runBackup('DAILY', 'daily', 'dailyBackupPaths', 'dailyPathIndex');
+    runBackup('DAILY', 'daily', 'dailyBackupPaths', 'dailyBackupFileIds', 'dailyPathIndex');
 });
 
 // Perform backup every tuesday at 02:55 - middle of the night
 cron.schedule('55 2 * * tue', () => {
-    runBackup('WEEKLY', 'weekly', 'weeklyBackupPaths', 'weeklyPathIndex');
+    runBackup('WEEKLY', 'weekly', 'weeklyBackupPaths', 'weeklyBackupFileIds', 'weeklyPathIndex');
 });
 
 function testBackup() {
-    runBackup('TEST', 'daily', 'dailyBackupPaths', 'dailyPathIndex');
+    runBackup('TEST', 'daily', 'dailyBackupPaths', 'dailyBackupFileIds', 'dailyPathIndex');
 }
 
 export {
