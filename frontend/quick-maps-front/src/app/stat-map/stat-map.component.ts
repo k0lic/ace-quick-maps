@@ -16,8 +16,8 @@ interface Coord {
 }
 
 interface Marker {
-	lat: number;
-	lng: number;
+  lat: number;
+  lng: number;
   path: Coord[],
   description: string;
 }
@@ -30,14 +30,15 @@ interface Marker {
 export class StatMapComponent extends LoggedInComponent implements OnInit {
 
   // Default parameters for the map element. Some of these could be dynamic (TODO).
-  map_lat : number = 43;
-  map_lng : number = 19;
-  map_zoom : number = 7;
+  map_lat: number = 43;
+  map_lng: number = 19;
+  map_zoom: number = 7;
 
-  map : google.maps.Map|null = null;
-  mapClickListener : google.maps.MapsEventListener|null = null;
+  map: google.maps.Map | null = null;
+  mapClickListener: google.maps.MapsEventListener | null = null;
 
   markers: Marker[] = [];
+  totalNights: number = 0;
 
   anchorConst: any;
   labelOriginConst: any;
@@ -56,8 +57,8 @@ export class StatMapComponent extends LoggedInComponent implements OnInit {
   ngOnInit(): void {
     this.refreshStats();
 
-    this.anchorConst = {x: 12, y: 12};
-    this.labelOriginConst = {x: 12, y: 12};
+    this.anchorConst = { x: 12, y: 12 };
+    this.labelOriginConst = { x: 12, y: 12 };
 
     setTitle('STATS.TITLE', this.titleService, this.translateService);
   }
@@ -69,8 +70,8 @@ export class StatMapComponent extends LoggedInComponent implements OnInit {
       this.mapClickListener.remove();
     }
   }
-  
-  mapReadyHandler($event : google.maps.Map): void {
+
+  mapReadyHandler($event: google.maps.Map): void {
     this.map = $event;
     this.mapClickListener = this.map.addListener('click', (e: google.maps.MouseEvent) => {
       this.zone.run(() => {
@@ -80,7 +81,7 @@ export class StatMapComponent extends LoggedInComponent implements OnInit {
   }
   // End of workaround.
 
-  onMapClick($event : google.maps.MouseEvent): void {
+  onMapClick($event: google.maps.MouseEvent): void {
     // skip
   }
 
@@ -92,6 +93,8 @@ export class StatMapComponent extends LoggedInComponent implements OnInit {
     this.statService.getPaxNightsByLocation().subscribe((rows: PaxNightsByLocation[]) => {
       // Convert PaxNightsByLocation into markers we can show on the map
       let tmpList: Marker[] = [];
+      let sum: number = 0;
+
       rows.forEach(row => {
         let radiusQ = Math.sqrt(row.pax_nights);
 
@@ -107,9 +110,11 @@ export class StatMapComponent extends LoggedInComponent implements OnInit {
           //   })
           description: row.pax_nights + ''
         });
+        sum += row.pax_nights;
       });
 
       this.markers = tmpList;
+      this.totalNights = sum;
     }, err => this.checkErrUnauthorized(err));
   }
 
@@ -119,7 +124,7 @@ export class StatMapComponent extends LoggedInComponent implements OnInit {
     let radius = radiusBase * radiusQ;
 
     let path: Coord[] = [];
-    for (let i = 0; i< steps; i++) {
+    for (let i = 0; i < steps; i++) {
       path.push({
         lat: centerLat + radius * Math.sin(2 * Math.PI * i / steps),
         lng: centerLng + radius * Math.cos(2 * Math.PI * i / steps)

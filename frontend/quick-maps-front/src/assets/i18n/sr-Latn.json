@@ -132,7 +132,8 @@
     "STATS": {
         "TITLE": "Statistika",
         "PAX_NIGHTS_BY_LOCATION": "Noćenja po lokaciji",
-        "LOCATION_NUMBER_PATTERN": "{{location}} - {{number}}"
+        "LOCATION_NUMBER_PATTERN": "{{location}} - {{number}}",
+        "TOTAL_PATTERN": "Ukupno: {{number}}"
     },
     "LANG": {
         "sr-Latn": "Srpski (Latinica)",

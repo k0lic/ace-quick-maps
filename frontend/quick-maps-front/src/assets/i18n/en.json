@@ -132,7 +132,8 @@
     "STATS": {
         "TITLE": "Statistics",
         "PAX_NIGHTS_BY_LOCATION": "Number of overnight stays",
-        "LOCATION_NUMBER_PATTERN": "{{location}} - {{number}}"
+        "LOCATION_NUMBER_PATTERN": "{{location}} - {{number}}",
+        "TOTAL_PATTERN": "In total: {{number}}"
     },
     "LANG": {
         "sr-Latn": "Serbian (Latin)",

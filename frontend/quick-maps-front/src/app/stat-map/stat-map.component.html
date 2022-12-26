@@ -1,33 +1,23 @@
-<div class="row d-flex justify-content-center">  
+<div class="row d-flex justify-content-center">
 
     <!-- HEADING -->
     <h1 class="col-12 text-center mb-4" translate>STATS.TITLE</h1>
 
     <!-- MAP CONTAINER -->
     <h3 class="col-12 mb-2" translate>STATS.PAX_NIGHTS_BY_LOCATION</h3>
+    <div class="col-12 mb-2" translate [translateParams]="{day: totalNights}">STATS.TOTAL_PATTERN</div>
     <div class="col-12 mb-4">
         <div class="row d-flex justify-content-center">
             <!-- MAP -->
-            <agm-map
-                class="col-12"
-                [latitude]="map_lat"
-                [longitude]="map_lng"
-                [zoom]="map_zoom"
-                (mapReady)="mapReadyHandler($event)"
-                [disableDefaultUI]="true"
-                >
+            <agm-map class="col-12" [latitude]="map_lat" [longitude]="map_lng" [zoom]="map_zoom"
+                (mapReady)="mapReadyHandler($event)" [disableDefaultUI]="true">
                 <!-- LABELS -->
-                <agm-marker 
-                    *ngFor="let m of markers"
-                    [latitude]="m.lat"
-                    [longitude]="m.lng"
-                    [label]="{
+                <agm-marker *ngFor="let m of markers" [latitude]="m.lat" [longitude]="m.lng" [label]="{
                         color: 'white',
                         text: m.description,
                         fontSize: '1em',
                         fontWeight: '800'
-                    }"
-                    [iconUrl]="{
+                    }" [iconUrl]="{
                         path: getSvgPath(),
                         anchor: anchorConst,
                         fillColor: 'purple',
@@ -38,8 +28,7 @@
                         strokeColor: 'black',
                         strokeOpacity: 0,
                         strokeWeight: 1
-                    }"
-                >
+                    }">
                 </agm-marker>
                 <!-- CIRCLES -->
                 <!-- <agm-circle
@@ -58,14 +47,8 @@
                     [clickable]="false"
                 >
                 </agm-circle> -->
-                <agm-polygon 
-                    *ngFor="let m of markers"
-                    [clickable]="false"
-                    [fillColor]="'purple'"
-                    [fillOpacity]="0.5"
-                    [strokeOpacity]="0"
-                    [paths]="m.path"
-                >
+                <agm-polygon *ngFor="let m of markers" [clickable]="false" [fillColor]="'purple'" [fillOpacity]="0.5"
+                    [strokeOpacity]="0" [paths]="m.path">
                 </agm-polygon>
                 <!-- <agm-polygon 
                     [clickable]="false"
@@ -82,5 +65,5 @@
             </agm-map>
         </div>
     </div>
-  
-  </div>
+
+</div>
