@@ -14,25 +14,29 @@ router.use(userCheckers.assertIsAdmin);
 // List routes here
 router.get('/pax_nights_by_location', (req, res) => {
     let queryString = ''
-        + 'SELECT p1.location, l.lat, l.lng, sum(t.guest_number * (p2.daynumber - p1.daynumber)) as `pax_nights` '
+        + 'SELECT p1.location, y.id as `year_id`, l.lat, l.lng, sum(td.pax) as `pax_nights` '
         + 'FROM tours t '
+        + 'INNER JOIN tour_days td '
+        + 'ON t.id = td.tour_id '
         + 'INNER JOIN programs pr '
         + 'ON t.program_id = pr.idprogram '
+        + 'INNER JOIN years y '
+        + 'ON pr.id_year = y.id '
+        + 'INNER JOIN program_days pd '
+        + 'ON pr.idprogram = pd.idprogram and td.day_number = pd.number '
         + 'INNER JOIN points p1 '
-        + 'ON t.program_id = p1.idprogram '
+        + 'ON pd.idprogram = p1.idprogram and pd.number = p1.daynumber '
         + 'INNER JOIN locations l '
         + 'ON p1.location = l.name '
-        + 'INNER JOIN points p2 '
-        + 'ON t.program_id = p2.idprogram '
-        + 'WHERE t.status = \'confirmed\' AND t.guest_number is not null '
-        + 'AND p1.idtype = \'hotel_checkin\' AND p1.location = p2.location AND p2.idtype = \'hotel_checkout\' '
-        + 'AND p2.daynumber = ( '
-        + '    SELECT min(psub.daynumber) '
-        + '    FROM points psub '
-        + '    WHERE psub.idprogram = t.program_id AND psub.location = p1.location AND psub.idtype = \'hotel_checkout\' AND psub.daynumber > p1.daynumber '
+        + 'WHERE t.status = \'confirmed\' AND td.pax is not null '
+        + 'AND p1.idtype IN (\'hotel_checkin\', \'hotel_stay\') '
+        + 'AND p1.pointindex = ( '
+        + '    SELECT max(pt.pointindex) '
+        + '    FROM points pt '
+        + '    WHERE pd.idprogram = pt.idprogram and pd.number = pt.daynumber '
         + ') '
-        + 'GROUP BY p1.location '
-        + 'ORDER BY `pax_nights` DESC';
+        + 'GROUP BY p1.location, y.id '
+        + 'ORDER BY `year_id`, `pax_nights` DESC';
     executeQuery(queryString, [], rows => respondWith200(res, rows), err => respondWith500(res, err));
 });
 

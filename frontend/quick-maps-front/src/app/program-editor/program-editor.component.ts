@@ -12,12 +12,13 @@ import { setTitle } from '../_helpers/titleHelper';
 import { LocationService } from '../_services/location.service';
 import { MeService } from '../_services/me.service';
 import { ProgramService } from '../_services/program.service';
+import { Year } from '../_entities/year';
 
 // Marker interface, used for presenting the places on the map
 interface Marker {
   label: string;
-	lat: number;
-	lng: number;
+  lat: number;
+  lng: number;
   icon_map_key: string;
   show_label: boolean;
 }
@@ -49,13 +50,14 @@ interface ProgramDay {
 export class ProgramEditorComponent extends LoggedInComponent implements OnInit {
 
   // Default parameters for the map element. Some of these could be dynamic (TODO).
-  map_lat : number = 43;
-  map_lng : number = 19;
-  map_zoom : number = 7;
+  map_lat: number = 43;
+  map_lng: number = 19;
+  map_zoom: number = 7;
 
-  map : google.maps.Map|null = null;
-  mapClickListener : google.maps.MapsEventListener|null = null;
+  map: google.maps.Map | null = null;
+  mapClickListener: google.maps.MapsEventListener | null = null;
 
+  years: Year[] = [];
   partners: Partner[] = [];
   tourPrograms: TourProgram[] = [];
   tourProgramsFiltered: TourProgram[] = [];
@@ -70,6 +72,8 @@ export class ProgramEditorComponent extends LoggedInComponent implements OnInit 
 
   editMode: boolean = false;
   selectedDay: number = 1;
+  selectedYearLabel: string = "2023"; // 2023
+  selectedYearId: number = 2; // ID of year 2023
   selectedPartnerId: number = -1;
   selectedPartnerName: string = "";
   selectedTourProgramId: number = 1;
@@ -85,10 +89,10 @@ export class ProgramEditorComponent extends LoggedInComponent implements OnInit 
   constructor(
     protected router: Router,
     protected meService: MeService,
-    private zone: NgZone, 
-    public translateService: TranslateService, 
+    private zone: NgZone,
+    public translateService: TranslateService,
     private titleService: Title,
-    private locationService: LocationService, 
+    private locationService: LocationService,
     private programService: ProgramService
   ) {
     super(router, meService);
@@ -108,8 +112,8 @@ export class ProgramEditorComponent extends LoggedInComponent implements OnInit 
       this.mapClickListener.remove();
     }
   }
-  
-  mapReadyHandler($event : google.maps.Map): void {
+
+  mapReadyHandler($event: google.maps.Map): void {
     this.map = $event;
     this.mapClickListener = this.map.addListener('click', (e: google.maps.MouseEvent) => {
       this.zone.run(() => {
@@ -120,7 +124,7 @@ export class ProgramEditorComponent extends LoggedInComponent implements OnInit 
   // End of workaround.
 
   // React to user action
-  onMapClick($event : google.maps.MouseEvent): void {
+  onMapClick($event: google.maps.MouseEvent): void {
     // Ignore if not in edit mode
     if (!this.editMode) {
       return;
@@ -145,7 +149,7 @@ export class ProgramEditorComponent extends LoggedInComponent implements OnInit 
 
     // Send new point to the server
     this.programService.addPoint(
-      this.selectedTourProgramId, 
+      this.selectedTourProgramId,
       this.selectedDay,
       point_index,
       use_location,
@@ -172,16 +176,33 @@ export class ProgramEditorComponent extends LoggedInComponent implements OnInit 
     this.onDaySelect(this.selectedDay + 1);
   }
 
+  onYearSelect(yearId: number): void {
+    this.selectedYearId = yearId;
+
+    this.years.forEach(y => {
+      if (y.id == this.selectedYearId) {
+        this.selectedYearLabel = y.value;
+      }
+    });
+
+    this.performTourProgramFiltering();
+  }
+
   onPartnerSelect(partnerId: number): void {
     this.selectedPartnerId = partnerId;
+    this.performTourProgramFiltering();
+  }
 
+  performTourProgramFiltering(): void {
     // Special value for any partner
-    if (partnerId == this.jokerPartner.idpartner) {
-      this.tourProgramsFiltered = this.tourPrograms;
+    if (this.selectedPartnerId == this.jokerPartner.idpartner) {
+      this.tourProgramsFiltered = this.tourPrograms.filter((prog) => {
+        return prog.id_year == this.selectedYearId;
+      });
     } else {
       // Filter for only programs of selected partner
       this.tourProgramsFiltered = this.tourPrograms.filter((prog) => {
-        return prog.partner_id == this.selectedPartnerId;
+        return prog.id_year == this.selectedYearId && prog.partner_id == this.selectedPartnerId;
       });
     }
 
@@ -257,6 +278,15 @@ export class ProgramEditorComponent extends LoggedInComponent implements OnInit 
   }
 
   // Fetch data from server
+  getAllYears(): void {
+    this.programService.getAllYears().subscribe((years: [Year]) => {
+      this.years = years;
+
+      // Perform next server request in the chain
+      this.getAllPartners();
+    }, err => this.checkErrUnauthorized(err));
+  }
+
   getAllPartners(): void {
     this.programService.getAllPartners().subscribe((partners: [Partner]) => {
       let partnersWithJoker = [this.jokerPartner].concat(partners);
@@ -290,14 +320,14 @@ export class ProgramEditorComponent extends LoggedInComponent implements OnInit 
         } else {
           // There should be an icon
           this.markerIconMap.set(type.name, {
-            url: (type.preferred_ui_icon != null && type.preferred_ui_icon != '')?(')../../assets/icons/' + type.preferred_ui_icon):'',
-            labelOrigin: {x: 18, y: -6}
+            url: (type.preferred_ui_icon != null && type.preferred_ui_icon != '') ? (')../../assets/icons/' + type.preferred_ui_icon) : '',
+            labelOrigin: { x: 18, y: -6 }
           });
         }
       });
 
       // Perform next server request in the chain
-      this.getAllPartners();
+      this.getAllYears();
     }, err => this.checkErrUnauthorized(err));
   }
 
@@ -340,8 +370,8 @@ export class ProgramEditorComponent extends LoggedInComponent implements OnInit 
             location: dp.location_name,
             type: dp.point_type,
             description: dp.point_description,
-            lat: dp.location_name != null?dp.location_lat:dp.ff_lat,
-            lng: dp.location_name != null?dp.location_lng:dp.ff_lng
+            lat: dp.location_name != null ? dp.location_lat : dp.ff_lat,
+            lng: dp.location_name != null ? dp.location_lng : dp.ff_lng
           });
         }
       });
@@ -365,7 +395,7 @@ export class ProgramEditorComponent extends LoggedInComponent implements OnInit 
       // Add location icon object to marker icon map
       this.markerIconMap.set('_location', {
         url: '../../assets/icons/place_gray.svg',
-        labelOrigin: {x: 18, y: -6}
+        labelOrigin: { x: 18, y: -6 }
       });
 
       // Add location markers to map
@@ -424,11 +454,11 @@ export class ProgramEditorComponent extends LoggedInComponent implements OnInit 
 
     this.days[this.selectedDay - 1].points.forEach(p => {
       this.pointMarkers.push({
-        label: p.location??' ',
+        label: p.location ?? ' ',
         lat: p.lat,
         lng: p.lng,
         icon_map_key: p.type,
-        show_label: this.getTypeObject(p.type)?.preferred_ui_label??false
+        show_label: this.getTypeObject(p.type)?.preferred_ui_label ?? false
       });
     });
   }

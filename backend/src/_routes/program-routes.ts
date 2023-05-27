@@ -12,6 +12,11 @@ let userCheckers = require('../_middleware/user-checkers');
 router.use(userCheckers.assertIsAdmin);
 
 // List routes here
+router.get('/all_years', (req, res) => {
+    let queryString = 'SELECT * FROM years';
+    executeQuery(queryString, [], rows => respondWith200(res, rows), err => respondWith500(res, err));
+});
+
 router.get('/all_partners', (req, res) => {
     let queryString = 'SELECT * FROM partners';
     executeQuery(queryString, [], rows => respondWith200(res, rows), err => respondWith500(res, err));
@@ -19,10 +24,10 @@ router.get('/all_partners', (req, res) => {
 
 router.get('/all_tour_programs', (req, res) => {
     let queryString = ''
-        + 'SELECT pr.idprogram as id, pr.name as name, pr.idpartner as partner_id, pa.name as partner_name, pa.shorthand as parther_short '
+        + 'SELECT pr.idprogram as id, pr.name as name, pr.idpartner as partner_id, pa.name as partner_name, pa.shorthand as parther_short, pr.id_year as id_year '
         + 'FROM programs pr, partners pa '
         + 'WHERE pr.idpartner = pa.idpartner';  // join with partners might be unneeded
-        
+
     executeQuery(queryString, [], rows => respondWith200(res, rows), err => respondWith500(res, err));
 });
 
@@ -111,7 +116,7 @@ function fixupProgramRows(programId: number, rows: any[]): any[] {
     rows.forEach(row => {
         if (row.day_number > lastDayNumber) {
             lastDayNumber = row.day_number;
-            lastDayLastPointIndex = row.point_index??0;
+            lastDayLastPointIndex = row.point_index ?? 0;
 
             dailyHotelInfo.push({
                 day_number: row.day_number,
@@ -120,12 +125,12 @@ function fixupProgramRows(programId: number, rows: any[]): any[] {
                 first_location_index: 0,
                 last_location: null,
                 last_location_index: 0,
-                last_index: row.point_index??0,
+                last_index: row.point_index ?? 0,
                 increment_points: 0
             });
-        } else if (row.day_number == lastDayNumber && (row.point_index??0) > lastDayLastPointIndex) {
-            lastDayLastPointIndex = row.point_index??0;
-            dailyHotelInfo[dailyHotelInfo.length - 1].last_index = row.point_index??0;
+        } else if (row.day_number == lastDayNumber && (row.point_index ?? 0) > lastDayLastPointIndex) {
+            lastDayLastPointIndex = row.point_index ?? 0;
+            dailyHotelInfo[dailyHotelInfo.length - 1].last_index = row.point_index ?? 0;
         }
 
         if (row.point_type == 'hotel') {
@@ -152,9 +157,9 @@ function fixupProgramRows(programId: number, rows: any[]): any[] {
         dailyHotelInfo.forEach((info, index, arr) => {
             // Add hotel checkout to start of day
             if (currentLocation != null && ((info.hotel_point_count == 1 && info.first_location_index == info.last_index && info.first_location != currentLocation) // There's an apparent checkin at the end of the day
-                                            || (info.hotel_point_count == 0 && info.day_number == lastDayNumber)    // This is the last day and there's no hotel info
-                                            || (info.hotel_point_count == 0 && info.day_number < lastDayNumber && arr[index + 1].hotel_point_count > 0  // There's no hotel info, and there's a different hotel tomorrow at the start of the day
-                                            && arr[index + 1].last_index > 1 && arr[index + 1].first_location_index == 1 && arr[index + 1].first_location != currentLocation)
+                || (info.hotel_point_count == 0 && info.day_number == lastDayNumber)    // This is the last day and there's no hotel info
+                || (info.hotel_point_count == 0 && info.day_number < lastDayNumber && arr[index + 1].hotel_point_count > 0  // There's no hotel info, and there's a different hotel tomorrow at the start of the day
+                    && arr[index + 1].last_index > 1 && arr[index + 1].first_location_index == 1 && arr[index + 1].first_location != currentLocation)
             )) {
                 newRows.push({
                     idprogram: programId,
@@ -173,11 +178,11 @@ function fixupProgramRows(programId: number, rows: any[]): any[] {
             }
             // Add hotel stay to start of day
             else if (currentLocation != null && info.day_number != lastDayNumber
-            && (info.hotel_point_count == 0 && (arr[index + 1].hotel_point_count == 0 
-                                                || (arr[index + 1].hotel_point_count > 0 && arr[index + 1].first_location_index == arr[index + 1].last_index)
-                                                || (arr[index + 1].hotel_point_count > 0 && arr[index + 1].first_location_index == 1 && arr[index + 1].first_location == currentLocation)
-                                                ) 
-                || (info.hotel_point_count == 1 && info.first_location_index == info.last_index && info.first_location == currentLocation))) {
+                && (info.hotel_point_count == 0 && (arr[index + 1].hotel_point_count == 0
+                    || (arr[index + 1].hotel_point_count > 0 && arr[index + 1].first_location_index == arr[index + 1].last_index)
+                    || (arr[index + 1].hotel_point_count > 0 && arr[index + 1].first_location_index == 1 && arr[index + 1].first_location == currentLocation)
+                )
+                    || (info.hotel_point_count == 1 && info.first_location_index == info.last_index && info.first_location == currentLocation))) {
                 newRows.push({
                     idprogram: programId,
                     daynumber: info.day_number,
@@ -202,8 +207,8 @@ function fixupProgramRows(programId: number, rows: any[]): any[] {
                 }
 
                 // Add hotel checkin to end of day
-                if ((info.hotel_point_count == 0 || (info.hotel_point_count == 1 && info.first_location_index == 1 && (info.day_number > 1 || info.last_index > 1))) 
-                && tomorrowsInfo.hotel_point_count > 0 && tomorrowsInfo.last_index > 1 && tomorrowsInfo.first_location_index == 1 && tomorrowsInfo.first_location != currentLocation) {
+                if ((info.hotel_point_count == 0 || (info.hotel_point_count == 1 && info.first_location_index == 1 && (info.day_number > 1 || info.last_index > 1)))
+                    && tomorrowsInfo.hotel_point_count > 0 && tomorrowsInfo.last_index > 1 && tomorrowsInfo.first_location_index == 1 && tomorrowsInfo.first_location != currentLocation) {
                     newRows.push({
                         idprogram: programId,
                         daynumber: info.day_number,
@@ -222,10 +227,10 @@ function fixupProgramRows(programId: number, rows: any[]): any[] {
                 }
                 // Add hotel stay to end of day
                 if (currentLocation != null && (info.hotel_point_count == 0 || (info.hotel_point_count == 1 && info.first_location_index == 1 && (info.day_number > 1 || info.last_index > 1)))
-                && (tomorrowsInfo.hotel_point_count == 0 
-                    || (tomorrowsInfo.hotel_point_count > 0 && tomorrowsInfo.first_location_index == tomorrowsInfo.last_index)
-                    || (tomorrowsInfo.hotel_point_count > 0 && tomorrowsInfo.first_location_index == 1 && tomorrowsInfo.first_location == currentLocation)
-                )) {
+                    && (tomorrowsInfo.hotel_point_count == 0
+                        || (tomorrowsInfo.hotel_point_count > 0 && tomorrowsInfo.first_location_index == tomorrowsInfo.last_index)
+                        || (tomorrowsInfo.hotel_point_count > 0 && tomorrowsInfo.first_location_index == 1 && tomorrowsInfo.first_location == currentLocation)
+                    )) {
                     newRows.push({
                         idprogram: programId,
                         daynumber: info.day_number,

@@ -3,6 +3,16 @@
     <!-- HEADING -->
     <h1 class="col-12 text-center mb-4" translate>STATS.TITLE</h1>
 
+
+    <!-- YEAR SELECTOR -->
+    <div class="col-12 d-flex justify-content-center mb-4">
+        <select class="form-select" [ngModel]="selectedYearId" (ngModelChange)="onYearSelect($event)">
+            <option *ngFor="let year of years" [value]="year.id">
+                {{year.value}}
+            </option>
+        </select>
+    </div>
+
     <!-- MAP CONTAINER -->
     <h3 class="col-12 mb-2" translate>STATS.PAX_NIGHTS_BY_LOCATION</h3>
     <div class="col-12 mb-2" translate [translateParams]="{number: totalNights}">STATS.TOTAL_PATTERN</div>

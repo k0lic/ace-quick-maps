@@ -1,6 +1,18 @@
 agm-map {
-    height: 750px;
+    height: 700px;
     width: 100%;
+
+    @media screen and (max-width: 1600px) {
+        height: 500px;
+    }
+
+    @media screen and (max-width: 1200px) {
+        height: 480px;
+    }
+
+    @media screen and (max-width: 992px) {
+        height: 460px;
+    }
 }
 
 .tour-info-container {
@@ -9,10 +21,10 @@ agm-map {
     /* The max width of the info window. */
     /* width: 200px; */
 }
- 
+
 /* The popup bubble styling. */
 .popup-bounds {
-/* Position the bubble centred-above its parent. */
+    /* Position the bubble centred-above its parent. */
     position: absolute;
     top: 0;
     left: 0;
@@ -36,6 +48,11 @@ agm-map {
     font-family: sans-serif;
     /* overflow-y: auto; */
     width: fit-content;
+}
+
+.popup-header {
+    padding: 0px 50px;
+    white-space: nowrap;
 }
 
 /* The parent of the bubble. A zero-height div at the top of the tip. */

@@ -57,7 +57,7 @@ function beginTransaction(callback, errCallback) {
                 errCallback(err);
                 return;
             }
-            
+
             callback(conn);
         });
     });

@@ -8,6 +8,8 @@ import { defaultSvgPath } from '../_helpers/svgHelper';
 import { setTitle } from '../_helpers/titleHelper';
 import { MeService } from '../_services/me.service';
 import { StatService } from '../_services/stat.service';
+import { Year } from '../_entities/year';
+import { ProgramService } from '../_services/program.service';
 
 // Marker interface, used for presenting the points on the map
 interface Coord {
@@ -37,6 +39,11 @@ export class StatMapComponent extends LoggedInComponent implements OnInit {
   map: google.maps.Map | null = null;
   mapClickListener: google.maps.MapsEventListener | null = null;
 
+  years: Year[] = [];
+  locationPaxNights: PaxNightsByLocation[] = [];
+  selectedYearId: number = 2;
+  selectedYearLabel: string = '2023';
+
   markers: Marker[] = [];
   totalNights: number = 0;
 
@@ -49,13 +56,14 @@ export class StatMapComponent extends LoggedInComponent implements OnInit {
     private zone: NgZone,
     private titleService: Title,
     private translateService: TranslateService,
-    private statService: StatService
+    private statService: StatService,
+    private programService: ProgramService
   ) {
     super(router, meService);
   }
 
   ngOnInit(): void {
-    this.refreshStats();
+    this.getAllYears();
 
     this.anchorConst = { x: 12, y: 12 };
     this.labelOriginConst = { x: 12, y: 12 };
@@ -85,37 +93,69 @@ export class StatMapComponent extends LoggedInComponent implements OnInit {
     // skip
   }
 
+  onYearSelect(yearId: number): void {
+    this.selectedYearId = yearId;
+
+    this.years.forEach(y => {
+      if (y.id == this.selectedYearId) {
+        this.selectedYearLabel = y.value;
+      }
+    });
+
+    this.refreshMarkers();
+  }
+
+  // Fetch data from server
+  getAllYears(): void {
+    this.programService.getAllYears().subscribe((years: [Year]) => {
+      this.years = years;
+
+      // Next step
+      this.refreshStats();
+    }, err => this.checkErrUnauthorized(err));
+  }
+
   refreshStats(): void {
     this.refreshPaxNightsByLocationMap();
   }
 
   refreshPaxNightsByLocationMap(): void {
     this.statService.getPaxNightsByLocation().subscribe((rows: PaxNightsByLocation[]) => {
-      // Convert PaxNightsByLocation into markers we can show on the map
-      let tmpList: Marker[] = [];
-      let sum: number = 0;
-
-      rows.forEach(row => {
-        let radiusQ = Math.sqrt(row.pax_nights);
-
-        tmpList.push({
-          lat: row.lat,
-          lng: row.lng,
-          path: this.createCirclePath(row.lat, row.lng, radiusQ),
-          // description: this.translateService.instant(
-          //   'STATS.LOCATION_NUMBER_PATTERN', 
-          //   {
-          //     location: this.translateService.instant(row.location), 
-          //     number: row.pax_nights
-          //   })
-          description: row.pax_nights + ''
-        });
-        sum += row.pax_nights;
-      });
-
-      this.markers = tmpList;
-      this.totalNights = sum;
+      this.locationPaxNights = rows;
+      this.refreshMarkers();
     }, err => this.checkErrUnauthorized(err));
+  }
+
+  refreshMarkers(): void {
+    // Convert PaxNightsByLocation into markers we can show on the map
+    let tmpList: Marker[] = [];
+    let sum: number = 0;
+
+    this.locationPaxNights.forEach(row => {
+      // Only use rows for selected year
+      if (row.year_id != this.selectedYearId) {
+        return;
+      }
+
+      let radiusQ = Math.sqrt(row.pax_nights);
+
+      tmpList.push({
+        lat: row.lat,
+        lng: row.lng,
+        path: this.createCirclePath(row.lat, row.lng, radiusQ),
+        // description: this.translateService.instant(
+        //   'STATS.LOCATION_NUMBER_PATTERN', 
+        //   {
+        //     location: this.translateService.instant(row.location), 
+        //     number: row.pax_nights
+        //   })
+        description: row.pax_nights + ''
+      });
+      sum += row.pax_nights;
+    });
+
+    this.markers = tmpList;
+    this.totalNights = sum;
   }
 
   createCirclePath(centerLat: number, centerLng: number, radiusQ: number): Coord[] {

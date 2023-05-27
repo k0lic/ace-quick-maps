@@ -68,7 +68,7 @@ function runRefresh() {
                             // Log successful job
                             timeStampLog(''
                                 + 'Dataset Refresher Cron Job successfully finished '
-                                + '\n\tWith settings: (fetchSchedule:' + refreshConfig.fetchTourSchedule + ', fetchDrivingLog:' + refreshConfig.fetchDrivingLog 
+                                + '\n\tWith settings: (fetchSchedule:' + refreshConfig.fetchTourSchedule + ', fetchDrivingLog:' + refreshConfig.fetchDrivingLog
                                 + ', updateSchedule:' + refreshConfig.updateTourSchedule + ', updateDrivingLog:' + refreshConfig.updateDrivingLog + ')'
                             );
                         }, reportFailure);
@@ -96,8 +96,8 @@ function rollback(conn: any, err) {
 function reportFailure(err) {
     timeStampLog(''
         + 'Dataset refresher cron job FAILED!'
-        + '\n\tWith settings: (fetchSchedule:' + refreshConfig.fetchTourSchedule + ', fetchDrivingLog:' + refreshConfig.fetchDrivingLog 
-        + ', updateSchedule:' + refreshConfig.updateTourSchedule + ', updateDrivingLog' + refreshConfig.updateDrivingLog + ')'
+        + '\n\tWith settings: (fetchSchedule:' + refreshConfig.fetchTourSchedule + ', fetchDrivingLog:' + refreshConfig.fetchDrivingLog
+        + ', updateSchedule:' + refreshConfig.updateTourSchedule + ', updateDrivingLog:' + refreshConfig.updateDrivingLog + ')'
         + '\n\tCause in next line:'
     );
     normalLog(err);
@@ -123,19 +123,25 @@ async function updateTourSchedule(conn: any, report: DatasetErrorReport, success
     // Only send report to the first component that fires errors, since later components depend on the previous ones
     let noErrorsOnEntry = report.hasErrors() == false;
 
-    let tours = await excelHelpers.processTourScheduleExcelFile(report);
-    updateDatabaseWithTours(conn, tours, report, (conn, report) => {
-        if (noErrorsOnEntry) {
-            // Send report before calling the callback
-            sendReport('Raspored tura', Environment.RESOURCE_OWNERS.TOUR_SCHEDULE, report);
+    excelHelpers.processTourScheduleExcelFileSelectVersion(report, tours => {
+        if (tours.length == 0) {
+            successCallback(conn, report);
+            return;
         }
 
-        successCallback(conn, report);
-    }, (conn, err, report) => {
-        // Do we send a report on failure? I think it's better not to - 
-        // The report will not contain the reason for the failure, any errors in the report are minor compared to the one that failed the DB update
-        errCallback(conn, err);
-    });
+        updateDatabaseWithTours(conn, tours, report, (conn, report) => {
+            if (noErrorsOnEntry) {
+                // Send report before calling the callback
+                sendReport('Raspored tura', Environment.RESOURCE_OWNERS.TOUR_SCHEDULE, report);
+            }
+
+            successCallback(conn, report);
+        }, (conn, err, report) => {
+            // Do we send a report on failure? I think it's better not to - 
+            // The report will not contain the reason for the failure, any errors in the report are minor compared to the one that failed the DB update
+            errCallback(conn, err);
+        });
+    }, err => errCallback(conn, err));
 }
 
 // NOTICE: When opening a excel file that has a filter on Exceljs crashes, so I added a really stupid fix, to a piece of code I don't understand.
@@ -146,19 +152,25 @@ async function updateDrivingLog(conn: any, report: DatasetErrorReport, successCa
     // Only send report to the first component that fires errors, since later components depend on the previous ones
     let noErrorsOnEntry = report.hasErrors() == false;
 
-    let rows = await excelHelpers.processDrivingLogExcelFile(report);
-    updateDatabaseWithDrivingLog(conn, rows, report, (conn, report) => {
-        if (noErrorsOnEntry) {
-            // Send report before calling the callback
-            sendReport('DRIVING LOG', Environment.RESOURCE_OWNERS.DRIVING_LOG, report);
+    excelHelpers.processDrivingLogExcelFileSelectVersion(report, rows => {
+        if (rows.length == 0) {
+            successCallback(conn, report);
+            return;
         }
 
-        successCallback(conn, report);
-    }, (conn, err, report) => {
-        // Do we send a report on failure? I think it's better not to - 
-        // The report will not contain the reason for the failure, any errors in the report are minor compared to the one that failed the DB update
-        errCallback(conn, err);
-    });
+        updateDatabaseWithDrivingLog(conn, rows, report, (conn, report) => {
+            if (noErrorsOnEntry) {
+                // Send report before calling the callback
+                sendReport('DRIVING LOG', Environment.RESOURCE_OWNERS.DRIVING_LOG, report);
+            }
+
+            successCallback(conn, report);
+        }, (conn, err, report) => {
+            // Do we send a report on failure? I think it's better not to - 
+            // The report will not contain the reason for the failure, any errors in the report are minor compared to the one that failed the DB update
+            errCallback(conn, err);
+        });
+    }, err => errCallback(conn, err));
 }
 
 function updateDatabaseWithTours(conn: any, tours, report: DatasetErrorReport, successCallback, errCallback): void {
@@ -168,8 +180,8 @@ function updateDatabaseWithTours(conn: any, tours, report: DatasetErrorReport, s
     const statusCanceled = 'canceled';
 
     // Excel contains program names, while database uses auto-generated keys for programs
-    let allProgramsQuery = 'SELECT * FROM programs';
-    executeQueryInTransaction(conn, allProgramsQuery, [], (conn, programs) => {
+    let currentYearProgramsQuery = 'SELECT * FROM programs p, current_year cy WHERE cy.current = p.id_year';
+    executeQueryInTransaction(conn, currentYearProgramsQuery, [], (conn, programs) => {
         // Create mapping from program name (eg. MCG1) to program id (eg. 31)
         let programNameMap: Map<string, number> = new Map();
         programs.forEach(p => {
@@ -177,9 +189,15 @@ function updateDatabaseWithTours(conn: any, tours, report: DatasetErrorReport, s
         });
 
         // tour_days and activities are set to Cascade on Delete
-        let cleanupQuery = 'DELETE FROM tours';
-        
-        let insertToursQueryString = 'INSERT INTO tours (excel_row_number, program_id, start_date, end_date, depart_num, tour_guide, guest_number, guests_raw, status) VALUES ?';
+        let cleanupQuery = 'DELETE '
+            + 'FROM tours '
+            + 'WHERE program_id IN ( '
+            + '  SELECT p.idprogram '
+            + '  FROM programs p, current_year cy '
+            + '  WHERE p.id_year = cy.current '
+            + ')';
+
+        let insertToursQueryString = 'INSERT INTO tours (excel_row_number, program_id, start_date, end_date, depart_num, status) VALUES ?';
 
         let insertTourQueryValues: any[] = [[]];
         tours.forEach(t => {
@@ -189,9 +207,6 @@ function updateDatabaseWithTours(conn: any, tours, report: DatasetErrorReport, s
                 dateHelpers.getYYYYMMDDdashed(t.startDate),
                 dateHelpers.getYYYYMMDDdashed(t.endDate),
                 t.departNum,
-                t.tourGuide,
-                t.guestNum,
-                t.guestNumRaw,
                 t.status
             ]);
         });
@@ -199,10 +214,17 @@ function updateDatabaseWithTours(conn: any, tours, report: DatasetErrorReport, s
         executeQueryInTransaction(conn, cleanupQuery, [], (conn, rows) => {
             executeQueryInTransaction(conn, insertToursQueryString, insertTourQueryValues, (conn, rows) => {
 
-                let fetchNewToursQuery = 'SELECT * FROM tours ORDER BY excel_row_number';
+                let fetchNewToursQuery = 'SELECT * '
+                    + 'FROM tours t '
+                    + 'WHERE t.program_id IN ( '
+                    + '  SELECT p.idprogram '
+                    + '  FROM programs p, current_year cy '
+                    + '  WHERE p.id_year = cy.current '
+                    + ') '
+                    + 'ORDER BY t.excel_row_number';
                 executeQueryInTransaction(conn, fetchNewToursQuery, [], (conn, dbTours) => {
 
-                    let insertTourDaysQueryString = 'INSERT INTO tour_days (tour_id, day_number, date, hotel1, hotel2) VALUES ?';
+                    let insertTourDaysQueryString = 'INSERT INTO tour_days (tour_id, day_number, date, hotel1, hotel2, pax, pax_raw, room_single, room_double, room_twin, room_triple, room_apt, room_staff, tour_lead1, tour_lead2, dump) VALUES ?';
 
                     let insertTourDaysQueryValues: any[] = [[]];
                     tours.forEach((t, tIndex) => {
@@ -212,14 +234,35 @@ function updateDatabaseWithTours(conn: any, tours, report: DatasetErrorReport, s
                                 d.dayNum,
                                 dateHelpers.getYYYYMMDDdashed(d.arrDate),
                                 d.hotel1,
-                                d.hotel2
+                                d.hotel2,
+                                d.pax,
+                                d.paxRaw,
+                                d.roomSingle,
+                                d.roomDouble,
+                                d.roomTwin,
+                                d.roomTriple,
+                                d.roomApt,
+                                d.roomStaff,
+                                d.leader1,
+                                d.leader2,
+                                d.dump
                             ]);
                         });
                     });
 
                     executeQueryInTransaction(conn, insertTourDaysQueryString, insertTourDaysQueryValues, (conn, rows) => {
 
-                        let fetchNewTourDaysQuery = 'SELECT * FROM tour_days';
+                        let fetchNewTourDaysQuery = 'SELECT * '
+                            + 'FROM tour_days td '
+                            + 'WHERE td.tour_id IN ( '
+                            + '  SELECT t.id '
+                            + '  FROM tours t '
+                            + '  WHERE t.program_id IN ( '
+                            + '    SELECT p.idprogram '
+                            + '    FROM programs p, current_year cy '
+                            + '    WHERE p.id_year = cy.current '
+                            + '  ) '
+                            + ')';
                         executeQueryInTransaction(conn, fetchNewTourDaysQuery, [], (conn, dbTourDays) => {
 
                             let insertActivitiesQueryString = 'INSERT INTO activities (tour_day_id, activity_number, point_index, description) VALUES ?';
@@ -251,8 +294,8 @@ function updateDatabaseWithTours(conn: any, tours, report: DatasetErrorReport, s
                             if (!firstActivity) {
                                 executeQueryInTransaction(
                                     conn,
-                                    insertActivitiesQueryString, insertActivitiesQueryValues, 
-                                    (conn, rows) => successCallback(conn, report), 
+                                    insertActivitiesQueryString, insertActivitiesQueryValues,
+                                    (conn, rows) => successCallback(conn, report),
                                     (conn, err) => errCallback(conn, err, report));
                             } else {
                                 successCallback(conn, report);
@@ -267,12 +310,14 @@ function updateDatabaseWithTours(conn: any, tours, report: DatasetErrorReport, s
 
 function updateDatabaseWithDrivingLog(conn, rows, report: DatasetErrorReport, successCallback, errCallback): void {
     // Driving log contains tour instance names, while database uses auto-generated keys for tour objects
-    let allToursQuery = ''
+    let currentYearToursQuery = ''
         + 'SELECT t.id as id, p.name as `name`, t.start_date as `start_date` '
         + 'FROM tours t '
         + 'INNER JOIN programs p '
-        + 'ON t.program_id = p.idprogram';
-    executeQueryInTransaction(conn, allToursQuery, [], (conn, tours) => {
+        + 'ON t.program_id = p.idprogram '
+        + 'INNER JOIN current_year cy '
+        + 'ON p.id_year = cy.current';
+    executeQueryInTransaction(conn, currentYearToursQuery, [], (conn, tours) => {
         // Create mapping from tour instance name (eg. MCG1-01/01/22) to program id (eg. 31)
         let tourIdMap: Map<string, number> = new Map();
         tours.forEach(t => {
@@ -281,10 +326,16 @@ function updateDatabaseWithDrivingLog(conn, rows, report: DatasetErrorReport, su
         });
 
         // Cleanup old driving log rows
-        let cleanupQuery = 'DELETE FROM tour_days_driving_log';
+        let cleanupQuery = 'DELETE '
+            + 'FROM tour_days_driving_log '
+            + 'WHERE tour_id IN ( '
+            + '  SELECT t.id '
+            + '  FROM tours t, programs p, current_year cy '
+            + '  WHERE t.program_id = p.idprogram and p.id_year = cy.current '
+            + ')';
 
         // Insert new driving log rows
-        let insertDrivingLogQueryString = 'INSERT INTO tour_days_driving_log (excel_row_number, tour_id, day_number, date, vehicle1, vehicle2, vehicle3, notice) VALUES ?';
+        let insertDrivingLogQueryString = 'INSERT INTO tour_days_driving_log (excel_row_number, tour_id, day_number, date, vehicle1, driver1, vehicle2, driver2, vehicle3, driver3, carrier1, type1, carrier2, type2, carrier3, type3, notice) VALUES ?';
 
         let insertDrivingLogQueryValues: any[] = [[]];
         rows.forEach(r => {
@@ -303,8 +354,17 @@ function updateDatabaseWithDrivingLog(conn, rows, report: DatasetErrorReport, su
                 r.dayNumber,
                 r.date,
                 r.vehicle1,
+                r.driver1,
                 r.vehicle2,
+                r.driver2,
                 r.vehicle3,
+                r.driver3,
+                r.carrier1,
+                r.type1,
+                r.carrier2,
+                r.type2,
+                r.carrier3,
+                r.type3,
                 r.notice
             ]);
         });

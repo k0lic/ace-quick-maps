@@ -2,6 +2,7 @@ import { Environment } from "../../config/environment";
 import { Secrets } from "../../config/secrets";
 import { DatasetErrorReport } from "./dataset-error-report";
 import { normalLog } from "./logger";
+import { getDrivingLogDriveFileId, getDrivingLogLocalPath, getTourScheduleDriveFileId, getTourScheduleLocalPath, getYear } from "./version-helper";
 
 declare var require: any;
 let fs = require('fs');
@@ -41,6 +42,13 @@ async function listFiles(res) {
 }
 
 function downloadFromDrive(fileId, fileDestPath, successCallback, errCallback) {
+    // Skip if parameters are empty - don't go into errCallback, subsequent steps might still be possible
+    if (fileId == '' || fileDestPath == '') {
+        normalLog('  downloadFromDrive skip because of empty parameters (driveFileId, fileDestPath)');
+        successCallback();
+        return;
+    }
+
     return drive.files.get({
         fileId: fileId,
         alt: 'media'
@@ -59,11 +67,15 @@ function downloadFromDrive(fileId, fileDestPath, successCallback, errCallback) {
 }
 
 function downloadTourSchedule(conn: any, report: DatasetErrorReport, successCallback, errCallback) {
-    downloadFromDrive(Secrets.DRIVE_FILE_IDS.TOUR_SCHEDULE, Environment.FILE_PATHS.TOUR_SCHEDULE, () => successCallback(conn, report), err => errCallback(conn, err));
+    getYear(year => {
+        downloadFromDrive(getTourScheduleDriveFileId(year), getTourScheduleLocalPath(year), () => successCallback(conn, report), err => errCallback(conn, err));
+    }, err => errCallback(conn, err));
 }
 
 function downloadDrivingLog(conn: any, report: DatasetErrorReport, successCallback, errCallback) {
-    downloadFromDrive(Secrets.DRIVE_FILE_IDS.DRIVING_LOG, Environment.FILE_PATHS.DRIVING_LOG, () => successCallback(conn, report), err => errCallback(conn, err));
+    getYear(year => {
+        downloadFromDrive(getDrivingLogDriveFileId(year), getDrivingLogLocalPath(year), () => successCallback(conn, report), err => errCallback(conn, err));
+    }, err => errCallback(conn, err));
 }
 
 async function uploadFile(filePath: string, successCallback, errCallback) {

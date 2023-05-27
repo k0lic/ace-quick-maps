@@ -24,26 +24,26 @@ const routes: Routes = [
     path: 'ok',
     component: UserLayoutComponent,
     children: [
-      { path: 'date-map', component: DateMapComponent, canActivate: [UserGuard]},
-      { path: 'new-locations', component: NewLocationsComponent, canActivate: [AdminGuard]},
-      { path: 'program-editor', component: ProgramEditorComponent, canActivate: [AdminGuard]},
-      { path: 'users', component: UserListsComponent, canActivate: [HigherGuard]},
-      { path: 'stats', component: StatMapComponent, canActivate: [AdminGuard]},
-      { path: 'message', component: MessageComponent, canActivate: [UserGuard]},
-      // { path: 'test', component: TestComponent, canActivate: [AdminGuard]},  // FOR TESTING ONLY
-      { path: '**', redirectTo: 'date-map'}
+      { path: 'date-map', component: DateMapComponent, canActivate: [UserGuard] },
+      { path: 'new-locations', component: NewLocationsComponent, canActivate: [AdminGuard] },
+      { path: 'program-editor', component: ProgramEditorComponent, canActivate: [AdminGuard] },
+      { path: 'users', component: UserListsComponent, canActivate: [HigherGuard] },
+      { path: 'stats', component: StatMapComponent, canActivate: [AdminGuard] },
+      { path: 'message', component: MessageComponent, canActivate: [UserGuard] },
+      { path: 'test', component: TestComponent, canActivate: [AdminGuard] },  // TODO: FOR TESTING ONLY
+      { path: '**', redirectTo: 'date-map' }
     ]
   },
-  { 
+  {
     path: '',
     component: NakedLayoutComponent,
     children: [
-      { path: 'login', component: LoginComponent, canActivate: [GuestGuard]},
-      { path: 'register', component: RegisterComponent, canActivate: [GuestGuard]},
-      { path: 'forgot-password', component: ForgotPasswordComponent, canActivate: [GuestGuard]},
-      { path: 'reset-password/:code', component: ResetPasswordComponent, canActivate: [GuestGuard]},
-      { path: 'message', component: MessageComponent, canActivate: [GuestGuard]},
-      { path: '**', redirectTo: 'login'}
+      { path: 'login', component: LoginComponent, canActivate: [GuestGuard] },
+      { path: 'register', component: RegisterComponent, canActivate: [GuestGuard] },
+      { path: 'forgot-password', component: ForgotPasswordComponent, canActivate: [GuestGuard] },
+      { path: 'reset-password/:code', component: ResetPasswordComponent, canActivate: [GuestGuard] },
+      { path: 'message', component: MessageComponent, canActivate: [GuestGuard] },
+      { path: '**', redirectTo: 'login' }
     ]
   },
   {

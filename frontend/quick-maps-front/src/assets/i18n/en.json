@@ -113,11 +113,16 @@
         "HOTEL2": "Hotel2:",
         "ROUTE": "Route:",
         "ACTIVITY": "Activity:",
+        "ROOMS": "Rooms:",
         "VEHICLES": "Vehicles:",
+        "CARRIERS": "Carriers:",
         "DRIVING_LOG_NOTICE": "Drive info:"
     },
     "ITEM_VALUE_PATTERNS": {
         "ROUTE": "{{v1}} -> {{v2}}"
+    },
+    "MAP_OPTIONS": {
+        "SHOW_UNKNOWNS": "Show tours with unknown status"
     },
     "FIELD_PICKER": {
         "NAME": "Name",
@@ -127,7 +132,9 @@
         "HOTEL1": "Hotel1",
         "HOTEL2": "Hotel2",
         "ACTIVITY": "Activities",
-        "VEHICLES": "Vehicles"
+        "ROOMS": "Rooms",
+        "VEHICLES": "Vehicles",
+        "CARRIERS": "Carriers"
     },
     "STATS": {
         "TITLE": "Statistics",

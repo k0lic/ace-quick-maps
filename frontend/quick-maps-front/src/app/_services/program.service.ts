@@ -5,6 +5,7 @@ import { PointType } from '../_entities/point-type';
 import { TourProgram } from '../_entities/program';
 import { ProgramDayPoint } from '../_entities/program-day-point';
 import { optionsWithCookie, optionsWithCookieEmpty, uri } from '../_helpers/uriHelper';
+import { Year } from '../_entities/year';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,10 @@ import { optionsWithCookie, optionsWithCookieEmpty, uri } from '../_helpers/uriH
 export class ProgramService {
 
   constructor(private http: HttpClient) { }
+
+  getAllYears() {
+    return this.http.get<[Year]>(uri + '/programs/all_years', optionsWithCookie);
+  }
 
   getAllPartners() {
     return this.http.get<[Partner]>(uri + '/programs/all_partners', optionsWithCookie);

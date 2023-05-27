@@ -17,8 +17,8 @@ interface Marker {
   tourName: string;
   tourStartDate: Date;
   label: string;
-	lat: number;
-	lng: number;
+  lat: number;
+  lng: number;
   iconMapKey: string;
   showLabel: boolean;
 }
@@ -33,13 +33,16 @@ interface MarkerContainer {
   date: Date;
   hotel1: string;
   hotel2: string;
-  tourGuide: string;
+  tourGuides: string | null;
   guests: string;
+  rooms: string | null;
   activities: string;
   vehicles: string | null;
+  carriers: string | null;
   drivingLogNotice: string;
   markers: Marker[];
   color: string;
+  opacity: number;
 }
 
 interface TourInfoOverlay extends google.maps.OverlayView {
@@ -54,7 +57,7 @@ interface TourInfoOverlay extends google.maps.OverlayView {
   popToFront(): void;
 }
 
-let TourInfoWindow: { new (position: google.maps.LatLng, content: string, color: string): TourInfoOverlay};
+let TourInfoWindow: { new(position: google.maps.LatLng, content: string, color: string): TourInfoOverlay };
 let needToDefine = true;
 let renderer: Renderer2;
 let translateService: TranslateService;
@@ -73,8 +76,8 @@ function padZero(x: number): string {
 function pad4Zero(x: number): string {
   let prefix = x < 10 ? '000'
     : x < 100 ? '00'
-    : x < 1000 ? '0'
-    : '';
+      : x < 1000 ? '0'
+        : '';
   return prefix + x;
 }
 
@@ -88,7 +91,7 @@ function dateStringDashed(d: Date): string {
   return pad4Zero(d.getFullYear()) + '-' + padZero(d.getMonth() + 1) + '-' + padZero(d.getDate());
 }
 
-function toggleTOurInfoOverlay(tio: TourInfoOverlay): void {
+function toggleTourInfoOverlay(tio: TourInfoOverlay): void {
   tio.toggle();
   tio.popToFront();
 }
@@ -100,29 +103,29 @@ function defineTourInfoWindow() {
     bubbleContainer: HTMLDivElement;
     bubbleContainerBig: HTMLDivElement;
     hideBigOne: boolean;
-  
+
     constructor(position: google.maps.LatLng, content: string, color: string) {
       super();
-  
+
       this.position = position;
 
       // Item containers - each holds the separate div elements representing tours and stuff - first one the short version, the second one the long one
       this.bubbleContainer = renderer.createElement('div');
       renderer.addClass(this.bubbleContainer, 'popup-bubble');
       renderer.listen(this.bubbleContainer, 'click', event => {
-        toggleTOurInfoOverlay(this);
+        toggleTourInfoOverlay(this);
       });
 
       this.bubbleContainerBig = renderer.createElement('div');
       renderer.addClass(this.bubbleContainerBig, 'popup-bubble');
       renderer.listen(this.bubbleContainerBig, 'click', event => {
-        toggleTOurInfoOverlay(this);
+        toggleTourInfoOverlay(this);
       });
 
       // Hide big one
       renderer.setStyle(this.bubbleContainerBig, 'display', 'none');
       this.hideBigOne = true;
-      
+
       // Container for the afformentioned containers :)
       let conContainer = renderer.createElement('div');
       renderer.addClass(conContainer, 'popup-bounds');
@@ -133,12 +136,12 @@ function defineTourInfoWindow() {
       let bubbleAnchor = renderer.createElement('div');
       renderer.addClass(bubbleAnchor, 'popup-bubble-anchor');
       renderer.appendChild(bubbleAnchor, conContainer);
-  
+
       // The container adjusts the position based on the map zoom/pan - holds the anchor
       this.containerDiv = renderer.createElement('div');
       renderer.addClass(this.containerDiv, 'tour-info-container');
       renderer.appendChild(this.containerDiv, bubbleAnchor);
-  
+
       TourInfoWindow.preventMapHitsAndGesturesFrom(this.bubbleContainer);
       TourInfoWindow.preventMapHitsAndGesturesFrom(this.bubbleContainerBig);
     }
@@ -148,17 +151,23 @@ function defineTourInfoWindow() {
       // Add short version
       let bubble = renderer.createElement('div');
       renderer.addClass(bubble, 'popup-inner');
-      renderer.setStyle(bubble, 'border', '2px solid ' + item.color);
+      if (item.status == 'confirmed') {
+        renderer.setStyle(bubble, 'border', '2px solid ' + item.color);
+      } else {
+        renderer.setStyle(bubble, 'border', '2px dotted ' + item.color);
+      }
 
       let shortContent = '';
-      shortContent += showFields.name       && item.name        ? (shortContent.length > 0 ? ',' : '') + item.name                  : '';
-      shortContent += showFields.startDate  && item.startDate   ? (shortContent.length > 0 ? ',' : '') + dateString(item.startDate) : '';
-      shortContent += showFields.tourGuide  && item.tourGuide   ? (shortContent.length > 0 ? ',' : '') + item.tourGuide             : '';
-      shortContent += showFields.guests     && item.guests      ? (shortContent.length > 0 ? ',' : '') + item.guests                : '';
-      shortContent += showFields.hotel1     && item.hotel1      ? (shortContent.length > 0 ? ',' : '') + item.hotel1                : '';
-      shortContent += showFields.hotel2     && item.hotel2      ? (shortContent.length > 0 ? ',' : '') + item.hotel2                : '';
-      shortContent += showFields.activities && item.activities  ? (shortContent.length > 0 ? ',' : '') + item.activities            : '';
-      shortContent += showFields.vehicles   && item.vehicles    ? (shortContent.length > 0 ? ',' : '') + item.vehicles              : '';
+      shortContent += showFields.name && item.name ? (shortContent.length > 0 ? ',' : '') + item.name : '';
+      shortContent += showFields.startDate && item.startDate ? (shortContent.length > 0 ? ',' : '') + dateString(item.startDate) : '';
+      shortContent += showFields.tourGuides && item.tourGuides ? (shortContent.length > 0 ? ',' : '') + item.tourGuides : '';
+      shortContent += showFields.guests && item.guests ? (shortContent.length > 0 ? ',' : '') + item.guests : '';
+      shortContent += showFields.hotel1 && item.hotel1 ? (shortContent.length > 0 ? ',' : '') + item.hotel1 : '';
+      shortContent += showFields.hotel2 && item.hotel2 ? (shortContent.length > 0 ? ',' : '') + item.hotel2 : '';
+      shortContent += showFields.activities && item.activities ? (shortContent.length > 0 ? ',' : '') + item.activities : '';
+      shortContent += showFields.rooms && item.rooms ? (shortContent.length > 0 ? ',' : '') + item.rooms : '';
+      shortContent += showFields.vehicles && item.vehicles ? (shortContent.length > 0 ? ',' : '') + item.vehicles : '';
+      shortContent += showFields.carriers && item.carriers ? (shortContent.length > 0 ? ',' : '') + item.carriers : '';
       renderer.setProperty(bubble, 'innerHTML', escapeHtml(shortContent));
 
       renderer.appendChild(this.bubbleContainer, bubble);
@@ -166,29 +175,40 @@ function defineTourInfoWindow() {
       // Add detailed version
       let bubbleBig = renderer.createElement('div');
       renderer.addClass(bubbleBig, 'popup-inner');
-      renderer.setStyle(bubbleBig, 'border', '2px solid ' + item.color);
+      if (item.status == 'confirmed') {
+        renderer.setStyle(bubbleBig, 'border', '2px solid ' + item.color);
+      } else {
+        renderer.setStyle(bubbleBig, 'border', '2px dotted ' + item.color);
+      }
 
       //    Heading
       let headerEl = renderer.createElement('h4');
+      renderer.addClass(headerEl, 'popup-header');
       renderer.setProperty(headerEl, 'innerHTML', escapeHtml(item.name + ' ' + dateString(item.startDate)));
       renderer.appendChild(bubbleBig, headerEl);
-      
+
       //    Mandatory rows
-      this.addTableRow(bubbleBig, 'ITEM_LABELS.TOUR_GUIDE', item.tourGuide ?? '/');
+      this.addTableRow(bubbleBig, 'ITEM_LABELS.TOUR_GUIDE', item.tourGuides ?? '/');
       this.addTableRow(bubbleBig, 'ITEM_LABELS.GUESTS', item.guests ?? '/');
       this.addTableRow(bubbleBig, 'ITEM_LABELS.HOTEL1', item.hotel1 ?? '/');
       this.addTableRow(bubbleBig, 'ITEM_LABELS.HOTEL2', item.hotel2 ?? '/');
       this.addTableRow(bubbleBig, 'ITEM_LABELS.ROUTE', translateService.instant('ITEM_VALUE_PATTERNS.ROUTE', {
         v1: item.markers[0].label != null ? translateService.instant('LOC.' + item.markers[0].label) : '?',
-        v2: item.markers[item.markers.length - 1].label != null ? translateService.instant('LOC.' + item.markers[item.markers.length - 1].label) : '?' 
+        v2: item.markers[item.markers.length - 1].label != null ? translateService.instant('LOC.' + item.markers[item.markers.length - 1].label) : '?'
       }));
-      
+
       //    Optional rows
       if (item.activities != null) {
         this.addTableRow(bubbleBig, 'ITEM_LABELS.ACTIVITY', item.activities);
       }
-      if (item.vehicles != null) {
+      if (item.rooms != null && item.rooms != '') {
+        this.addTableRow(bubbleBig, 'ITEM_LABELS.ROOMS', item.rooms);
+      }
+      if (item.vehicles != null && item.vehicles != '') {
         this.addTableRow(bubbleBig, 'ITEM_LABELS.VEHICLES', item.vehicles);
+      }
+      if (item.carriers != null && item.carriers != '') {
+        this.addTableRow(bubbleBig, 'ITEM_LABELS.CARRIERS', item.carriers);
       }
       if (item.drivingLogNotice != null) {
         this.addTableRow(bubbleBig, 'ITEM_LABELS.DRIVING_LOG_NOTICE', item.drivingLogNotice);
@@ -206,16 +226,16 @@ function defineTourInfoWindow() {
       let labelEl = renderer.createElement('div');
       renderer.addClass(labelEl, 'col-3');
       renderer.setProperty(labelEl, 'innerHTML', escapeHtml(translateService.instant(label)));
-      
+
       // Create value (right) col div
       let valueEl = renderer.createElement('div');
       renderer.addClass(valueEl, 'col-9');
       renderer.setProperty(valueEl, 'innerHTML', escapeHtml(value));
-      
+
       // Append col divs to row div
       renderer.appendChild(rowEl, labelEl);
       renderer.appendChild(rowEl, valueEl);
-      
+
       // Append row div to parent element and add divider underneath
       renderer.appendChild(parentEl, rowEl);
       this.addDivider(parentEl);
@@ -245,20 +265,20 @@ function defineTourInfoWindow() {
 
       renderer.setStyle(this.containerDiv, 'z-index', 1);
     }
-  
+
     onAdd() {
       renderer.appendChild(this.getPanes()!.floatPane, this.containerDiv);
     }
-  
+
     onRemove() {
       if (this.containerDiv.parentElement) {
         renderer.removeChild(this.containerDiv.parentElement, this.containerDiv);
       }
     }
-  
+
     draw() {
       let divPosition = this.getProjection().fromLatLngToDivPixel(this.position)!;
-  
+
       renderer.setStyle(this.containerDiv, 'left', divPosition.x + 'px');
       renderer.setStyle(this.containerDiv, 'top', divPosition.y + 'px');
       renderer.setStyle(this.containerDiv, 'display', 'block');
@@ -274,15 +294,15 @@ function defineTourInfoWindow() {
 export class DateMapComponent extends LoggedInComponent implements OnInit {
 
   // Default parameters for the map element. Some of these could be dynamic (TODO).
-  map_lat : number = 43;
-  map_lng : number = 19;
-  map_zoom : number = 7;
+  map_lat: number = 43;
+  map_lng: number = 19;
+  map_zoom: number = 7;
 
   anchorConst: any;
   labelOriginConst: any;
 
-  map : google.maps.Map|null = null;
-  mapClickListener : google.maps.MapsEventListener|null = null;
+  map: google.maps.Map | null = null;
+  mapClickListener: google.maps.MapsEventListener | null = null;
 
   svgMap: Map<string, string> = svgMap;
   defaultSvgPath: string = defaultSvgPath;
@@ -296,25 +316,28 @@ export class DateMapComponent extends LoggedInComponent implements OnInit {
   markerIconMap: Map<string, any> = new Map();
   shortInfoWindows: TourInfoOverlay[] = [];
 
+  showUnknownTours: boolean = false;
   shortInfos: any = {
     name: true,
     startDate: false,
-    tourGuide: false,
+    tourGuides: false,
     guests: false,
     hotel1: false,
     hotel2: false,
     activities: false,
-    vehicles: false
+    rooms: false,
+    vehicles: false,
+    carriers: false
   };
 
   constructor(
     protected router: Router,
     protected meService: MeService,
-    private zone: NgZone, 
-    private renderer: Renderer2, 
+    private zone: NgZone,
+    private renderer: Renderer2,
     private translateService: TranslateService,
     private titleService: Title,
-    private tourService: TourService, 
+    private tourService: TourService,
     private programService: ProgramService
   ) {
     super(router, meService);
@@ -323,8 +346,8 @@ export class DateMapComponent extends LoggedInComponent implements OnInit {
   ngOnInit(): void {
     this.getAllPointTypes();
 
-    this.anchorConst = {x: 12, y: 12};
-    this.labelOriginConst = {x: 12, y: 12};
+    this.anchorConst = { x: 12, y: 12 };
+    this.labelOriginConst = { x: 12, y: 12 };
 
     renderer = this.renderer;
     translateService = this.translateService;
@@ -339,8 +362,8 @@ export class DateMapComponent extends LoggedInComponent implements OnInit {
       this.mapClickListener.remove();
     }
   }
-  
-  mapReadyHandler($event : google.maps.Map): void {
+
+  mapReadyHandler($event: google.maps.Map): void {
     this.map = $event;
     this.mapClickListener = this.map.addListener('click', (e: google.maps.MouseEvent) => {
       this.zone.run(() => {
@@ -350,7 +373,7 @@ export class DateMapComponent extends LoggedInComponent implements OnInit {
   }
   // End of workaround.
 
-  onMapClick($event : google.maps.MouseEvent): void {
+  onMapClick($event: google.maps.MouseEvent): void {
     // TODO: do we do anything on map click?
     // skip
   }
@@ -380,6 +403,10 @@ export class DateMapComponent extends LoggedInComponent implements OnInit {
     this.getTourInfo();
   }
 
+  onShowUnknownsChange(): void {
+    this.getTourInfo();
+  }
+
   onShortInfoFieldsChange(): void {
     // Same tour data points, but use different fields for the short bubble
     this.refreshInfoWindows();
@@ -388,7 +415,7 @@ export class DateMapComponent extends LoggedInComponent implements OnInit {
   getTourInfo(): void {
     // Check if this date was already queried
     if (this.tourInfoBank.has(this.dateStringDashed(this.selectedDate))) {
-      this.tourInfoPoints = this.tourInfoBank.get(this.dateStringDashed(this.selectedDate))??[];
+      this.tourInfoPoints = this.tourInfoBank.get(this.dateStringDashed(this.selectedDate)) ?? [];
       this.refreshMarkerContainers();
       return;
     }
@@ -396,7 +423,7 @@ export class DateMapComponent extends LoggedInComponent implements OnInit {
     // This is the first time this date is requested, so send the query to the server
     this.tourService.getConfirmedTourInfoForDate(this.selectedDate).subscribe((tourInfo: [TourInfoPoint]) => {
       this.tourInfoPoints = tourInfo;
-      
+
       // Save date info for possible later use
       // TODO: can this cause too much memory usage?
       if (this.tourInfoPoints.length > 0) {
@@ -410,8 +437,27 @@ export class DateMapComponent extends LoggedInComponent implements OnInit {
   refreshMarkerContainers(): void {
     this.markerContainers = [];
     this.tourInfoPoints.forEach(p => {
+      // Skip points of 'unknown' tours
+      if (!this.showUnknownTours && p.status != 'confirmed') {
+        return;
+      }
+
       let c: MarkerContainer | undefined = this.markerContainers.find(mc => mc.name == p.program && mc.startDate == p.start_date);
       if (c == null) {
+        let roomingList = [];
+        if (p.room_single != null) roomingList.push(p.room_single + 'sngl');
+        if (p.room_double != null) roomingList.push(p.room_double + 'dbl');
+        if (p.room_twin != null) roomingList.push(p.room_twin + 'tw');
+        if (p.room_triple != null) roomingList.push(p.room_triple + 'trpl');
+        if (p.room_apt != null) roomingList.push(p.room_apt + 'apt');
+        if (p.room_staff != null) roomingList.push('staff ' + p.room_staff + '');
+        let driverVehiclePair1 = (p.driver1 == null ? '' : p.driver1) + (p.vehicle1 == null ? '' : '(' + p.vehicle1 + ')');
+        let driverVehiclePair2 = (p.driver2 == null ? '' : p.driver2) + (p.vehicle2 == null ? '' : '(' + p.vehicle2 + ')');
+        let driverVehiclePair3 = (p.driver3 == null ? '' : p.driver3) + (p.vehicle3 == null ? '' : '(' + p.vehicle3 + ')');
+        let carrierCombo1 = p.carrier1 == null ? '' : p.carrier1 + (p.type1 == null ? '' : ' - ' + p.type1);
+        let carrierCombo2 = p.carrier2 == null ? '' : p.carrier2 + (p.type2 == null ? '' : ' - ' + p.type2);
+        let carrierCombo3 = p.carrier3 == null ? '' : p.carrier3 + (p.type3 == null ? '' : ' - ' + p.type3);
+
         c = {
           name: p.program,
           depart: p.depart,
@@ -422,13 +468,16 @@ export class DateMapComponent extends LoggedInComponent implements OnInit {
           date: p.date,
           hotel1: p.hotel1,
           hotel2: p.hotel2,
-          tourGuide: p.tour_guide,
+          tourGuides: p.tour_lead1 == null ? null : p.tour_lead1 + (p.tour_lead2 == null ? '' : ', ' + p.tour_lead2),
           guests: p.guests,
+          rooms: roomingList.length == 0 ? null : roomingList.join('/'),
           activities: p.activities,
-          vehicles: p.vehicle1 == null ? null : (p.vehicle1 + (p.vehicle2 == null ? '' : ', ' + p.vehicle2 + (p.vehicle3 == null ? '' : ', ' + p.vehicle3))),
+          vehicles: driverVehiclePair1 == '' ? null : driverVehiclePair1 + (driverVehiclePair2 == '' ? '' : ', ' + driverVehiclePair2 + (driverVehiclePair3 == '' ? '' : ', ' + driverVehiclePair3)),
+          carriers: carrierCombo1 == '' ? null : carrierCombo1 + (carrierCombo2 == '' ? '' : ', ' + carrierCombo2 + (carrierCombo3 == '' ? '' : ', ' + carrierCombo3)),
           drivingLogNotice: p.driving_log_notice,
           markers: [],
-          color: p.color
+          color: p.color,
+          opacity: p.status == 'confirmed' ? 1.0 : 0.5,
         };
         this.markerContainers.push(c);
       }
@@ -438,9 +487,9 @@ export class DateMapComponent extends LoggedInComponent implements OnInit {
         tourStartDate: p.start_date,
         label: p.location,
         lat: p.location != null ? p.lat : p.ff_lat,
-        lng: p.location != null ? p.lng: p.ff_lng,
+        lng: p.location != null ? p.lng : p.ff_lng,
         iconMapKey: p.point_type,
-        showLabel: this.allPointTypes.find(t => t.name == p.point_type)?.preferred_ui_label??false
+        showLabel: this.allPointTypes.find(t => t.name == p.point_type)?.preferred_ui_label ?? false
       });
     });
 
@@ -496,7 +545,7 @@ export class DateMapComponent extends LoggedInComponent implements OnInit {
   getAllPointTypes(): void {
     this.programService.getAllPointTypes().subscribe((types: [PointType]) => {
       this.allPointTypes = types;
-      
+
       // Populate marker icon map for all types
       this.allPointTypes.forEach(type => {
         if (type.preferred_ui_icon == null || type.preferred_ui_icon.trim().length == 0) {
@@ -505,7 +554,7 @@ export class DateMapComponent extends LoggedInComponent implements OnInit {
         } else {
           // There should be an icon
           this.markerIconMap.set(
-            type.name, 
+            type.name,
             type.preferred_ui_icon ?? ''
           );
         }
@@ -518,7 +567,7 @@ export class DateMapComponent extends LoggedInComponent implements OnInit {
 
   getSvgPath(key: string): string {
     let iconName = this.markerIconMap.get(key);
-    return svgMap.get(iconName)??defaultSvgPath;
+    return svgMap.get(iconName) ?? defaultSvgPath;
   }
 
   dateStringDashed(d: Date): string {

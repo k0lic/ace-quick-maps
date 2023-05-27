@@ -8,8 +8,15 @@ export interface TourInfoPoint {
     date: Date;
     hotel1: string;
     hotel2: string;
-    tour_guide: string;
+    tour_lead1: string;
+    tour_lead2: string;
     guests: string;
+    room_single: string;
+    room_double: string;
+    room_twin: string;
+    room_triple: string;
+    room_apt: string;
+    room_staff: string;
     activities: string;
     point_index: number;
     location: string;
@@ -23,5 +30,14 @@ export interface TourInfoPoint {
     vehicle1: string;
     vehicle2: string;
     vehicle3: string;
+    driver1: string;
+    driver2: string;
+    driver3: string;
+    carrier1: string;
+    carrier2: string;
+    carrier3: string;
+    type1: string;
+    type2: string;
+    type3: string;
     driving_log_notice: string;
 }

@@ -1,12 +1,20 @@
 <div class="row d-flex justify-content-center">
     <!-- HEADER -->
     <div class="col-12 d-flex justify-content-center mb-3">
-        <h1>{{selectedPartnerName + ' - ' + selectedTourProgramName}}</h1>
+        <h1>{{selectedYearLabel + ' - ' + selectedPartnerName + ' - ' + selectedTourProgramName}}</h1>
     </div>
 
     <!-- PROGRAM SELECTOR -->
     <div class="col-12 mb-4">
         <div class="row justify-content-center">
+            <!-- YEAR SELECTOR -->
+            <div class="col-12 col-lg-2 d-flex justify-content-center mb-2">
+                <select class="form-select" [ngModel]="selectedYearId" (ngModelChange)="onYearSelect($event)">
+                    <option *ngFor="let year of years" [value]="year.id">
+                        {{year.value}}
+                    </option>
+                </select>
+            </div>
             <!-- PARTNER SELECTOR -->
             <div class="col-12 col-lg-5 d-flex justify-content-center mb-2">
                 <select class="form-select" [ngModel]="selectedPartnerId" (ngModelChange)="onPartnerSelect($event)">
@@ -16,8 +24,9 @@
                 </select>
             </div>
             <!-- TOUR PROGRAM SELECTOR -->
-            <div class="col-12 col-lg-3 d-flex justify-content-center mb-2">
-                <select class="form-select" [ngModel]="selectedTourProgramId" (ngModelChange)="onTourProgramSelect($event)">
+            <div class="col-12 col-lg-2 d-flex justify-content-center mb-2">
+                <select class="form-select" [ngModel]="selectedTourProgramId"
+                    (ngModelChange)="onTourProgramSelect($event)">
                     <option *ngFor="let program of tourProgramsFiltered" [value]="program.id">
                         {{program.name}}
                     </option>
@@ -27,16 +36,18 @@
             <div class="col-12 col-lg-3">
                 <div class="row d-flex justify-content-left">
                     <div class="col-6">
-                        <button type="button" [class]="editMode?'btn btn-secondary':'btn btn-primary'" (click)="flipEditMode()">{{editMode?translateService.instant('BUTTONS.VIEW'):translateService.instant('BUTTONS.EDIT')}}</button>
+                        <button type="button" [class]="editMode?'btn btn-secondary':'btn btn-primary'"
+                            (click)="flipEditMode()">{{editMode?translateService.instant('BUTTONS.VIEW'):translateService.instant('BUTTONS.EDIT')}}</button>
                     </div>
                     <div *ngIf="editMode" class="col-6">
-                        <button type="button" class="btn btn-secondary" (click)="fixUpTourProgramOnServer()" translate>BUTTONS.FIX</button>
+                        <button type="button" class="btn btn-secondary" (click)="fixUpTourProgramOnServer()"
+                            translate>BUTTONS.FIX</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-  
+
     <!-- MAP CONTAINER -->
     <div class="col-12 col-lg-8 col-xxl-9">
         <div class="row d-flex justify-content-center">
@@ -44,7 +55,8 @@
             <div class="col-12 col-lg-10 mb-2">
                 <div class="row">
                     <button type="button" class="btn btn-secondary col-3" (click)="goToPreviousDay()">&lt;</button>
-                    <h5 class="col-6 text-center" translate [translateParams]="{program: selectedTourProgramName, day: selectedDay}">
+                    <h5 class="col-6 text-center" translate
+                        [translateParams]="{program: selectedTourProgramName, day: selectedDay}">
                         DAY_OF_PROGRAM_PATTERN
                     </h5>
                     <button type="button" class="btn btn-secondary col-3" (click)="goToNextDay()">&gt;</button>
@@ -52,50 +64,30 @@
             </div>
 
             <!-- MAP -->
-            <agm-map
-                class="col-12"
-                [latitude]="map_lat"
-                [longitude]="map_lng"
-                [zoom]="map_zoom"
-                (mapReady)="mapReadyHandler($event)"
-                [disableDefaultUI]="true"
-                >
+            <agm-map class="col-12" [latitude]="map_lat" [longitude]="map_lng" [zoom]="map_zoom"
+                (mapReady)="mapReadyHandler($event)" [disableDefaultUI]="true">
                 <!-- LOCATION MARKERS -->
-                <agm-marker 
-                    *ngFor="let m of locationMarkers; let i = index"
-                    [latitude]="m.lat"
-                    [longitude]="m.lng"
+                <agm-marker *ngFor="let m of locationMarkers; let i = index" [latitude]="m.lat" [longitude]="m.lng"
                     [label]="m.show_label?{
                         color: 'gray',
                         text: translateService.instant('LOC.' + m.label),
                         fontSize: '1em',
                         fontWeight: '300'
-                    }:''"
-                    [iconUrl]="markerIconMap.get(m.icon_map_key)"
-                    [markerClickable]="false"
-                    >
+                    }:''" [iconUrl]="markerIconMap.get(m.icon_map_key)" [markerClickable]="false">
                 </agm-marker>
                 <!-- POINT MARKERS -->
-                <agm-marker 
-                    *ngFor="let m of pointMarkers; let i = index"
-                    [latitude]="m.lat"
-                    [longitude]="m.lng"
+                <agm-marker *ngFor="let m of pointMarkers; let i = index" [latitude]="m.lat" [longitude]="m.lng"
                     [label]="m.show_label?{
                         color: 'purple',
                         text: translateService.instant('LOC.' + m.label),
                         fontSize: '1.8em',
                         fontWeight: '500'
-                    }:''"
-                    [iconUrl]="markerIconMap.get(m.icon_map_key)"
-                    >
+                    }:''" [iconUrl]="markerIconMap.get(m.icon_map_key)">
                 </agm-marker>
                 <!-- POLYLINE -->
                 <agm-polyline *ngIf="pointMarkers.length > 0" strokeColor="purple">
-                    <agm-polyline-point 
-                        *ngFor="let point of pointMarkers; let i = index"
-                        [latitude]="point.lat"
-                        [longitude]="point.lng"
-                    >
+                    <agm-polyline-point *ngFor="let point of pointMarkers; let i = index" [latitude]="point.lat"
+                        [longitude]="point.lng">
                     </agm-polyline-point>
                 </agm-polyline>
             </agm-map>
@@ -103,50 +95,50 @@
             <!-- MARKER TYPE BUTTONS -->
             <div *ngIf="editMode" class="col-12">
                 <div class="row d-flex justify-content-center">
-                    <button 
-                        *ngFor="let type of userPointTypes" 
-                        type="button" 
-                        [class]="type.name==selectedPointType?'btn btn-primary col-3 col-xxl-1 m-1':'btn btn-secondary col-3 col-xxl-1 m-1'" 
-                        (click)="onPointTypeClick(type.name)"
-                        style="font-size: 0.8em;"
-                        [translate]="'POINT_TYPES.' + type.name"
-                    >
+                    <button *ngFor="let type of userPointTypes" type="button"
+                        [class]="type.name==selectedPointType?'btn btn-primary col-3 col-xxl-1 m-1':'btn btn-secondary col-3 col-xxl-1 m-1'"
+                        (click)="onPointTypeClick(type.name)" style="font-size: 0.8em;"
+                        [translate]="'POINT_TYPES.' + type.name">
                     </button>
                 </div>
             </div>
         </div>
     </div>
-  
+
     <!-- SIDEBAR -->
     <div class="col-10 col-lg-4 col-xxl-3">
-      <div class="row d-flex justify-content-center p-3">
-  
-        <!-- PROGRAM HEADER -->
-        <div class="col-12">
-            <h4 translate [translateParams]="{program: selectedTourProgramName}">TOUR_PROGRAM_PATTERN</h4>
-        </div>
-  
-        <!-- LIST OF DAYS -->
-        <div *ngFor="let day of days; let i = index" class="col-12">
-          <div [class]="day.day_number==selectedDay?'row mb-1 p-2 bg-primary':'row mb-1 p-2 bg-light'" (click)="onDaySelect(day.day_number)">
-            <!-- DAY HEADER -->
-            <div class="col-12" translate [translateParams]="{day: day.day_number}">DAY_PATTERN</div>
-            <!-- LIST OF POINTS -->
-            <div *ngFor="let point of day.points" class="col-11 col-lg-9 bg-light mx-3 m-1">
-                {{'#' + point.index + ' - ' + translateService.instant('LOC.' + point.location) + ' - ' + translateService.instant('POINT_TYPES.' + point.type)}}
-            </div>
-          </div>
-        </div>
+        <div class="row d-flex justify-content-center p-3">
 
-        <!-- DAY BUTTONS -->
-        <div class="col-12 mt-3">
-            <div class="row d-flex justify-content-center">
-                <button *ngIf="editMode" type="button" class="btn btn-primary col-4 col-lg-8 m-2" (click)="addTourProgramDay()" translate>BUTTONS.DAY_ADD</button>
-                <button *ngIf="editMode" type="button" class="btn btn-danger col-4 col-lg-8 m-2" (click)="deleteLastTourProgramDay()" translate>BUTTONS.DAY_REMOVE_LAST</button>
+            <!-- PROGRAM HEADER -->
+            <div class="col-12">
+                <h4 translate [translateParams]="{program: selectedTourProgramName}">TOUR_PROGRAM_PATTERN</h4>
             </div>
+
+            <!-- LIST OF DAYS -->
+            <div *ngFor="let day of days; let i = index" class="col-12">
+                <div [class]="day.day_number==selectedDay?'row mb-1 p-2 bg-primary':'row mb-1 p-2 bg-light'"
+                    (click)="onDaySelect(day.day_number)">
+                    <!-- DAY HEADER -->
+                    <div class="col-12" translate [translateParams]="{day: day.day_number}">DAY_PATTERN</div>
+                    <!-- LIST OF POINTS -->
+                    <div *ngFor="let point of day.points" class="col-11 col-lg-9 bg-light mx-3 m-1">
+                        {{'#' + point.index + ' - ' + translateService.instant('LOC.' + point.location) + ' - ' +
+                        translateService.instant('POINT_TYPES.' + point.type)}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- DAY BUTTONS -->
+            <div class="col-12 mt-3">
+                <div class="row d-flex justify-content-center">
+                    <button *ngIf="editMode" type="button" class="btn btn-primary col-4 col-lg-8 m-2"
+                        (click)="addTourProgramDay()" translate>BUTTONS.DAY_ADD</button>
+                    <button *ngIf="editMode" type="button" class="btn btn-danger col-4 col-lg-8 m-2"
+                        (click)="deleteLastTourProgramDay()" translate>BUTTONS.DAY_REMOVE_LAST</button>
+                </div>
+            </div>
+
         </div>
-  
-      </div>
     </div>
-  
-  </div>
+
+</div>

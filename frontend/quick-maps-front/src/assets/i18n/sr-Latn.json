@@ -113,11 +113,16 @@
         "HOTEL2": "Hotel2:",
         "ROUTE": "Ruta:",
         "ACTIVITY": "Aktivnost:",
-        "VEHICLES": "Vozila:",
+        "ROOMS": "Sobe:",
+        "VEHICLES": "Vozači:",
+        "CARRIERS": "Prevoznici:",
         "DRIVING_LOG_NOTICE": "Vožnja info:"
     },
     "ITEM_VALUE_PATTERNS": {
         "ROUTE": "{{v1}} -> {{v2}}"
+    },
+    "MAP_OPTIONS": {
+        "SHOW_UNKNOWNS": "Prikaži ture s nepoznatim statusom"
     },
     "FIELD_PICKER": {
         "NAME": "Naziv",
@@ -127,7 +132,9 @@
         "HOTEL1": "Hotel1",
         "HOTEL2": "Hotel2",
         "ACTIVITY": "Aktivnosti",
-        "VEHICLES": "Vozila"
+        "ROOMS": "Sobe",
+        "VEHICLES": "Vozači/Vozila",
+        "CARRIERS": "Prevoznici"
     },
     "STATS": {
         "TITLE": "Statistika",

@@ -75,9 +75,9 @@ app.use('/users', userRoutes.router);
 let statRoutes = require('./_routes/stat-routes');
 app.use('/stats', statRoutes.router);
 
-// Test file routes - ENABLE DURING TESTING ONLY
-// let testRoutes = require('./_routes/test-routes');
-// app.use('/test', testRoutes.router);
+// TODO: Test file routes - ENABLE DURING TESTING ONLY
+let testRoutes = require('./_routes/test-routes');
+app.use('/test', testRoutes.router);
 
 // !!! Setup post-Routes
 if (Environment.SSL.ENABLED) {

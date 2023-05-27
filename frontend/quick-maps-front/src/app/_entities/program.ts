@@ -4,4 +4,5 @@ export interface TourProgram {
     partner_id: number;
     partner_name: string;
     partner_short: string;
+    id_year: number;
 }

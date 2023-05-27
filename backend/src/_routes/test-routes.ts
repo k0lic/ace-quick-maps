@@ -1,6 +1,7 @@
 import { testBackup } from "../_cron/db-backup";
 import { DatasetErrorReport } from "../_helpers/dataset-error-report";
 import { normalLog } from "../_helpers/logger";
+import { getTourScheduleLocalPath, getYear } from "../_helpers/version-helper";
 
 declare var require: any;
 let express = require('express');
