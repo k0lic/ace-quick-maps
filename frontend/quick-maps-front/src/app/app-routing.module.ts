@@ -30,7 +30,7 @@ const routes: Routes = [
       { path: 'users', component: UserListsComponent, canActivate: [HigherGuard] },
       { path: 'stats', component: StatMapComponent, canActivate: [AdminGuard] },
       { path: 'message', component: MessageComponent, canActivate: [UserGuard] },
-      { path: 'test', component: TestComponent, canActivate: [AdminGuard] },  // TODO: FOR TESTING ONLY
+      // { path: 'test', component: TestComponent, canActivate: [AdminGuard] },  // FOR TESTING ONLY
       { path: '**', redirectTo: 'date-map' }
     ]
   },
