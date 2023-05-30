@@ -681,7 +681,7 @@ function consolidateRowsIntoTourObjectsV1(rows, report: DatasetErrorReport): any
             }
         });
 
-        // Copy 'pax','paxRaw' from previous day (except for last day)
+        // Copy 'hotel1, 'hotel2', 'pax', 'paxRaw' from previous day (except for last day)
         // Makes sure stats are correct for hotel stays, since the junkString field is empty for those
         if (!tour.invalidData && tour.days.length > 2) {
             for (let i = 1; i < tour.days.length - 1; i++) {
@@ -689,6 +689,8 @@ function consolidateRowsIntoTourObjectsV1(rows, report: DatasetErrorReport): any
                 let prevDay = tour.days[i - 1];
 
                 if (currDay.hotel1 == null && currDay.hotel2 == null && currDay.pax_raw == null) {
+                    currDay.hotel1 = prevDay.hotel1;
+                    currDay.hotel2 = prevDay.hotel2;
                     currDay.paxRaw = prevDay.paxRaw;
 
                     if (currDay.pax == null) {
@@ -985,6 +987,19 @@ function consolidateRowsIntoTourObjectsV2(rows, report: DatasetErrorReport): any
                 expectedDate.setDate(arrDate.getDate() + 1);
             }
         });
+
+        // Copy 'hotel1', 'hotel2' from previous day (except for last day)
+        if (!tour.invalidData && tour.days.length > 2) {
+            for (let i = 1; i < tour.days.length - 1; i++) {
+                let currDay = tour.days[i];
+                let prevDay = tour.days[i - 1];
+
+                if (currDay.hotel1 == null && currDay.hotel2 == null) {
+                    currDay.hotel1 = prevDay.hotel1;
+                    currDay.hotel2 = prevDay.hotel2;
+                }
+            }
+        }
 
         // Copy some fields to last day - tour leader, pax
         // For some reason these are missing for the last day of the tour
