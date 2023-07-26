@@ -200,7 +200,17 @@ function updateDatabaseWithTours(conn: any, tours, report: DatasetErrorReport, s
         let insertToursQueryString = 'INSERT INTO tours (excel_row_number, program_id, start_date, end_date, depart_num, status) VALUES ?';
 
         let insertTourQueryValues: any[] = [[]];
+        let toursFiltered: any[] = [];
         tours.forEach(t => {
+            // Check if tour is an instance of known program
+            if (!programNameMap.has(String(t.name))) {
+                report.addError(atRowMessage('Neočekivana vrednost za \'tour\' <' + String(t.name) + '>', t.rowNumber, null));
+                return;
+            }
+
+            // Remove tours of unknown program for further steps as well
+            toursFiltered.push(t);
+
             insertTourQueryValues[0].push([
                 t.rowNumber,
                 programNameMap.get(String(t.name)),
@@ -210,6 +220,7 @@ function updateDatabaseWithTours(conn: any, tours, report: DatasetErrorReport, s
                 t.status
             ]);
         });
+        tours = toursFiltered;
 
         executeQueryInTransaction(conn, cleanupQuery, [], (conn, rows) => {
             executeQueryInTransaction(conn, insertToursQueryString, insertTourQueryValues, (conn, rows) => {
