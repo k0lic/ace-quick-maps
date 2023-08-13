@@ -1129,15 +1129,20 @@ function extractCellRawValue(workbook, worksheet, row, cellIndex) {
     let cellValue = row.getCell(cellIndex).value;
 
     // Extract formula result, if cell content is a formula
-    cellValue = checkIfExcelLinkAndEvaluate(workbook, worksheet, cellValue);
+    cellValue = checkIfExcelLinkAndEvaluate(workbook, worksheet, cellValue, 1);
 
     return cellValue;
 }
 
-function checkIfExcelLinkAndEvaluate(workbook, worksheet, cell) {
+function checkIfExcelLinkAndEvaluate(workbook, worksheet, cell, recursionLevel) {
     // Check if cell is a formula cell
     if (cell == null || typeof cell != 'object' || (!('formula' in cell) && !('sharedFormula' in cell))) {
         // Give up - cell value is not a formula
+        return cell;
+    }
+    // Check if the maximum recursion level has been broken
+    if (recursionLevel > 10) {
+        // TODO: report the issue?
         return cell;
     }
 
@@ -1168,7 +1173,7 @@ function checkIfExcelLinkAndEvaluate(workbook, worksheet, cell) {
 
         if (targetCell != null) {
             // Recursively travel through the chain of links until you resolve to a value
-            return checkIfExcelLinkAndEvaluate(workbook, targetWorksheet, targetCell.value);
+            return checkIfExcelLinkAndEvaluate(workbook, targetWorksheet, targetCell.value, recursionLevel + 1);
         }
     }
 
