@@ -370,7 +370,7 @@ function getValidDrivingLogRowsV2(rows, report: DatasetErrorReport): any[] {
 const processTourScheduleExcelFileVersions = {
     2022: processTourScheduleExcelFileV1,
     2023: processTourScheduleExcelFileV2,
-    2024: processTourScheduleExcelFileV3,
+    2024: processTourScheduleExcelFileV2,
 };
 
 function processTourScheduleExcelFileSelectVersion(report: DatasetErrorReport, callback, errCallback) {
@@ -1035,89 +1035,6 @@ function consolidateRowsIntoTourObjectsV2(rows, report: DatasetErrorReport): any
     report.addInfo('Of which ' + confirmedTours.length + ' are confirmed, ' + canceledTours.length + ' are canceled, and ' + unknownTours.length + ' are unknown');
 
     return validTours;
-}
-
-async function processTourScheduleExcelFileV3(year: number, report: DatasetErrorReport, callback) {
-    let workbook = new Excel.Workbook();
-
-    let filePath = getTourScheduleLocalPath(year);
-    // Skip if filePath is empty - don't go into errCallback, subsequent steps might still be possible
-    if (filePath == '') {
-        normalLog('  processTourScheduleExcelFileV3 skip because of empty file path');
-        callback([]);
-        return;
-    }
-
-    await workbook.xlsx.readFile(filePath);
-
-    let rows = extractAndResolveExcelRowsV3(workbook, report);
-
-    let tours = consolidateRowsIntoTourObjectsV2(rows, report);
-
-    callback(tours);
-}
-
-// Read through the rows of the Excel workbook and extract useful fields, resolving any links
-function extractAndResolveExcelRowsV3(workbook, report: DatasetErrorReport): any[] {
-    let worksheet = workbook.getWorksheet('link');
-
-    let rowObjs: any[] = [];
-    worksheet.eachRow((row, rowNumber) => {
-        // Ignore header row
-        if (rowNumber == 1) {
-            return;
-        }
-
-        let operator = extractCellRawValue(workbook, worksheet, row, 1);
-        let aceOrg = extractCellRawValue(workbook, worksheet, row, 2);
-        let tour = extractCellRawValue(workbook, worksheet, row, 3);
-        let departNum = extractCellRawValue(workbook, worksheet, row, 4);
-        let hotel1 = extractCellRawValue(workbook, worksheet, row, 5);
-        let hotel2 = extractCellRawValue(workbook, worksheet, row, 6);
-        let activities1 = extractCellRawValue(workbook, worksheet, row, 7);
-        let activities2 = extractCellRawValue(workbook, worksheet, row, 8);
-        let dayNum = extractCellRawValue(workbook, worksheet, row, 9);
-        let arrDate = extractCellRawValue(workbook, worksheet, row, 10);
-        let depDate = extractCellRawValue(workbook, worksheet, row, 11);
-        let status = extractCellRawValue(workbook, worksheet, row, 12);
-        let paxRaw = extractCellRawValue(workbook, worksheet, row, 16);
-        let roomSingle = extractCellRawValue(workbook, worksheet, row, 17);
-        let roomDouble = extractCellRawValue(workbook, worksheet, row, 18);
-        let roomTwin = extractCellRawValue(workbook, worksheet, row, 19);
-        let roomTriple = extractCellRawValue(workbook, worksheet, row, 20);
-        let roomApt = extractCellRawValue(workbook, worksheet, row, 21);
-        let roomStaff = extractCellRawValue(workbook, worksheet, row, 22);
-        let leader1 = extractCellRawValue(workbook, worksheet, row, 24);
-
-        rowObjs.push({
-            rowNumber: rowNumber,
-            operator: operator,
-            aceOrg: aceOrg,
-            tour: tour,
-            departNum: departNum,
-            dayNum: dayNum,
-            hotel1: hotel1,
-            hotel2: hotel2,
-            activities: (activities1 != null && activities2 != null ? activities1 + ', ' + activities2 : activities1), // lazy workaround for now, table is still empty, I don't wanna put in work now
-            arrDate: arrDate,
-            depDate: depDate,
-            status: status,
-            pax: null,
-            paxRaw: paxRaw,
-            roomSingle: roomSingle,
-            roomDouble: roomDouble,
-            roomTwin: roomTwin,
-            roomTriple: roomTriple,
-            roomApt: roomApt,
-            roomStaff: roomStaff,
-            leader1: leader1,
-            leader2: null,
-        });
-    });
-
-    // report.info.push('Extracted all row objects: ' + rowObjs.length + ' in total');
-    report.addInfo('Extracted all row objects: ' + rowObjs.length + ' in total');
-    return rowObjs;
 }
 
 // ************************************************************************************************************************************* //
