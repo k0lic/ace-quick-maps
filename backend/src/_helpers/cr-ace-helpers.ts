@@ -41,14 +41,23 @@ function processTourDayAssignmentsResponse(report: DatasetErrorReport, callback,
                     return;
                 }
 
+                // Joining is performed on the 'date' field, rather than the 'dayNumber', so we can afford
+                // to transform 'pre'/'post' values into w/e
+                let dayNumber = r.itinerary_day_number;
+                if (dayNumber == 'Pre') {
+                    dayNumber = -1;
+                } else if (dayNumber == 'Post') {
+                    dayNumber = -2;
+                }
+
                 let adapted = {
                     rowNumber: index,
                     date: r.date,
                     tourCode: r.tour_code,
                     tourName: tourCodeMatch[1],
                     startDate: new Date(Number(tourCodeMatch[4]), Number(tourCodeMatch[3]) - 1, Number(tourCodeMatch[2])),
-                    dayNumber: r.itinerary_day_number,
-                    destination: "",
+                    dayNumber: dayNumber,
+                    destination: r.itinerary_route,
                     vehicle1: null,
                     driver1: r.driver_1,
                     vehicle2: null,
