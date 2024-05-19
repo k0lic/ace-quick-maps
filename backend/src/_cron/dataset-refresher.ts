@@ -13,6 +13,7 @@ let driveHelpers = require('../_helpers/drive-helpers');
 let dateHelpers = require('../_helpers/date-helpers');
 let excelHelpers = require('../_helpers/excel-helpers');
 let mailHelpers = require('../_helpers/mail-helpers');
+let resourceHelpers = require('../_helpers/resource-helpers');
 
 // Setup config object
 let refreshConfig = CronConfig.DATASET_REFRESHER.DEFAULT_CONFIG;
@@ -56,7 +57,7 @@ function runRefresh() {
     // First step - fetch Tour-Schedule excel file from drive
     jobStep(refreshConfig.fetchTourSchedule, ogReport, driveHelpers.downloadTourSchedule, null, (conn, report) => {
         // Second step - fetch Driving-Log excel file from drive
-        jobStep(refreshConfig.fetchDrivingLog, report, driveHelpers.downloadDrivingLog, null, (conn, report) => {
+        jobStep(refreshConfig.fetchDrivingLog, report, resourceHelpers.getDrivingLogResource, null, (conn, report) => {
             // Start transaction
             beginTransaction(conn => {
                 // Third step - update DB with Tour-Schedule values
@@ -152,7 +153,7 @@ async function updateDrivingLog(conn: any, report: DatasetErrorReport, successCa
     // Only send report to the first component that fires errors, since later components depend on the previous ones
     let noErrorsOnEntry = report.hasErrors() == false;
 
-    excelHelpers.processDrivingLogExcelFileSelectVersion(report, rows => {
+    resourceHelpers.processDrivingLogResource(report, rows => {
         if (rows.length == 0) {
             successCallback(conn, report);
             return;

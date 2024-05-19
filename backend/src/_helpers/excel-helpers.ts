@@ -14,7 +14,6 @@ let dateHelpers = require('./date-helpers');
 const processDrivingLogExcelFileVersions = {
     2022: processDrivingLogExcelFileV1,
     2023: processDrivingLogExcelFileV2,
-    2024: processDrivingLogExcelFileV2,
 };
 
 async function processDrivingLogExcelFileSelectVersion(report: DatasetErrorReport, callback, errCallback) {
