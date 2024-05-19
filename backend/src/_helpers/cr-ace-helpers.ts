@@ -42,12 +42,14 @@ function processTourDayAssignmentsResponse(report: DatasetErrorReport, callback,
                 }
 
                 // Joining is performed on the 'date' field, rather than the 'dayNumber', so we can afford
-                // to transform 'pre'/'post' values into w/e
+                // to transform 'pre'/'post'/'recce' values into w/e
                 let dayNumber = r.itinerary_day_number;
                 if (dayNumber == 'Pre') {
                     dayNumber = -1;
                 } else if (dayNumber == 'Post') {
                     dayNumber = -2;
+                } else if (dayNumber == 'Recce') {
+                    dayNumber = -3;
                 }
 
                 let adapted = {
