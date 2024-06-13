@@ -30,15 +30,32 @@ function processTourDayAssignmentsResponse(report: DatasetErrorReport, callback,
 
             // Setup
             let tourCodePattern = /^(.*)\s(\d{2})\/(\d{2})\/(\d{2})$/;
+            let ignorePattern = /^(?:FOND|RECCE|ACE training).*$/;
+            let tourNameDic: Map<string, string> = new Map([
+                ['SEMK DE', 'SEMK - DE'],
+                ['JRBAK', 'JrBAK']
+            ]);
             let rows = [];
 
             // Adapt to expected format
             drivingLog.forEach((r, index) => {
+                let ignoreMatch = r.tour_code.match(ignorePattern);
+                if (ignoreMatch != null) {
+                    // skip
+                    return;
+                }
+
                 let tourCodeMatch = r.tour_code.match(tourCodePattern);
                 if (tourCodeMatch == null) {
                     // Serious error - Include it in the report
                     report.addError(unexpectedValueMsg('TourCode', r.tour_code, index, null))
                     return;
+                }
+
+                // Perform tour name mapping
+                let name = tourCodeMatch[1];
+                if (tourNameDic.has(name)) {
+                    name = tourNameDic.get(name);
                 }
 
                 // Joining is performed on the 'date' field, rather than the 'dayNumber', so we can afford
@@ -56,7 +73,7 @@ function processTourDayAssignmentsResponse(report: DatasetErrorReport, callback,
                     rowNumber: index,
                     date: r.date,
                     tourCode: r.tour_code,
-                    tourName: tourCodeMatch[1],
+                    tourName: name,
                     startDate: new Date(2000 + Number(tourCodeMatch[4]), Number(tourCodeMatch[3]) - 1, Number(tourCodeMatch[2])),
                     dayNumber: dayNumber,
                     destination: r.itinerary_route,
