@@ -29,7 +29,7 @@ function processTourDayAssignmentsResponse(report: DatasetErrorReport, callback,
             let drivingLog = JSON.parse(rawdata);
 
             // Setup
-            let tourCodePattern = /^([^-]*)-([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/;
+            let tourCodePattern = /^(.*)\s(\d{2})\/(\d{2})\/(\d{2})$/;
             let rows = [];
 
             // Adapt to expected format
@@ -57,7 +57,7 @@ function processTourDayAssignmentsResponse(report: DatasetErrorReport, callback,
                     date: r.date,
                     tourCode: r.tour_code,
                     tourName: tourCodeMatch[1],
-                    startDate: new Date(Number(tourCodeMatch[4]), Number(tourCodeMatch[3]) - 1, Number(tourCodeMatch[2])),
+                    startDate: new Date(2000 + Number(tourCodeMatch[4]), Number(tourCodeMatch[3]) - 1, Number(tourCodeMatch[2])),
                     dayNumber: dayNumber,
                     destination: r.itinerary_route,
                     vehicle1: null,
