@@ -33,7 +33,8 @@ function processTourDayAssignmentsResponse(report: DatasetErrorReport, callback,
             let ignorePattern = /^(?:FOND|RECCE|ACE training).*$/;
             let tourNameDic: Map<string, string> = new Map([
                 ['SEMK DE', 'SEMK - DE'],
-                ['JRBAK', 'JrBAK']
+                ['JRBAK', 'JrBAK'],
+                ['E-CCD', 'CCD']
             ]);
             let rows = [];
 
